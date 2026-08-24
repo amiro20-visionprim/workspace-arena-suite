@@ -47,6 +47,24 @@ class AuthenticationTest extends TestCase
         $this->actingAs($user)->get('/login')->assertRedirect(route('app.dashboard'));
     }
 
+    public function test_failed_login_is_audited(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'team@visionprime.test',
+            'password' => Hash::make('StrongPassword2026'),
+        ]);
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'WrongPassword123',
+        ])->assertSessionHasErrors('email');
+
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'auth.login_failed',
+            'actor_id' => null,
+        ]);
+    }
+
     public function test_a_password_reset_link_can_be_requested(): void
     {
         Notification::fake();

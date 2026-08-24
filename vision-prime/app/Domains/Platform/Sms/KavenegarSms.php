@@ -29,6 +29,16 @@ class KavenegarSms implements SmsSender
         $apiKey = (string) config('services.kavenegar.api_key');
 
         if ($apiKey === '') {
+            // در پروداکشن بدون کلید، ارسال واقعی ممکن نیست؛ نباید «موفقیت» کاذب برگردد.
+            // در غیر این صورت کاربر «کد ارسال شد» می‌بیند ولی هرگز پیامکی دریافت نمی‌کند.
+            if (app()->environment('production')) {
+                return [
+                    'success' => false,
+                    'external_id' => null,
+                    'error' => 'پنل پیامکی (کاوه‌نگار) پیکربندی نشده است.',
+                ];
+            }
+
             return ['success' => true, 'external_id' => 'sandbox-'.now()->timestamp, 'error' => null];
         }
 

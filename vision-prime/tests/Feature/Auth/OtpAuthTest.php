@@ -50,6 +50,10 @@ class OtpAuthTest extends TestCase
         ]);
 
         $this->assertAuthenticatedAs($user);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'auth.login_otp_succeeded',
+            'actor_id' => $user->getKey(),
+        ]);
     }
 
     public function test_otp_verify_rejects_wrong_code(): void

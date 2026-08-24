@@ -60,9 +60,13 @@ class OtpService
 
         $result = $this->sms->send($phone, $message);
 
+        // کد واقعی فقط در محیط توسعه/تست (و تنها وقتی sandbox است) برگردانده می‌شود.
+        // در پروداکشن هرگز به کلاینت برنمی‌گردد — حتی اگر کلید پیامک خالی باشد.
+        // این کار از نشت OTP جلوگیری می‌کند (نگاه: PHASE1_AUTH_REVIEW.md - H3).
+        $revealCode = $isSandbox && ! app()->environment('production');
+
         return [
-            // در sandbox کد واقعی برمی‌گردد تا توسعه بدون کلید ممکن باشد.
-            'code' => $isSandbox ? $code : null,
+            'code' => $revealCode ? $code : null,
             'sent' => $result['success'],
             'message' => $result['success']
                 ? 'کد تأیید ارسال شد.'

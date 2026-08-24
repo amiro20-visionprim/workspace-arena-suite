@@ -22,6 +22,15 @@ class PasswordResetLinkController extends Controller
     {
         $request->validate(['email' => ['required', 'email']]);
 
+        // اگر در پروداکشن ارسال ایمیل واقعی پیکربندی نشده (MAIL_MAILER=log)، به‌جای
+        // «موفقیت کاذب»، پیام صادقانه بدهیم تا کاربر در انتظار ایمیلی که هرگز نمی‌آید نماند.
+        // (در محیط توسعه/تست جریان عادی حفظ می‌شود تا تست‌ها و توسعه بدون SMTP ممکن باشد.)
+        if (app()->environment('production') && config('mail.default') === 'log') {
+            return back()->withErrors([
+                'email' => 'سامانهٔ ارسال ایمیل هنوز پیکربندی نشده است. لطفاً از طریق پشتیبانی، بازیابی رمز را درخواست کنید.',
+            ]);
+        }
+
         $status = Password::sendResetLink($request->only('email'));
 
         return $status === Password::RESET_LINK_SENT

@@ -1,0 +1,10 @@
+{
+  "name": "vision-prime-php-lint",
+  "private": true,
+  "type": "module",
+  "description": "PHP syntax linter (php -l) via @php-wasm — no native PHP needed",
+  "dependencies": {
+    "@php-wasm/node": "^1.0.0",
+    "@php-wasm/universal": "^1.0.0"
+  }
+}

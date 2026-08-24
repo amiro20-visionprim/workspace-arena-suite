@@ -38,6 +38,12 @@ class AuthenticatedSessionController extends Controller
         if (! Auth::attempt($credentials, $remember)) {
             RateLimiter::hit($throttleKey, 60);
 
+            // ثبت تلاش ناموفق برای کشف حملات brute-force (اصل #8: همهٔ عملیات حساس audit دارند).
+            $recordAuditLog->handle(
+                action: 'auth.login_failed',
+                metadata: ['email' => strtolower((string) $request->string('email'))],
+            );
+
             return back()->withErrors([
                 'email' => 'ایمیل یا رمز عبور صحیح نیست.',
             ])->onlyInput('email');

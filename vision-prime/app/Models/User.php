@@ -80,11 +80,12 @@ class User extends Authenticatable
     /** آیا این کاربر در یک عضویت فعال نقش super-admin دارد؟ */
     public function isSuperAdmin(): bool
     {
+        // یک کوئری EXISTS به‌جای بارگذاری همهٔ عضویت‌ها و نقش‌ها (جلوگیری از کوئری‌های سنگین
+        // روی هر روت /platform/* — نگاه: PHASE1_AUTH_REVIEW.md - M2).
         return $this->memberships()
             ->where('status', 'active')
-            ->with('role')
-            ->get()
-            ->contains(fn ($membership): bool => $membership->role?->key === 'super-admin');
+            ->whereHas('role', static fn ($query): mixed => $query->where('key', 'super-admin'))
+            ->exists();
     }
 
     protected function casts(): array
