@@ -17,6 +17,12 @@ const props = defineProps<{
     lastSeenAt: string | null
     health: Record<string, unknown>
   }
+  wpCredentials: null | {
+    wp_url: string
+    wp_username: string
+    has_password: boolean
+    connected_at: string | null
+  }
 }>()
 const page = usePage<{ flash?: { pairingToken?: string; pairingTokenExpiresAt?: string } }>()
 function generateToken(): void {
@@ -47,6 +53,51 @@ async function syncWordPress() {
 }
 function disconnect(): void {
   router.post(`/app/sites/${props.site.id}/connector/disconnect`)
+}
+
+// WordPress credentials
+const wpUrl = ref(props.wpCredentials?.wp_url || props.site.canonicalUrl || '')
+const wpUser = ref(props.wpCredentials?.wp_username || '')
+const wpPass = ref('')
+const wpSaving = ref(false)
+const wpMessage = ref<null | { type: 'success' | 'error'; text: string }>(null)
+
+async function saveWpCredentials() {
+  wpSaving.value = true
+  wpMessage.value = null
+  try {
+    const res = await fetch(`/app/sites/${props.site.id}/connector/wp-credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      body: JSON.stringify({ wp_url: wpUrl.value, wp_username: wpUser.value, wp_app_password: wpPass.value })
+    })
+    const data = await res.json()
+    if (data.success) {
+      wpMessage.value = { type: 'success', text: `✅ ذخیره شد — کاربر: ${data.user_name || wpUser.value}` }
+      wpPass.value = ''
+    } else {
+      wpMessage.value = { type: 'error', text: `❌ ${data.error || 'خطا در ذخیره'}` }
+    }
+  } catch (e: any) { wpMessage.value = { type: 'error', text: `❌ ${e.message}` } }
+  wpSaving.value = false
+}
+
+async function removeWpCredentials() {
+  wpSaving.value = true
+  wpMessage.value = null
+  try {
+    const res = await fetch(`/app/sites/${props.site.id}/connector/wp-credentials`, {
+      method: 'DELETE',
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    const data = await res.json()
+    if (data.success) {
+      wpMessage.value = { type: 'success', text: '✅ اطلاعات وردپرس حذف شد.' }
+      wpUser.value = ''
+      wpPass.value = ''
+    }
+  } catch (e: any) { wpMessage.value = { type: 'error', text: `❌ ${e.message}` } }
+  wpSaving.value = false
 }
 </script>
 <template>
@@ -114,6 +165,37 @@ function disconnect(): void {
           </div>
         </div>
       </div>
+      <div class="border-line mt-6 border-t pt-5">
+        <h3 class="text-ink-strong mb-3 text-sm font-bold">تنظیمات انتشار در وردپرس</h3>
+        <p class="text-ink-muted mb-3 text-sm">برای انتشار مستقیم مقالات و محصولات، اطلاعات WordPress REST API را وارد کنید.</p>
+        <div v-if="wpCredentials" class="rounded-card bg-surface p-4 mb-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-600 text-sm font-semibold">✅ متصل به وردپرس</p>
+              <p class="text-ink-muted text-xs mt-1">کاربر: {{ wpCredentials.wp_username }} · URL: {{ wpCredentials.wp_url }}</p>
+            </div>
+            <VButton size="sm" variant="danger" @click="removeWpCredentials" :loading="wpSaving">حذف</VButton>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-ink-muted text-xs font-medium">آدرس سایت وردپرس</label>
+            <input v-model="wpUrl" type="url" placeholder="https://example.com" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="text-ink-muted text-xs font-medium">نام کاربری وردپرس</label>
+            <input v-model="wpUser" type="text" placeholder="admin" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="text-ink-muted text-xs font-medium">Application Password</label>
+            <input v-model="wpPass" type="password" :placeholder="wpCredentials?.has_password ? '(قابل تغییر)' : 'xxxx xxxx xxxx xxxx'" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+            <p class="text-ink-muted mt-1 text-xs">از wp-admin → کاربران → ویرایش → Application Passwords بسازید</p>
+          </div>
+          <VButton @click="saveWpCredentials" :loading="wpSaving" variant="primary" size="sm">💾 ذخیره و تست اتصال</VButton>
+          <p v-if="wpMessage" :class="wpMessage.type === 'success' ? 'text-green-600' : 'text-red-600'" class="text-xs">{{ wpMessage.text }}</p>
+        </div>
+      </div>
+
       <div class="border-line mt-6 border-t pt-5">
         <h3 class="text-ink-strong mb-3 text-sm font-bold">مرحله ۲ — جفت‌سازی</h3>
         <div class="flex flex-wrap gap-3">

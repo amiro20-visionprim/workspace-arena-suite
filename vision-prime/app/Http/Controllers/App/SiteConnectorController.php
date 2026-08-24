@@ -7,6 +7,7 @@ namespace App\Http\Controllers\App;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Models\Site;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -18,6 +19,8 @@ class SiteConnectorController extends Controller
     {
         Gate::authorize('view', $site);
         $connection = \DB::table('site_connections')->where('site_id', $site->id)->first();
+        $settings = (array) $site->settings;
+        $wpCreds = $settings['wordpress'] ?? null;
 
         return Inertia::render('App/Sites/Connector', [
             'site' => ['id' => $site->id, 'name' => $site->name, 'canonicalUrl' => $site->canonical_url],
@@ -28,7 +31,74 @@ class SiteConnectorController extends Controller
                 'lastSeenAt' => $connection->last_seen_at,
                 'health' => json_decode($connection->health ?? '{}', true),
             ],
+            'wpCredentials' => $wpCreds ? [
+                'wp_url' => $wpCreds['wp_url'] ?? '',
+                'wp_username' => $wpCreds['wp_username'] ?? '',
+                'has_password' => !empty($wpCreds['wp_app_password']),
+                'connected_at' => $wpCreds['connected_at'] ?? null,
+            ] : null,
         ]);
+    }
+
+    /**
+     * Save WordPress API credentials for publishing.
+     * POST /app/sites/{site}/connector/wp-credentials
+     */
+    public function saveWpCredentials(Site $site, CurrentOrganization $c): JsonResponse
+    {
+        Gate::authorize('update', $site);
+
+        $data = request()->validate([
+            'wp_url' => 'required|string|max:500',
+            'wp_username' => 'required|string|max:200',
+            'wp_app_password' => 'required|string|max:200',
+        ]);
+
+        // Normalize URL
+        $data['wp_url'] = rtrim($data['wp_url'], '/');
+
+        // Test connection first
+        $publisher = app(\App\Domains\Content\Services\WordPressPublisher::class);
+        $test = $publisher->testConnection($data['wp_url'], $data['wp_username'], $data['wp_app_password']);
+
+        if (!$test['success']) {
+            return response()->json([
+                'success' => false,
+                'error' => 'اتصال به وردپرس ناموفق بود: ' . ($test['error'] ?? 'اطلاعات صحیح نیست'),
+            ], 422);
+        }
+
+        // Save to site settings
+        $settings = (array) $site->settings;
+        $settings['wordpress'] = [
+            'wp_url' => $data['wp_url'],
+            'wp_username' => $data['wp_username'],
+            'wp_app_password' => $data['wp_app_password'],
+            'connected_at' => now()->toISOString(),
+            'user_name' => $test['user'] ?? '',
+        ];
+        $site->update(['settings' => $settings]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'اطلاعات وردپرس ذخیره شد.',
+            'user_name' => $test['user'] ?? '',
+        ]);
+    }
+
+    /**
+     * Remove WordPress credentials.
+     * DELETE /app/sites/{site}/connector/wp-credentials
+     */
+    public function removeWpCredentials(Site $site, CurrentOrganization $c): JsonResponse
+    {
+        Gate::authorize('update', $site);
+
+        $settings = (array) $site->settings;
+        unset($settings['wordpress']);
+        $site->update(['settings' => $settings]);
+
+        return response()->json(['success' => true, 'message' => 'اطلاعات وردپرس حذف شد.']);
     }
 
     /**

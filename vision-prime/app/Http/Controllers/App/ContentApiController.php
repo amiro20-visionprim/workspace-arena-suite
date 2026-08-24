@@ -1194,15 +1194,35 @@ class ContentApiController extends Controller
         $draft = ContentDraft::findOrFail($data['draft_id']);
         $site = Site::findOrFail($draft->site_id);
         $settings = (array) $site->settings;
+
+        // 1. Try site->settings->wordpress (stored credentials)
         $wp = $settings['wordpress'] ?? null;
 
-        if (!$wp || empty($wp['wp_url'])) {
-            return response()->json(['success' => false, 'error' => 'تنظیمات وردپرس ذخیره نشده.']);
+        // 2. If not found, try site_connections + settings combo
+        if (empty($wp['wp_url']) || empty($wp['wp_username'])) {
+            $conn = \DB::table('site_connections')->where('site_id', $site->id)->where('status', 'connected')->first();
+            if ($conn && !empty($conn->platform_url)) {
+                $wp = [
+                    'wp_url' => $conn->platform_url,
+                    'wp_username' => $wp['wp_username'] ?? '',
+                    'wp_app_password' => $wp['wp_app_password'] ?? '',
+                ];
+            }
+        }
+
+        // 3. Validate credentials
+        if (!$wp || empty($wp['wp_url']) || empty($wp['wp_username'])) {
+            return response()->json([
+                'success' => false,
+                'error' => 'تنظیمات وردپرس ذخیره نشده. ابتدا از صفحه «اتصال وردپرس» اطلاعات WP را وارد کنید.',
+                'needs_setup' => true,
+                'setup_url' => "/app/sites/{$site->id}/connector",
+            ]);
         }
 
         $publisher = app(WordPressPublisher::class);
         $result = $publisher->publish(
-            ['wp_url'=>$wp['wp_url'],'wp_username'=>$wp['wp_username'],'wp_app_password'=>$wp['wp_app_password']],
+            ['wp_url'=>$wp['wp_url'],'wp_username'=>$wp['wp_username'],'wp_app_password'=>$wp['wp_app_password'] ?? ''],
             ['title'=>$draft->title,'content'=>$draft->content,'meta_title'=>$draft->meta_title,'meta_description'=>$draft->meta_description,'slug'=>$draft->slug,'status'=>$data['status'] ?? 'draft']
         );
 

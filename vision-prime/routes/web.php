@@ -186,6 +186,8 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::get('/app/sites/{site}/connector', [SiteConnectorController::class, 'show'])->name('app.sites.connector');
     Route::post('/app/sites/{site}/connector/pairing-token', [SiteConnectorTokenController::class, 'store'])->name('app.sites.connector.pairing-token');
     Route::post('/app/sites/{site}/connector/disconnect', SiteDisconnectController::class)->name('app.sites.connector.disconnect');
+    Route::post('/app/sites/{site}/connector/wp-credentials', [SiteConnectorController::class, 'saveWpCredentials'])->name('app.sites.connector.wp-credentials');
+    Route::delete('/app/sites/{site}/connector/wp-credentials', [SiteConnectorController::class, 'removeWpCredentials'])->name('app.sites.connector.wp-credentials.remove');
     Route::get('/app/sites/{site}/sync', [SiteSyncStatusController::class, 'show'])->name('app.sites.sync.show');
     Route::post('/app/sites/{site}/sync', [SiteSyncController::class, 'store'])->name('app.sites.sync.store');
     Route::get('/app/url-profiles', [UrlProfileController::class, 'index'])->name('app.url-profiles.index');
@@ -309,7 +311,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
         Route::post("/api/content/publish", [ContentApiController::class, "publishToWordPress"])->name("api.content.publish")->middleware("throttle:5,1");
         Route::post("/api/content/test-wp", [ContentApiController::class, "testWordPress"])->name("api.content.test-wp")->middleware("throttle:5,1");
         Route::post("/api/content/drafts", [ContentApiController::class, "saveDraft"])->name("api.content.drafts.save");
-        Route::post("/api/content/test-wp-connection", [ContentApiController::class, "testWpConnection"])->name("api.content.test-wp");
+        Route::post("/api/content/test-wp-connection", [ContentApiController::class, "testWpConnection"])->name("api.content.test-wp-connection");
         Route::post("/api/content/publish-stored", [ContentApiController::class, "publishStored"])->name("api.content.publish-stored");
         Route::get("/api/content/drafts", [ContentApiController::class, "listDrafts"])->name("api.content.drafts");
         Route::get("/api/content/drafts/{id}", [ContentApiController::class, "getDraft"])->name("api.content.drafts.show");

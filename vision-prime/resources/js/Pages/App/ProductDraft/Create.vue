@@ -65,9 +65,6 @@ const currentDraftId = ref<number | null>(null)
 const draftSaved = ref(false)
 
 // Publish
-const wpUrl = ref('')
-const wpUser = ref('')
-const wpPass = ref('')
 const publishing = ref(false)
 const publishResult = ref<any>(null)
 const showPublishDialog = ref(false)
@@ -271,7 +268,6 @@ async function copyPlainText() {
 }
 
 async function publishToWordPress(status: string) {
-  if (!result.value || !wpUrl.value || !wpUser.value || !wpPass.value) return
   publishing.value = true; publishResult.value = null
   try {
     let draftId = currentDraftId.value
@@ -280,9 +276,9 @@ async function publishToWordPress(status: string) {
       const dd = await dr.json(); draftId = dd.drafts?.[0]?.id
     }
     if (!draftId) { publishResult.value = { success: false, error: 'Draft یافت نشد' }; publishing.value = false; return }
-    const res = await fetch('/api/content/publish', {
+    const res = await fetch('/api/content/publish-stored', {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ draft_id: draftId, status, wp_url: wpUrl.value, wp_username: wpUser.value, wp_app_password: wpPass.value })
+      body: JSON.stringify({ draft_id: draftId, status })
     })
     publishResult.value = await res.json()
   } catch (e: any) { publishResult.value = { success: false, error: e.message } }
@@ -614,6 +610,8 @@ async function applySuggestions(suggestions: string[]) {
                 <VButton variant="secondary" size="sm" @click="showPublishDialog = true">🚀 انتشار در وردپرس</VButton>
               </div>
               <p v-if="draftSaved" class="text-green-600 text-xs">✅ Draft ذخیره شد</p>
+              <p v-if="copyStatus === 'HTML'" class="text-blue-600 text-xs">📋 HTML کپی شد!</p>
+              <p v-if="copyStatus === 'TEXT'" class="text-blue-600 text-xs">📝 متن کپی شد!</p>
               <p v-if="publishResult?.success" class="text-green-600 text-xs">✅ منتشر شد! <a :href="publishResult.post_url" target="_blank" class="underline">مشاهده</a></p>
               <p v-if="publishResult?.error" class="text-red-600 text-xs">❌ {{ publishResult.error }}</p>
             </div>
@@ -629,20 +627,7 @@ async function applySuggestions(suggestions: string[]) {
           <h4 class="font-bold text-ink-strong">🚀 انتشار در وردپرس</h4>
           <button class="text-ink-muted hover:text-ink-strong" @click="showPublishDialog = false">✕</button>
         </div>
-        <div class="space-y-3">
-          <div>
-            <label class="text-ink-strong text-sm font-semibold">آدرس سایت</label>
-            <input v-model="wpUrl" placeholder="https://example.com" dir="ltr" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
-          </div>
-          <div>
-            <label class="text-ink-strong text-sm font-semibold">نام کاربری</label>
-            <input v-model="wpUser" placeholder="admin" dir="ltr" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
-          </div>
-          <div>
-            <label class="text-ink-strong text-sm font-semibold">Application Password</label>
-            <input v-model="wpPass" type="password" dir="ltr" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
-          </div>
-        </div>
+        <p class="text-ink-muted text-sm mb-4">محصول با اتصال خودکار به سایت وردپرس منتشر می‌شود.</p>
         <div class="flex gap-2 mt-4 justify-end">
           <VButton variant="secondary" @click="showPublishDialog = false">لغو</VButton>
           <VButton variant="secondary" :loading="publishing" @click="publishToWordPress('draft')">پیش‌نویس</VButton>
