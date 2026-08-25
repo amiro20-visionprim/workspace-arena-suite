@@ -66,9 +66,20 @@ class ConfidenceScorer
     {
         $hasRule = in_array('rule_based', $sources, true);
         $hasAi = in_array('ai', $sources, true);
+        $hasHuman = in_array('human_review', $sources, true);
+
+        // دو منبع ماشینیِ هم‌نظر → توافق کامل
         if ($hasRule && $hasAi) {
             return 1.0;
         }
+
+        // پیش‌نویس ماشینی (rule_based یا ai) + تأیید انسانی = دو منبع مستقلِ هم‌نظر.
+        // نکته: پیش از این human_review نادیده گرفته می‌شد و امتیاز انتشارِ
+        // تأییدشدهٔ انسانی روی لبهٔ آستانه (۸۴ در برابر ۸۵) می‌ماند.
+        if (($hasRule || $hasAi) && $hasHuman) {
+            return 0.85;
+        }
+
         if ($hasRule || $hasAi) {
             return 0.6;
         }
