@@ -137,6 +137,7 @@ jobs:
             
             # Run migrations
             docker compose -f docker-compose.production.yml --env-file .env.production exec -T app php artisan migrate --force
+            docker compose -f docker-compose.production.yml --env-file .env.production exec -T app php artisan db:seed --class=RolePermissionSeeder --force
             
             # Optimize
             docker compose -f docker-compose.production.yml --env-file .env.production exec -T app php artisan config:cache
