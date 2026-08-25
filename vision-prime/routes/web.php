@@ -60,7 +60,6 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Client\ClientActivityController;
 use App\Http\Controllers\Client\ClientDashboardController;
 use App\Http\Controllers\Client\ClientDecisionController;
-use App\Http\Controllers\Client\ClientDecisionsController;
 use App\Http\Controllers\Client\ClientGrowthController;
 use App\Http\Controllers\Client\ClientPrioritiesController;
 use App\Http\Controllers\Client\ClientReportController;
@@ -88,9 +87,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::post('/connector/pair', PairSiteController::class)->name('connector.pair');
-Route::post('/connector/health', HealthCheckController::class)->name('connector.health');
-Route::post('/connector/command-result', CommandResultController::class)->name('connector.command-result');
+Route::post('/connector/pair', PairSiteController::class)->name('connector.pair')->middleware('throttle:10,1');
+Route::post('/connector/health', HealthCheckController::class)->name('connector.health')->middleware('throttle:60,1');
+Route::post('/connector/command-result', CommandResultController::class)->name('connector.command-result')->middleware('throttle:60,1');
 
 Route::get('/up', function (): JsonResponse {
     try {
@@ -153,7 +152,7 @@ Route::middleware(['auth', 'current.organization', 'client.portal'])->prefix('cl
 
     Route::get('/site-health', ClientSiteHealthController::class)->name('client.site-health');
     Route::get('/opportunities', ClientPrioritiesController::class)->name('client.opportunities');
-    Route::get('/decisions', ClientDecisionsController::class)->name('client.decisions');
+    Route::get('/decisions', [ClientDecisionController::class, 'index'])->name('client.decisions');
     Route::get('/activity', ClientActivityController::class)->name('client.activity');
     Route::post('/decisions/commands/{command}', [ClientDecisionController::class, 'command'])->name('client.decisions.command')->middleware('throttle:20,1');
     Route::post('/decisions/questions', [ClientDecisionController::class, 'question'])->name('client.decisions.question')->middleware('throttle:10,1');
