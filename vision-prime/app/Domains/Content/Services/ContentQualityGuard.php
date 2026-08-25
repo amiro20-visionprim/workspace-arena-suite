@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domains\Content\Services;
 
+use App\Domains\Content\Models\ContentDraft;
+
 /**
  * لایهٔ ۲ — گیت کیفیت محتوا.
  *
@@ -257,7 +259,7 @@ class ContentQualityGuard
             if ($readability['score'] >= 40) {
                 $passed++;
             } else {
-                $warnings[] = 'readability_low:' . $readability['score'] . '/100';
+                $warnings[] = 'readability_low:'.$readability['score'].'/100';
                 $passed++; // warning only
             }
         }
@@ -274,7 +276,10 @@ class ContentQualityGuard
                 $externalCount++;
                 $isTrusted = false;
                 foreach ($trustedDomains as $domain) {
-                    if (str_contains($href, $domain)) { $isTrusted = true; break; }
+                    if (str_contains($href, $domain)) {
+                        $isTrusted = true;
+                        break;
+                    }
                 }
                 $externalLinks[] = ['url' => $href, 'anchor' => $anchor, 'trusted' => $isTrusted];
             }
@@ -296,37 +301,44 @@ class ContentQualityGuard
         $lower = mb_strtolower($body, 'UTF-8');
         // 1) تجربه واقعی
         if (preg_match('/(تجربه|تجریه|ما در|من در|case study|مطالعه موردی)/u', $lower)) {
-            $eeatScore += 0.20; $eeatSignals[] = 'experience';
+            $eeatScore += 0.20;
+            $eeatSignals[] = 'experience';
         }
         // 2) منابع معتبر
         if (preg_match('/<a[^>]*href=["\'][^"\']*(\.gov|\.edu|\.org|wikipedia)[^"\']*["\']/i', $body)) {
-            $eeatScore += 0.15; $eeatSignals[] = 'authoritative_sources';
+            $eeatScore += 0.15;
+            $eeatSignals[] = 'authoritative_sources';
         }
         // 3) آمار دقیق
         if (preg_match('/\d+[\s]*(٪|%|درصد|هزار|میلیون|بیش از|کمتر از)/u', $lower)) {
-            $eeatScore += 0.15; $eeatSignals[] = 'statistics';
+            $eeatScore += 0.15;
+            $eeatSignals[] = 'statistics';
         }
         // 4) اصطلاحات تخصصی
         if (preg_match('/(سئو|SEO|Core Web Vitals|Schema|LCP|FID|CLS|INP|crawl|ranking|SERP|Bounce Rate)/i', $body)) {
-            $eeatScore += 0.15; $eeatSignals[] = 'technical_terms';
+            $eeatScore += 0.15;
+            $eeatSignals[] = 'technical_terms';
         }
         // 5) ذکر نویسنده
         if (preg_match('/(نویسنده|author|تاریخ انتشار|published|آخرین به‌روزرسانی)/u', $lower)) {
-            $eeatScore += 0.10; $eeatSignals[] = 'author_mention';
+            $eeatScore += 0.10;
+            $eeatSignals[] = 'author_mention';
         }
         // 6) نکات عملی
         if (preg_match('/(مرحله|قدم|گام|steps|todo|چک‌لیست|checklist|نحوه|how to)/u', $lower)) {
-            $eeatScore += 0.15; $eeatSignals[] = 'actionable_steps';
+            $eeatScore += 0.15;
+            $eeatSignals[] = 'actionable_steps';
         }
         // 7) مقایسه واقعی
         if (preg_match('/(مقایسه| pros | cons | مزایا| معایب| outweigh| better| worse| vs)/u', $lower)) {
-            $eeatScore += 0.10; $eeatSignals[] = 'comparison';
+            $eeatScore += 0.10;
+            $eeatSignals[] = 'comparison';
         }
         $total++;
         if ($eeatScore >= 0.60) {
             $passed++;
         } else {
-            $warnings[] = 'eeat_low:' . round($eeatScore * 100, 0) . '%';
+            $warnings[] = 'eeat_low:'.round($eeatScore * 100, 0).'%';
             $passed++; // warning only
         }
 
@@ -348,7 +360,7 @@ class ContentQualityGuard
         $hasFreshness = false;
         $currentYear = (int) date('Y');
         $persianYear = (int) date('Y') - 621; // approximate
-        if (preg_match('/(' . $currentYear . '|' . ($currentYear - 1) . ')/u', $body) ||
+        if (preg_match('/('.$currentYear.'|'.($currentYear - 1).')/u', $body) ||
             preg_match('/(سال ۱۴\d\d|۱۴\d\d)/u', $body)) {
             $hasFreshness = true;
         }
@@ -367,12 +379,14 @@ class ContentQualityGuard
             $headingsText = implode(' ', $headings);
             $boldText = '';
             preg_match_all('/<strong[^>]*>(.*?)<\/strong>/is', $body, $boldMatches);
-            foreach ($boldMatches[1] as $bm) { $boldText .= ' ' . strip_tags($bm); }
-            $contextWords = mb_strtolower($headingsText . ' ' . $boldText, 'UTF-8');
+            foreach ($boldMatches[1] as $bm) {
+                $boldText .= ' '.strip_tags($bm);
+            }
+            $contextWords = mb_strtolower($headingsText.' '.$boldText, 'UTF-8');
             // Count unique significant words (3+ chars) that are not the keyword itself
-            $kwWords = array_filter(explode(' ', mb_strtolower($keyword, 'UTF-8')), fn($w) => mb_strlen($w) > 2);
+            $kwWords = array_filter(explode(' ', mb_strtolower($keyword, 'UTF-8')), fn ($w) => mb_strlen($w) > 2);
             $allWords = preg_split('/[\s,.؟!؛:،\[\](){}*#\-\–—\/\\|]+/u', $contextWords, -1, PREG_SPLIT_NO_EMPTY);
-            $significantWords = array_unique(array_filter($allWords, fn($w) => mb_strlen($w) > 2 && !in_array($w, $kwWords)));
+            $significantWords = array_unique(array_filter($allWords, fn ($w) => mb_strlen($w) > 2 && ! in_array($w, $kwWords)));
             $lsCount = count(array_slice($significantWords, 0, 20));
             $total++;
             if ($lsCount >= 5) {
@@ -389,7 +403,7 @@ class ContentQualityGuard
             $introWords = 0;
             if (preg_match('/<h1[^>]*>.*?<\/h1>\s*(?:<[^>]+>)*\s*<p[^>]*>(.*?)<\/p>/is', $body, $introMatch)) {
                 $introPlain = strip_tags($introMatch[1]);
-                $introWords = count(array_filter(explode(' ', trim($introPlain)), fn($w) => strlen($w) > 0));
+                $introWords = count(array_filter(explode(' ', trim($introPlain)), fn ($w) => strlen($w) > 0));
             }
             $total++;
             if ($introWords > 0 && $introWords <= 100) {
@@ -434,7 +448,9 @@ class ContentQualityGuard
             $passiveMarkers = ['می‌شود', 'می شود', 'شده است', 'شده‌اند', 'انجام می‌شود', 'صورت می‌گیرد', 'اعلام شد', 'ارائه می‌شود'];
             foreach ($sentences as $s) {
                 $sTrimmed = trim($s);
-                if (mb_strlen($sTrimmed, 'UTF-8') < 5) continue;
+                if (mb_strlen($sTrimmed, 'UTF-8') < 5) {
+                    continue;
+                }
                 $isActive = true;
                 foreach ($passiveMarkers as $pm) {
                     if (mb_strpos(mb_strtolower($sTrimmed, 'UTF-8'), mb_strtolower($pm, 'UTF-8')) !== false) {
@@ -442,14 +458,16 @@ class ContentQualityGuard
                         break;
                     }
                 }
-                if ($isActive) $activeCount++;
+                if ($isActive) {
+                    $activeCount++;
+                }
             }
             $activePct = $sentenceCount > 0 ? ($activeCount / $sentenceCount) * 100 : 0;
             $total++;
             if ($activePct >= 70 || $sentenceCount === 0) {
                 $passed++;
             } else {
-                $warnings[] = "active_sentences:" . round($activePct, 0) . "% below 70%";
+                $warnings[] = 'active_sentences:'.round($activePct, 0).'% below 70%';
                 $passed++;
             }
         }
@@ -465,15 +483,18 @@ class ContentQualityGuard
             } elseif ($imgWithAlt >= $imgCount * 0.8) {
                 $passed++;
             } else {
-                $warnings[] = "images_missing_alt:" . ($imgCount - $imgWithAlt);
+                $warnings[] = 'images_missing_alt:'.($imgCount - $imgWithAlt);
                 $passed++;
             }
         }
 
         // ─── ۲۲) Uniqueness (vs existing drafts) ───
-        $uniquenessScore = 100; // default: unique
+        // maxSimilarity = بیشترین شباهت با درافت‌های موجود (0 = کاملاً یکتا).
+        // قبلاً این متغیر با 100 مقداردهی می‌شد و در نبود درافت، محتوای تازه
+        // به‌اشتباه «۱۰۰٪ تکراری» فلگ می‌شد — باگ رفع شد.
+        $maxSimilarity = 0;
         if ($body !== '' && $siteId !== null) {
-            $existingDrafts = \App\Domains\Content\Models\ContentDraft::query()
+            $existingDrafts = ContentDraft::query()
                 ->where('site_id', $siteId)
                 ->where('status', '!=', 'archived')
                 ->latest()
@@ -482,18 +503,22 @@ class ContentQualityGuard
             foreach ($existingDrafts as $draft) {
                 $draftPlain = strip_tags($draft->content ?? '');
                 $commonWords = 0;
-                $draftWords = array_filter(explode(' ', mb_strtolower($draftPlain, 'UTF-8')), fn($w) => mb_strlen($w) > 3);
+                $draftWords = array_filter(explode(' ', mb_strtolower($draftPlain, 'UTF-8')), fn ($w) => mb_strlen($w) > 3);
                 foreach ($draftWords as $dw) {
-                    if (mb_strpos(mb_strtolower($plain, 'UTF-8'), $dw) !== false) $commonWords++;
+                    if (mb_strpos(mb_strtolower($plain, 'UTF-8'), $dw) !== false) {
+                        $commonWords++;
+                    }
                 }
                 $similarity = count($draftWords) > 0 ? ($commonWords / count($draftWords)) * 100 : 0;
-                if ($similarity > $uniquenessScore) $uniquenessScore = $similarity;
+                if ($similarity > $maxSimilarity) {
+                    $maxSimilarity = $similarity;
+                }
             }
             $total++;
-            if ($uniquenessScore < 80) {
+            if ($maxSimilarity < 80) {
                 $passed++;
             } else {
-                $failures[] = "duplicate_content:{$uniquenessScore}% similar to existing draft";
+                $failures[] = "duplicate_content:{$maxSimilarity}% similar to existing draft";
             }
         }
 
@@ -527,7 +552,7 @@ class ContentQualityGuard
                 'active_sentences_pct' => round($activePct ?? 0),
                 'image_count' => $imgCount ?? 0,
                 'image_with_alt' => $imgWithAlt ?? 0,
-                'uniqueness' => $uniquenessScore ?? 100,
+                'uniqueness' => 100 - ($maxSimilarity ?? 0),
                 'timestamp' => now()->toISOString(),
             ],
         ];
