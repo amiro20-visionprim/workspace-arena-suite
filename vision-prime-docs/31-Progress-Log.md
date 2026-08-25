@@ -677,7 +677,7 @@ php artisan content:generate-batch --site=1 --type=all --limit=10 --dry-run
 
 ### مستندات جدید
 - `42-Content-Generation-System-Spec.md` — مشخصات فنی کامل سیستم تولید محتوا
-- `43-Phase-2-WordPress-Connector-Test.md` — برنامه تست اتصال وردپرس
+- `48-Phase-2-WordPress-Connector-Test.md` — برنامه تست اتصال وردپرس
 
 ### گام‌های بعدی
 1. نصب WordPress لوکال (localhost:8080)

@@ -1,80 +1,140 @@
-# سند ۴۱ — استقرار تولید: سرور visionprime (Ubuntu 24.04)
+# سند ۴۱ — راهنمای استقرار تولید (Production Deployment)
 
-> **وضعیت:** ✅ اجرا و تأیید شد — ۲۰۲۶-۰۸-۱۷
-> **مرجع:** سند ۳۷ (معماری اتاق فرماندهی) · سند ۴۰ (فاز G) · تصمیمنامه D-034
-> **محورها:** مشخصات سرور · نصب استک · استقرار کد + داده · nginx/php-fpm · صف + زمانبند · بهروزرسانی بعدی
+> **وضعیت:** ✅ استقرار انجام شد — ۲۰۲۶-۰۸-۱۷ · **ادغام اسناد:** ۲۰۲۶-۰۸-۲۵
+> دو نسخهٔ موازی این سند (`41-Production-Deployment-Guide.md` و `41-Production-Deployment.md`)
+> در همین سند واحد ادغام شدند تا «منبع حقیقت» یکی باشد. بخش «به‌روزرسانی بعدی»
+> از نسخهٔ دوم در انتها حفظ شده است.
+> **مرجع:** سند ۴۰ (فاز G) · سند ۳۷ (معماری اتاق فرماندهی) · تصمیمنامه D-034
 
----
-
-## مشخصات سرور (تأمینشده توسط مالک)
+## ۱) مشخصات سرور
 
 | مورد | مقدار |
 |---|---|
-| سیستم عامل | Ubuntu 24.04 LTS (هسته 6.8) — VM `vm-255175` |
-| IP عمومی | `[REDACTED]` |
-| هاست‌نیم | `visionprime` |
-| SSH | پورت `9011`، کاربر `root` |
-| RDP ویندوز | پورت `15226` (VM ویندوز جداگانه — استفاده نشده) |
-| سخت‌افزار | 3.8GB RAM · 30GB دیسک (26GB آزاد) |
-| محل کد | `/var/www/workspace-arena-suite` |
+| سیستم عامل | Ubuntu 24.04 LTS (سرور ابری ویندوزی RDP پورت ۱۵۲۲۶ جداگانه) |
+| IP | [REDACTED] |
+| SSH | پورت 9011 — کاربر `root` |
+| رم | 3.8 GB (3.4 آزاد) |
+| دیسک | 30 GB (26 آزاد) |
+| استک | PHP 8.3.6-fpm · nginx 1.24 · Composer 2.7.1 · Git |
+| دیتابیس | SQLite (`database/database.sqlite`) — بدون نیاز به سرور DB جدا |
+| صف/کش/سشن | database (همگی روی همان SQLite) |
 
-## استک نصب‌شده
+## ۲) چیدمان فایل‌ها
 
-- **PHP 8.3.6** (cli + fpm + mbstring/xml/curl/sqlite3/zip/intl/bcmath/gd) — از apt اوبونتو
-- **Composer 2.7.1** — از apt (getcomposer.org از سرور مسدود است)
-- **Nginx 1.24** + php-fpm (سوکت `/run/php/php8.3-fpm.sock`)
-- **Node.js: نصب نشد** — فرانت‌اند محلی build و فقط `public/build` آپلود شد (nodesource از سرور مسدود است)
-- **دیتابیس:** SQLite (`database/database.sqlite`) + صف/کش/سشن روی database — بدون نیاز به PostgreSQL/Redis
+- **ریپو:** `/var/www/workspace-arena-suite` (clone از GitHub، برنچ `new-branch`)
+- **اپ:** `/var/www/workspace-arena-suite/vision-prime`
+- **سایت‌های استاتیک:** `/var/www/sites/<domain>/` (هر دامنه یک پوشه)
+- **الگوی vhost استاتیک:** `/etc/nginx/sites-available/static-template`
+- **vhost اصلی:** `/etc/nginx/sites-available/visionprime` (server_name: `[REDACTED]` + `visionprime-suite.ir` + `www.visionprime-suite.ir`)
 
-## نکتهٔ مهم شبکه
+## ۳) سرویس‌ها
 
-از این سرور **getcomposer.org، packagist.org و deb.nodesource.com مسدود/نیمه‌مسدود** هستند (گیت‌هاب در دسترس است). بنابراین:
-- ریپو از گیت‌هاب clone شد ✓
-- `vendor/` به‌صورت آرشیو از سیستم توسعه منتقل شد + `composer dump-autoload -o`
-- فرانت‌اند با node محلی build و `public/build` آپلود شد
+| سرویس | روش | وضعیت |
+|---|---|---|
+| nginx | systemd | active |
+| php8.3-fpm | systemd (socket `/run/php/php8.3-fpm.sock`) | active |
+| صف (`queue:work database`) | systemd `visionprime-queue` | active |
+| زمان‌بند (`schedule:run`) | cron ریشه هر دقیقه | فعال |
 
-## استقرار (یک‌بار اجرا شد)
+## ۴) نکات ویژه استقرار (موانع شبکه)
 
-```bash
-# ۱) کد
-git clone -b new-branch https://github.com/amiro20-visionprim/workspace-arena-suite.git /var/www/
+سرور به **getcomposer.org و packagist.org دسترسی ندارد** (تحریم/فیلترینگ شبکه). راهکار:
+- Composer از apt نصب شد (2.7.1).
+- `vendor/` از ماشین توسعه آپلود و با `composer dump-autoload -o` بازسازی شد (۷۰۲۸ کلاس).
+- فرانت‌اند روی ماشین توسعه build شد و فقط خروجی `public/build/` آپلود شد (سرور به Node نیاز ندارد).
+- برای به‌روزرسانی بعدی: pull کد → آپلود `public/build` جدید (اگر فرانت تغییر کرده) → `composer dump-autoload -o` (اگر وابستگی جدید آمد، `vendor` کامل را آپلود کن) → `php artisan migrate --force`.
 
-# ۲) وابستگی‌ها
-tar xzf vendor.tgz -C /var/www/workspace-arena-suite/vision-prime/
-composer dump-autoload -o
+## ۵) دامنه و DNS
 
-# ۳) env (از .env.example با sed)
-APP_ENV=production · APP_DEBUG=false · APP_URL=http://[REDACTED]
-DB_CONNECTION=sqlite · DB_DATABASE=database/database.sqlite
-QUEUE_CONNECTION=database · CACHE_STORE=database · SESSION_DRIVER=database
+- دامنه `visionprime-suite.ir` ثبت شده ولی **DNS هنوز ست نشده** — باید در پنل ایرنیک ثبت شود (بخش ۶).
+- APP_URL و GSC_REDIRECT_URI روی `http://visionprime-suite.ir` تنظیم شده.
+- بعد از انتشار DNS: گواهی TLS با Let's Encrypt (`certbot --nginx -d visionprime-suite.ir -d www.visionprime-suite.ir`).
 
-# ۴) کلید + دیتابیس + لینک‌ها
-php artisan key:generate
-# database.sqlite از سیستم توسعه منتقل شد (داده‌های واقعی) — migrate چیزی برای اجرا نداشت
-php artisan storage:link
-chown -R www-data:www-data storage bootstrap/cache public/build database
+## ۶) رکوردهای DNS برای ثبت در ایرنیک
 
-# ۵) nginx: /etc/nginx/sites-available/visionprime → root …/vision-prime/public
-# ۶) صف: systemd service visionprime-queue (php artisan queue:work database)
-# ۷) زمانبند: cron → php artisan schedule:run هر دقیقه
-```
+| نوع | نام (Host) | مقدار | TTL |
+|---|---|---|---|
+| A | `visionprime-suite.ir` | `[REDACTED]` | 3600 (پیش‌فرض) |
+| A | `www` | `[REDACTED]` | 3600 (پیش‌فرض) |
 
-## سرویس‌های فعال
+نام‌سرورها (اگر در پنل ایرنیک نمایش داده شود): `ns1.irnic.ir` و `ns2.irnic.ir` (همان پیش‌فرض ثبت). انتشار DNS معمولاً ۱ تا ۲۴ ساعت طول می‌کشد.
 
-| سرویس | وضعیت |
-|---|---|
-| `nginx` | active |
-| `php8.3-fpm` | active |
-| `visionprime-queue` (systemd) | active — `queue:work database --sleep=3 --tries=3` |
-| cron (root) | `* * * * * php artisan schedule:run` |
+## ۷) داده‌ها
 
-## تأیید (همگی سبز)
+- دیتابیس واقعی توسعه (کاربران، سازمان، سایت، ۲۷ کامند تقویم محتوا، پرداخت‌ها، sms_logs) **همراه منتقل شد** — اپ با همان داده‌ها بالا آمد.
+- بکاپ خودکار: `platform:backup-db` هر شب ۲۲:۳۰ → `storage/backups/` (۷ نسخه).
+- ورود: `superadmin@visionprime.test` (پسورد پیش‌فرض seeder — پس از اولین ورود حتماً عوض شود).
 
-- `http://[REDACTED]/` → 200 · `/login` → 200 · `/build/*` → 200 (از بیرون تست شد)
-- ورود `superadmin@visionprime.test` → 302 به `/app/dashboard` · `/platform/dashboard` → 200
-- داده‌ها منتقل شد: ۹ کاربر، ۱ سازمان، ۱ سایت، ۲۷ دستور تقویم، پرداخت‌ها، sms_logs
-- صف: ارسال نوتیفیکیشن تست → jobs remaining: 0 (worker پردازش کرد)
-- `schedule:list`: همهٔ ۱۱ task (از جمله `SendWeeklyReport` جمعه) ثبت‌اند
+## ۸) تأییدهای انجام‌شده
+
+- ✅ `http://[REDACTED]/` و `/login` → 200 (عمومی)
+- ✅ ورود سوپرادمین → 302 به داشبورد · `/platform/dashboard` → 200
+- ✅ صف: نوتیفیکیشن تستی dispatch شد → jobs remaining: 0 (کارگر صف پردازش کرد)
+- ✅ زمان‌بند: ۱۱ تسک در `schedule:list` (گزارش هفتگی جمعه، بکاپ، یادآوری‌ها، حلقهٔ یادگیری…)
+- ✅ `Host: visionprime-suite.ir` و `www` → 200 (دامنه از سمت سرور آماده است)
+
+## ۹) امنیت
+
+- APP_DEBUG=false · APP_ENV=production · APP_KEY تولید شد.
+- بدون فایروال فعال (ufw نصب نیست) — پورت‌های باز: 80 و 22(9011). پیشنهاد: فایروال + SSH-key-only.
+- `.env` خارج از `public/` — از بیرون قابل دسترسی نیست.
+
+## ۱۰) DNS خودمیزبان (bind9) — 2026-08-18
+
+- ایرنیک فقط ثبتکننده است؛ رکورد A را نگه نمیدارد. برای دامنهٔ `.ir` باید نامسرور (host object) تعریف شود.
+- روی سرور **BIND 9.18** نصب شد (`apt install bind9`).
+- زون `visionprime-suite.ir` در `/etc/bind/zones/db.visionprime-suite.ir`:
+  - `@` و `www` → `[REDACTED]`
+  - NS: `ns1.visionprime-suite.ir` + `ns2.visionprime-suite.ir` (هر دو → `[REDACTED]`)
+- تأیید از بیرون: `nslookup visionprime-suite.ir [REDACTED]` → `[REDACTED]` ✓ · پورت 53 TCP باز ✓
+- **اقدام کاربر در ایرنیک** (بخش «ویرایش ردیفهای کارگزاری نام و میزبانی دامنه»):
+  - ردیف ۱: نام کارگزار `ns1.visionprime-suite.ir` — آیپی `[REDACTED]`
+  - ردیف ۲: نام کارگزار `ns2.visionprime-suite.ir` — آیپی `[REDACTED]`
+- پس از انتشار (تا ۲۴ ساعت): نصب SSL و ریدایرکت HTTPS.
+- الگوی سایتهای استاتیک بعدی: زون جدید در bind9 + vhost nginx + همان دو ردیف NS با آیپی سرور (یا subdomain A).
+
+## ۱۱) اسکریپت مدیریت دامنههای استاتیک — `scripts/add-site.sh`
+
+**روی سرور:** `/usr/local/bin/add-site.sh` (نسخهٔ مرجع در ریپو: `scripts/add-site.sh`)
+
+**کاربرد:**
+- افزودن دامنهٔ جدید: `add-site.sh add <domain> [webroot]`
+  - پوشهٔ سایت (پیشفرض `/var/www/sites/<domain>`) + صفحهٔ placeholder میسازد (اگر خالی باشد)
+  - زون bind9 (`/etc/bind/zones/db.<domain>`) با A برای `@` و `www` → `[REDACTED]` و NS = ns1/ns2.visionprime-suite.ir
+  - vhost nginx با ریدایرکت www→root، کش استاتیک ۳۰ روزه، هدرهای امنیتی، gzip
+  - هر دو سرویس ریلود + خروجی راهنمای IRNIC
+  - اعتبارسنجی و rollback خودکار در صورت خطا
+- حذف دامنه: `add-site.sh remove <domain>` (فایلهای سایت دستنخورده میمانند)
+- دامنهٔ اصلی سوئیت (`visionprime-suite.ir`) از حذف/تغییر محافظت شده است.
+
+**برای هر دامنهٔ جدید در ایرنیک:** نام کارگزار ۱ = `ns1.visionprime-suite.ir` و ۲ = `ns2.visionprime-suite.ir` (آیپی خالی — نامسرورها از قبل با آیپی سرور ثبت شدهاند).
+
+**تست انجامشده (2026-08-18):** add teststatic.ir → DNS پاسخ داد ([REDACTED]) · HTTP 200 با صفحهٔ placeholder · www → 301 · remove → پاکسازی کامل vhost/zone/conf.
+
+## ۱۲) سرویس ایمیل دامنه (Postfix + Dovecot + Roundcube) — 2026-08-18
+
+برای اینماد و ارتباطات تجاری، ایمیل روی دامنه راه‌اندازی شد:
+
+- **سرور:** Postfix 3.8.6 (MTA) + Dovecot 2.3.21 (IMAP/POP3) — virtual mailboxes در `/var/mail/vhosts/visionprime-suite.ir/{info,admin}`، احراز passwd-file (`/etc/dovecot/users`، SHA512-CRYPT).
+- **صندوق‌ها:** `info@visionprime-suite.ir` و `admin@visionprime-suite.ir` (رمزها نزد مالک — خارج از گیت).
+- **ارسال:** submission 587 (STARTTLS) + smtps 465 (TLS wrappermode) با AUTH PLAIN؛ **DKIM** با opendkim (selector `mail`) — همهٔ ایمیل‌های خروجی امضا می‌شوند.
+- **DNS (در زون bind9):** MX 10 `mail.visionprime-suite.ir` · A `mail` → [REDACTED] · SPF `"v=spf1 mx ip4:[REDACTED] ~all"` · DKIM TXT `mail._domainkey` · DMARC `_dmarc` (p=none).
+- **وبمیل:** Roundcube 1.6.6 (SQLite) با زبان فارسی در `http://mail.visionprime-suite.ir` — vhost در `/etc/nginx/sites-available/mail.visionprime-suite.ir`.
+- **تنظیمات کلاینت ایمیل (Outlook/Thunderbird):** IMAP `mail.visionprime-suite.ir:993` (SSL) · SMTP `mail.visionprime-suite.ir:587` (STARTTLS) · کاربر = آدرس کامل ایمیل.
+- **مهم:** TLS فعلی خودامضا است — بعد از انتشار NS دامنه در ایرنیک، گواهی Let's Encrypt جایگزین می‌شود و وبمیل HTTPS می‌گیرد. تا وقتی NS در ایرنیک ست نشود، ایمیل فقط به‌صورت محلی کار می‌کند (از بیرونِ سرور قابل‌دسترس نیست).
+- **نکتهٔ تحویل‌پذیری:** IP دیتاسنتر ایرانی ممکن است از سمت Gmail/Yahoo محدود شود؛ برای تأیید اینماد (دریافت ایمیل) مشکلی نیست.
+
+## ۱۳) سیستم دیپلوی خودکار سایتهای استاتیک — 2026-08-18
+
+سه راه استقرار (همگی از طریق `scripts/deploy-site.sh` در ریپو / `/usr/local/bin/deploy-site.sh` روی سرور):
+
+1. **کنسول وب:** `http://[REDACTED]/deploy/` — دامنه + توکن (`/etc/deploy-secret`) + آدرس گیت یا آپلود zip → دیپلوی فوری با خروجی.
+2. **وبهوک گیت‌هاب:** `http://[REDACTED]/deploy/?domain=<دامنه>&hook=1` — Content-Type `application/json`، سکرت `/etc/deploy-webhook-secret`، رویداد push. (در GitHub: Settings → Webhooks → Payload URL + Secret.)
+3. **CLI:** `deploy-site.sh <domain> <git-url|zip|dir>` (برای مدیر).
+
+- rsync با `--checksum` (مقایسهٔ محتوا، نه mtime) + `--delete`؛ لاگ `/var/log/deploy-site.log`؛ مالکیت نهایی www-data.
+- امنیت: توکن کنسول و HMAC-SHA256 وبهوک؛ `underscores_in_headers on;` در vhost ضروری است؛ دامنه با regex اعتبارسنجی می‌شود.
+- جریان کامل برای دامنهٔ جدید: `add-site.sh add <domain>` (DNS+vhost) ← دیپلوی با هر سه روش ← بعد از انتشار NS در ایرنیک: SSL.
 
 ## به‌روزرسانی بعدی (دیپلوی جدید)
 
@@ -88,10 +148,3 @@ php artisan migrate --force
 chown -R www-data:www-data storage bootstrap/cache public/build
 systemctl restart visionprime-queue && systemctl reload nginx
 ```
-
-## گام‌های آینده (پیشنهادی)
-
-- **دامنه + HTTPS:** `visionprime-suite.ir` را به این IP وصل کن + certbot (Let's Encrypt) — حالا HTTP خالص است
-- کلیدهای واقعی در env: `OWNER_PHONE` / `TELEGRAM_BOT_TOKEN` / `KAVENEGAR_API_KEY` / `ZARINPAL_MERCHANT_ID` / `PLATFORM_AI_API_KEY`
-- بکاپ DB را به جای دیگری (نه فقط storage/backups سرور) منتقل کن
-- Dockerize برای تکرارپذیری (اختیاری)
