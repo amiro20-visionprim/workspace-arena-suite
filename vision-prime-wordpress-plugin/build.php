@@ -14,11 +14,18 @@ declare(strict_types=1);
  *  3. Embeds a self-referential SHA-256 (SELF_HASH) so VP_Guard can detect any
  *     modification of the installed file and refuse to sign / execute.
  *
- * Usage: php build.php
+ * Usage: php build.php [--readable]
+ *
+ *   --readable  ship a human-readable dist (inline only, no minify/hex-
+ *               escape) — recommended while the product is in active
+ *               development and clients may need debugging. The self-hash
+ *               guard works identically on readable builds.
  */
 
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
+
+$readable = in_array('--readable', $argv ?? [], true);
 
 $root = __DIR__;
 $src = $root . '/vision-prime-connector.php';
@@ -69,8 +76,9 @@ if (! preg_match('/\A<\?php\s*(\/\*\*(?:[^*]|\*(?!\/))*\*\/)/', $main, $m)) {
 $header = $m[1];
 $body = substr($main, strlen($m[0]));
 
-$encoded = encode_php($body);
-$dist = "<?php\n{$header}\n{$encoded}\n";
+$dist = $readable
+    ? "<?php\n{$header}\n" . $body . "\n"
+    : "<?php\n{$header}\n" . encode_php($body) . "\n";
 
 /* --------------------------------------------------------------------------
  * 3) Embed the self-referential integrity hash.
@@ -137,7 +145,7 @@ if (class_exists('ZipArchive')) {
     echo "WARN ZipArchive unavailable — zip skipped.\n";
 }
 
-echo "OK  build complete (version 1.2.0)\n";
+echo "OK  build complete (" . ($readable ? "readable" : "obfuscated") . ", version 1.2.0)\n";
 
 /* --------------------------------------------------------------------------
  * Encoder

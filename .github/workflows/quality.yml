@@ -1,0 +1,58 @@
+name: Quality
+
+# ⚠️ این فایل باید در ریشهٔ مخزن باشد (.github/workflows). نسخهٔ قبلی زیر
+# vision-prime/.github بود که GitHub هرگز اجرایش نمی‌کرد — یعنی دروازه‌های
+# کیفیت عملاً وجود خارجی نداشتند.
+on:
+  pull_request:
+  push:
+    branches: [main, new-branch]
+
+defaults:
+  run:
+    working-directory: vision-prime
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, sqlite3, dom, tokenizer, fileinfo
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: vision-prime/package-lock.json
+
+      - name: Composer install
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: npm install
+        run: npm ci
+
+      - name: Format check (prettier)
+        run: npm run format:check
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Typecheck (vue-tsc)
+        run: npm run typecheck
+
+      - name: Build (vite)
+        run: npm run build
+
+      - name: pint
+        run: vendor/bin/pint --test
+
+      - name: Tests (phpunit)
+        run: php artisan test
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'

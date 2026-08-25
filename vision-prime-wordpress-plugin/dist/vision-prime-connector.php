@@ -5,7 +5,270 @@
  * Version: 1.2.0
  * Requires PHP: 8.2
  */
-defined("\x41\x42\x53\x50\x41\x54\x48") || exit; define("\x56\x49\x53\x49\x4f\x4e\x5f\x50\x52\x49\x4d\x45\x5f\x43\x4f\x4e\x4e\x45\x43\x54\x4f\x52\x5f\x56\x45\x52\x53\x49\x4f\x4e", "\x31\x2e\x32\x2e\x30"); define("\x56\x49\x53\x49\x4f\x4e\x5f\x50\x52\x49\x4d\x45\x5f\x4f\x50\x54\x49\x4f\x4e", "\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72");  final class VP_Guard {  public const SELF_HASH = 'd8f2e74902c7e7d0d93514c9a2f15494629a670d843f02bdc7cec9846a1000d5'; public static function current_file(): string { return __FILE__; }  public static function file_hash(): string { $raw = (string) file_get_contents(self::current_file()); return hash("\x73\x68\x61\x32\x35\x36", $raw); }  public static function tampered(): bool { if (self::SELF_HASH === "") { return false;  } $raw = (string) file_get_contents(self::current_file()); $normalized = preg_replace( "/const SELF_HASH = '[0-9a-f]{64}'/", "\x63\x6f\x6e\x73\x74\x20\x53\x45\x4c\x46\x5f\x48\x41\x53\x48\x20\x3d\x20\x27" . str_repeat("\x30", 64) . "\x27", $raw ); $actual = hash("\x73\x68\x61\x32\x35\x36", (string) $normalized); return ! hash_equals(self::SELF_HASH, $actual); } public static function is_tampered_flag(): int { return self::tampered() ? 1 : 0; } }  final class VP_Secret { private const PREFIX = "\x76\x70\x31\x3a"; private const OPTION = "\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72"; public static function encrypt(string $plain): string { if (! function_exists("\x6f\x70\x65\x6e\x73\x73\x6c\x5f\x65\x6e\x63\x72\x79\x70\x74") || $plain === "") { return $plain;  } $iv = random_bytes(12); $tag = ""; $cipher = openssl_encrypt($plain, "\x61\x65\x73\x2d\x32\x35\x36\x2d\x67\x63\x6d", self::key(), OPENSSL_RAW_DATA, $iv, $tag); if ($cipher === false) { return $plain; } return self::PREFIX . base64_encode($iv . $tag . $cipher); } public static function decrypt(string $stored): string { if (! str_starts_with($stored, self::PREFIX)) { return $stored;  } $raw = base64_decode(substr($stored, strlen(self::PREFIX)), true); if ($raw === false || strlen($raw) < 12 + 16) { return ""; } $iv = substr($raw, 0, 12); $tag = substr($raw, 12, 16); $cipher = substr($raw, 12 + 16); $plain = openssl_decrypt($cipher, "\x61\x65\x73\x2d\x32\x35\x36\x2d\x67\x63\x6d", self::key(), OPENSSL_RAW_DATA, $iv, $tag); return $plain === false ? "" : $plain; }  public static function unlock(array $settings): array { if (empty($settings["\x73\x65\x63\x72\x65\x74"])) { return $settings; } $stored = (string) $settings["\x73\x65\x63\x72\x65\x74"]; if (! str_starts_with($stored, self::PREFIX)) { $settings["\x73\x65\x63\x72\x65\x74"] = self::encrypt($stored); update_option(self::OPTION, $settings, false);  } $settings["\x73\x65\x63\x72\x65\x74"] = self::decrypt((string) $settings["\x73\x65\x63\x72\x65\x74"]); return $settings; } private static function key(): string { $salt = function_exists("\x77\x70\x5f\x73\x61\x6c\x74") ? (string) wp_salt("\x61\x75\x74\x68") : ""; if ($salt === "") { $salt = defined("\x41\x55\x54\x48\x5f\x4b\x45\x59") ? (string) AUTH_KEY : ""; } return hash("\x73\x68\x61\x32\x35\x36", "\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65\x2d\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x2d\x76\x31\x7c" . $salt, true);  } } final class VP_API_Client {  public static function pair(array $settings, string $token): array|WP_Error { $response = wp_remote_post(rtrim($settings["\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c"], "\x2f") . "\x2f\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x2f\x70\x61\x69\x72", [ "\x74\x69\x6d\x65\x6f\x75\x74" => 20, "\x68\x65\x61\x64\x65\x72\x73" => ["\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79\x70\x65" => "\x61\x70\x70\x6c\x69\x63\x61\x74\x69\x6f\x6e\x2f\x6a\x73\x6f\x6e"], "\x62\x6f\x64\x79" => wp_json_encode(["\x73\x69\x74\x65\x5f\x69\x64" => (int) $settings["\x73\x69\x74\x65\x5f\x69\x64"], "\x70\x61\x69\x72\x69\x6e\x67\x5f\x74\x6f\x6b\x65\x6e" => $token, "\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c" => home_url("\x2f"), "\x70\x6c\x75\x67\x69\x6e\x5f\x76\x65\x72\x73\x69\x6f\x6e" => VISION_PRIME_CONNECTOR_VERSION]), ]); if (is_wp_error($response)) return $response; $body = json_decode(wp_remote_retrieve_body($response), true); if (wp_remote_retrieve_response_code($response) !== 200 || empty($body["\x73\x65\x63\x72\x65\x74"])) return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x70\x61\x69\x72\x69\x6e\x67\x5f\x66\x61\x69\x6c\x65\x64", "\x50\x61\x69\x72\x69\x6e\x67\x20\x66\x61\x69\x6c\x65\x64\x2e"); return $body; }  public static function signed_request(array $settings, string $method, string $path, array $body): array|WP_Error { if (VP_Guard::tampered()) { return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x74\x61\x6d\x70\x65\x72\x65\x64", "\x43\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x20\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x20\x63\x68\x65\x63\x6b\x20\x66\x61\x69\x6c\x65\x64\x3b\x20\x72\x65\x66\x75\x73\x69\x6e\x67\x20\x74\x6f\x20\x73\x69\x67\x6e\x2e"); } $timestamp = (string) time(); $nonce = wp_generate_uuid4(); $encoded = wp_json_encode($body); $payload = strtoupper($method) . "\x0a" . $path . "\x0a" . $timestamp . "\x0a" . $nonce . "\x0a" . hash("\x73\x68\x61\x32\x35\x36", $encoded); $signature = hash_hmac("\x73\x68\x61\x32\x35\x36", $payload, $settings["\x73\x65\x63\x72\x65\x74"]); return [ "\x68\x65\x61\x64\x65\x72\x73" => ["\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79\x70\x65" => "\x61\x70\x70\x6c\x69\x63\x61\x74\x69\x6f\x6e\x2f\x6a\x73\x6f\x6e", "\x58\x2d\x56\x50\x2d\x54\x69\x6d\x65\x73\x74\x61\x6d\x70" => $timestamp, "\x58\x2d\x56\x50\x2d\x4e\x6f\x6e\x63\x65" => $nonce, "\x58\x2d\x56\x50\x2d\x53\x69\x67\x6e\x61\x74\x75\x72\x65" => $signature], "\x62\x6f\x64\x79" => $encoded, ]; } public static function signed_health(array $settings): array|WP_Error { $signed = self::signed_request($settings, "\x50\x4f\x53\x54", "\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x2f\x68\x65\x61\x6c\x74\x68", [ "\x73\x69\x74\x65\x5f\x69\x64" => (int) $settings["\x73\x69\x74\x65\x5f\x69\x64"], "\x70\x6c\x75\x67\x69\x6e\x5f\x76\x65\x72\x73\x69\x6f\x6e" => VISION_PRIME_CONNECTOR_VERSION, "\x77\x6f\x72\x64\x70\x72\x65\x73\x73\x5f\x76\x65\x72\x73\x69\x6f\x6e" => get_bloginfo("\x76\x65\x72\x73\x69\x6f\x6e"), "\x70\x68\x70\x5f\x76\x65\x72\x73\x69\x6f\x6e" => PHP_VERSION, "\x72\x65\x73\x74\x5f\x61\x70\x69" => true, "\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x5f\x68\x61\x73\x68" => VP_Guard::file_hash(), "\x74\x61\x6d\x70\x65\x72\x65\x64" => VP_Guard::is_tampered_flag(), ]); if (is_wp_error($signed)) return $signed; return wp_remote_post(rtrim($settings["\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c"], "\x2f") . "\x2f\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x2f\x68\x65\x61\x6c\x74\x68", ["\x74\x69\x6d\x65\x6f\x75\x74" => 20, "\x68\x65\x61\x64\x65\x72\x73" => $signed["\x68\x65\x61\x64\x65\x72\x73"], "\x62\x6f\x64\x79" => $signed["\x62\x6f\x64\x79"]]); }  public static function send_command_result(array $settings, array $result): array|WP_Error { $result["\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x5f\x68\x61\x73\x68"] = VP_Guard::file_hash(); $result["\x74\x61\x6d\x70\x65\x72\x65\x64"] = VP_Guard::is_tampered_flag(); $signed = self::signed_request($settings, "\x50\x4f\x53\x54", "\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x2f\x63\x6f\x6d\x6d\x61\x6e\x64\x2d\x72\x65\x73\x75\x6c\x74", $result); if (is_wp_error($signed)) return $signed; return wp_remote_post(rtrim($settings["\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c"], "\x2f") . "\x2f\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x2f\x63\x6f\x6d\x6d\x61\x6e\x64\x2d\x72\x65\x73\x75\x6c\x74", ["\x74\x69\x6d\x65\x6f\x75\x74" => 20, "\x68\x65\x61\x64\x65\x72\x73" => $signed["\x68\x65\x61\x64\x65\x72\x73"], "\x62\x6f\x64\x79" => $signed["\x62\x6f\x64\x79"]]); } } final class VP_Request_Verifier { public static function verify(WP_REST_Request $request): bool|WP_Error { if (VP_Guard::tampered()) { return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x74\x61\x6d\x70\x65\x72\x65\x64", "\x43\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x20\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x20\x63\x68\x65\x63\x6b\x20\x66\x61\x69\x6c\x65\x64\x2e", ["\x73\x74\x61\x74\x75\x73" => 403]); } $settings = VP_Secret::unlock(get_option("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72", [])); $secret = $settings["\x73\x65\x63\x72\x65\x74"] ?? ""; $timestamp = (string) $request->get_header("\x78\x2d\x76\x70\x2d\x74\x69\x6d\x65\x73\x74\x61\x6d\x70"); $nonce = (string) $request->get_header("\x78\x2d\x76\x70\x2d\x6e\x6f\x6e\x63\x65"); $signature = (string) $request->get_header("\x78\x2d\x76\x70\x2d\x73\x69\x67\x6e\x61\x74\x75\x72\x65"); if ($secret === "" || $timestamp === "" || $nonce === "" || $signature === "") return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x75\x6e\x61\x75\x74\x68\x6f\x72\x69\x7a\x65\x64", "\x4d\x69\x73\x73\x69\x6e\x67\x20\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x20\x73\x69\x67\x6e\x61\x74\x75\x72\x65\x2e", ["\x73\x74\x61\x74\x75\x73"=>401]); if (abs(time() - (int)$timestamp) > 300) return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x65\x78\x70\x69\x72\x65\x64", "\x45\x78\x70\x69\x72\x65\x64\x20\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x20\x72\x65\x71\x75\x65\x73\x74\x2e", ["\x73\x74\x61\x74\x75\x73"=>401]); $key = "\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x6e\x63\x65\x5f" . hash("\x73\x68\x61\x32\x35\x36", $nonce); if (get_transient($key)) return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x72\x65\x70\x6c\x61\x79", "\x52\x65\x70\x6c\x61\x79\x20\x72\x65\x71\x75\x65\x73\x74\x20\x72\x65\x6a\x65\x63\x74\x65\x64\x2e", ["\x73\x74\x61\x74\x75\x73"=>409]);  $path = (string) $request->get_route(); $payload = strtoupper($request->get_method())."\x0a".$path."\x0a".$timestamp."\x0a".$nonce."\x0a".hash("\x73\x68\x61\x32\x35\x36", $request->get_body()); $expected = hash_hmac("\x73\x68\x61\x32\x35\x36", $payload, $secret); if (!hash_equals($expected, $signature)) return new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x69\x6e\x76\x61\x6c\x69\x64\x5f\x73\x69\x67\x6e\x61\x74\x75\x72\x65", "\x49\x6e\x76\x61\x6c\x69\x64\x20\x63\x6f\x6e\x6e\x65\x63\x74\x6f\x72\x20\x73\x69\x67\x6e\x61\x74\x75\x72\x65\x2e", ["\x73\x74\x61\x74\x75\x73"=>401]); set_transient($key, "\x31", 10 * MINUTE_IN_SECONDS); return true; } } final class Vision_Prime_Connector { private const OPTION = VISION_PRIME_OPTION; public function __construct() { add_action("\x61\x64\x6d\x69\x6e\x5f\x6d\x65\x6e\x75", [$this, "\x73\x65\x74\x74\x69\x6e\x67\x73\x5f\x70\x61\x67\x65"]); add_action("\x61\x64\x6d\x69\x6e\x5f\x69\x6e\x69\x74", [$this, "\x72\x65\x67\x69\x73\x74\x65\x72\x5f\x73\x65\x74\x74\x69\x6e\x67\x73"]); add_action("\x61\x64\x6d\x69\x6e\x5f\x70\x6f\x73\x74\x5f\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x70\x61\x69\x72", [$this, "\x70\x61\x69\x72"]); add_action("\x61\x64\x6d\x69\x6e\x5f\x70\x6f\x73\x74\x5f\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x68\x65\x61\x6c\x74\x68", [$this, "\x68\x65\x61\x6c\x74\x68\x5f\x63\x68\x65\x63\x6b"]); add_action("\x72\x65\x73\x74\x5f\x61\x70\x69\x5f\x69\x6e\x69\x74", [$this, "\x72\x65\x67\x69\x73\x74\x65\x72\x5f\x72\x6f\x75\x74\x65\x73"]); } public function register_settings(): void { register_setting("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65", self::OPTION, ["\x73\x61\x6e\x69\x74\x69\x7a\x65\x5f\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [$this, "\x73\x61\x6e\x69\x74\x69\x7a\x65\x5f\x73\x65\x74\x74\x69\x6e\x67\x73"]]); } public function sanitize_settings(array $value): array { return ["\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c" => esc_url_raw($value["\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c"] ?? ""), "\x73\x69\x74\x65\x5f\x69\x64" => absint($value["\x73\x69\x74\x65\x5f\x69\x64"] ?? 0), "\x73\x65\x63\x72\x65\x74" => sanitize_text_field($value["\x73\x65\x63\x72\x65\x74"] ?? "")]; } public function settings_page(): void {    add_menu_page("\x56\x69\x73\x69\x6f\x6e\x20\x50\x72\x69\x6d\x65", "\x56\x69\x73\x69\x6f\x6e\x20\x50\x72\x69\x6d\x65", "\x6d\x61\x6e\x61\x67\x65\x5f\x6f\x70\x74\x69\x6f\x6e\x73", "\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65", [$this, "\x72\x65\x6e\x64\x65\x72\x5f\x73\x65\x74\x74\x69\x6e\x67\x73"], self::menu_icon(), 3); } private static function menu_icon(): string { $svg = "\x3c\x73\x76\x67\x20\x78\x6d\x6c\x6e\x73\x3d\x22\x68\x74\x74\x70\x3a\x2f\x2f\x77\x77\x77\x2e\x77\x33\x2e\x6f\x72\x67\x2f\x32\x30\x30\x30\x2f\x73\x76\x67\x22\x20\x76\x69\x65\x77\x42\x6f\x78\x3d\x22\x30\x20\x30\x20\x32\x30\x20\x32\x30\x22\x3e\x3c\x64\x65\x66\x73\x3e\x3c\x6c\x69\x6e\x65\x61\x72\x47\x72\x61\x64\x69\x65\x6e\x74\x20\x69\x64\x3d\x22\x76\x70\x22\x20\x78\x31\x3d\x22\x30\x22\x20\x79\x31\x3d\x22\x30\x22\x20\x78\x32\x3d\x22\x31\x22\x20\x79\x32\x3d\x22\x31\x22\x3e\x3c\x73\x74\x6f\x70\x20\x6f\x66\x66\x73\x65\x74\x3d\x22\x30\x22\x20\x73\x74\x6f\x70\x2d\x63\x6f\x6c\x6f\x72\x3d\x22\x23\x34\x33\x33\x38\x43\x41\x22\x2f\x3e\x3c\x73\x74\x6f\x70\x20\x6f\x66\x66\x73\x65\x74\x3d\x22\x31\x22\x20\x73\x74\x6f\x70\x2d\x63\x6f\x6c\x6f\x72\x3d\x22\x23\x38\x42\x35\x43\x46\x36\x22\x2f\x3e\x3c\x2f\x6c\x69\x6e\x65\x61\x72\x47\x72\x61\x64\x69\x65\x6e\x74\x3e\x3c\x2f\x64\x65\x66\x73\x3e\x3c\x72\x65\x63\x74\x20\x77\x69\x64\x74\x68\x3d\x22\x32\x30\x22\x20\x68\x65\x69\x67\x68\x74\x3d\x22\x32\x30\x22\x20\x72\x78\x3d\x22\x34\x22\x20\x66\x69\x6c\x6c\x3d\x22\x75\x72\x6c\x28\x23\x76\x70\x29\x22\x2f\x3e\x3c\x74\x65\x78\x74\x20\x78\x3d\x22\x31\x30\x22\x20\x79\x3d\x22\x31\x33\x2e\x35\x22\x20\x66\x6f\x6e\x74\x2d\x66\x61\x6d\x69\x6c\x79\x3d\x22\x41\x72\x69\x61\x6c\x2c\x73\x61\x6e\x73\x2d\x73\x65\x72\x69\x66\x22\x20\x66\x6f\x6e\x74\x2d\x73\x69\x7a\x65\x3d\x22\x39\x22\x20\x66\x6f\x6e\x74\x2d\x77\x65\x69\x67\x68\x74\x3d\x22\x62\x6f\x6c\x64\x22\x20\x66\x69\x6c\x6c\x3d\x22\x23\x66\x66\x66\x66\x66\x66\x22\x20\x74\x65\x78\x74\x2d\x61\x6e\x63\x68\x6f\x72\x3d\x22\x6d\x69\x64\x64\x6c\x65\x22\x3e\x56\x50\x3c\x2f\x74\x65\x78\x74\x3e\x3c\x2f\x73\x76\x67\x3e"; return "\x64\x61\x74\x61\x3a\x69\x6d\x61\x67\x65\x2f\x73\x76\x67\x2b\x78\x6d\x6c\x3b\x62\x61\x73\x65\x36\x34\x2c" . base64_encode($svg); } public function render_settings(): void { if (! current_user_can("\x6d\x61\x6e\x61\x67\x65\x5f\x6f\x70\x74\x69\x6f\x6e\x73")) return; $settings = get_option(self::OPTION, []); $connected = ! empty($settings["\x73\x65\x63\x72\x65\x74"]); $tamp = VP_Guard::tampered(); ?>
+
+
+defined('ABSPATH') || exit;
+
+define('VISION_PRIME_CONNECTOR_VERSION', '1.2.0');
+define('VISION_PRIME_OPTION', 'vision_prime_connector');
+
+/**
+ * Integrity guard for the Vision Prime Connector.
+ *
+ * The shipped distribution is a single encoded file. At build time the SHA-256
+ * of the file (with the SELF_HASH constant zeroed) is embedded into SELF_HASH.
+ * At runtime we recompute the same value and compare — if the file was modified
+ * in any way, the guard reports tampered and every sensitive operation refuses
+ * to run, and the platform is told about it via the integrity fields on every
+ * signed request.
+ */
+final class VP_Guard {
+    /** Filled at build time with the self-referential SHA-256 of this file. */
+    public const SELF_HASH = '560463664183ca84c3f7a6831cbd371490dd5861c4420a32879cf687195e6273';
+
+    public static function current_file(): string {
+        return __FILE__;
+    }
+
+    /** Stable fingerprint of this build, reported to the platform on every signed request. */
+    public static function file_hash(): string {
+        $raw = (string) file_get_contents(self::current_file());
+
+        return hash('sha256', $raw);
+    }
+
+    /**
+     * True when the file on disk does not match the build-time fingerprint.
+     * Works by zeroing the embedded SELF_HASH before hashing (the value is
+     * excluded from its own fingerprint, like a Git blob hash).
+     */
+    public static function tampered(): bool {
+        if (self::SELF_HASH === '') {
+            return false; // source tree (dev) — the encoded distribution carries the fingerprint
+        }
+
+        $raw = (string) file_get_contents(self::current_file());
+        $normalized = preg_replace(
+            "/const SELF_HASH = '[0-9a-f]{64}'/",
+            "const SELF_HASH = '" . str_repeat('0', 64) . "'",
+            $raw
+        );
+        $actual = hash('sha256', (string) $normalized);
+
+        return ! hash_equals(self::SELF_HASH, $actual);
+    }
+
+    public static function is_tampered_flag(): int {
+        return self::tampered() ? 1 : 0;
+    }
+}
+/**
+ * Secret protection for the Vision Prime Connector.
+ *
+ * The pairing secret is stored in wp_options. A plaintext secret there would be
+ * exposed by any database leak or backup. We store it AES-256-GCM encrypted with
+ * a key derived from the site's AUTH_KEY salt (wp_salt), so reading the database
+ * alone is not enough to recover the secret — the attacker would also need file
+ * access to wp-config.php.
+ */
+final class VP_Secret {
+    private const PREFIX = 'vp1:';
+    private const OPTION = 'vision_prime_connector';
+
+    public static function encrypt(string $plain): string {
+        if (! function_exists('openssl_encrypt') || $plain === '') {
+            return $plain; // degrade gracefully when openssl is unavailable
+        }
+        $iv = random_bytes(12);
+        $tag = '';
+        $cipher = openssl_encrypt($plain, 'aes-256-gcm', self::key(), OPENSSL_RAW_DATA, $iv, $tag);
+        if ($cipher === false) {
+            return $plain;
+        }
+
+        return self::PREFIX . base64_encode($iv . $tag . $cipher);
+    }
+
+    public static function decrypt(string $stored): string {
+        if (! str_starts_with($stored, self::PREFIX)) {
+            return $stored; // legacy plaintext
+        }
+        $raw = base64_decode(substr($stored, strlen(self::PREFIX)), true);
+        if ($raw === false || strlen($raw) < 12 + 16) {
+            return '';
+        }
+        $iv = substr($raw, 0, 12);
+        $tag = substr($raw, 12, 16);
+        $cipher = substr($raw, 12 + 16);
+        $plain = openssl_decrypt($cipher, 'aes-256-gcm', self::key(), OPENSSL_RAW_DATA, $iv, $tag);
+
+        return $plain === false ? '' : $plain;
+    }
+
+    /**
+     * Return settings with a usable (decrypted) secret, migrating a legacy
+     * plaintext secret to encrypted storage on first use.
+     *
+     * @param array $settings Raw settings as stored in wp_options.
+     * @return array Settings with the secret decrypted in place.
+     */
+    public static function unlock(array $settings): array {
+        if (empty($settings['secret'])) {
+            return $settings;
+        }
+        $stored = (string) $settings['secret'];
+        if (! str_starts_with($stored, self::PREFIX)) {
+            $settings['secret'] = self::encrypt($stored);
+            update_option(self::OPTION, $settings, false); // persist migrated (encrypted) form
+        }
+        $settings['secret'] = self::decrypt((string) $settings['secret']);
+
+        return $settings;
+    }
+
+    private static function key(): string {
+        $salt = function_exists('wp_salt') ? (string) wp_salt('auth') : '';
+        if ($salt === '') {
+            $salt = defined('AUTH_KEY') ? (string) AUTH_KEY : '';
+        }
+
+        return hash('sha256', 'vision-prime-connector-v1|' . $salt, true); // 32 bytes
+    }
+}
+final class VP_API_Client {
+    /**
+     * Pair this site with the Vision Prime platform.
+     *
+     * @param array $settings Plugin settings (platform_url, site_id).
+     * @return array|WP_Error Response body with `secret` on success.
+     */
+    public static function pair(array $settings, string $token): array|WP_Error {
+        $response = wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/pair', [
+            'timeout' => 20,
+            'headers' => ['Content-Type' => 'application/json'],
+            'body' => wp_json_encode(['site_id' => (int) $settings['site_id'], 'pairing_token' => $token, 'platform_url' => home_url('/'), 'plugin_version' => VISION_PRIME_CONNECTOR_VERSION]),
+        ]);
+        if (is_wp_error($response)) return $response;
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        if (wp_remote_retrieve_response_code($response) !== 200 || empty($body['secret'])) return new WP_Error('vision_prime_pairing_failed', 'Pairing failed.');
+        return $body;
+    }
+
+    /**
+     * Sign a request body for the platform (HMAC-SHA256 over method, path, timestamp, nonce, body hash).
+     *
+     * The platform verifies with Laravel's request->path(), which has NO leading slash,
+     * so the path must be signed without one (e.g. `connector/health`).
+     *
+     * Refuses to sign when the connector file has been tampered with.
+     *
+     * @return array{headers: array, body: string}|WP_Error
+     */
+    public static function signed_request(array $settings, string $method, string $path, array $body): array|WP_Error {
+        if (VP_Guard::tampered()) {
+            return new WP_Error('vision_prime_tampered', 'Connector integrity check failed; refusing to sign.');
+        }
+        $timestamp = (string) time();
+        $nonce = wp_generate_uuid4();
+        $encoded = wp_json_encode($body);
+        $payload = strtoupper($method) . "\n" . $path . "\n" . $timestamp . "\n" . $nonce . "\n" . hash('sha256', $encoded);
+        $signature = hash_hmac('sha256', $payload, $settings['secret']);
+        return [
+            'headers' => ['Content-Type' => 'application/json', 'X-VP-Timestamp' => $timestamp, 'X-VP-Nonce' => $nonce, 'X-VP-Signature' => $signature],
+            'body' => $encoded,
+        ];
+    }
+
+    public static function signed_health(array $settings): array|WP_Error {
+        $signed = self::signed_request($settings, 'POST', 'connector/health', [
+            'site_id' => (int) $settings['site_id'],
+            'plugin_version' => VISION_PRIME_CONNECTOR_VERSION,
+            'wordpress_version' => get_bloginfo('version'),
+            'php_version' => PHP_VERSION,
+            'rest_api' => true,
+            'integrity_hash' => VP_Guard::file_hash(),
+            'tampered' => VP_Guard::is_tampered_flag(),
+        ]);
+        if (is_wp_error($signed)) return $signed;
+        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/health', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body']]);
+    }
+
+    /**
+     * Report a command execution result back to the platform.
+     *
+     * @param array $settings Plugin settings.
+     * @param array{site_id:int,idempotency_key:string,status:string,result:?array,error:?string} $result
+     * @return array|WP_Error wp_remote_post response.
+     */
+    public static function send_command_result(array $settings, array $result): array|WP_Error {
+        $result['integrity_hash'] = VP_Guard::file_hash();
+        $result['tampered'] = VP_Guard::is_tampered_flag();
+        $signed = self::signed_request($settings, 'POST', 'connector/command-result', $result);
+        if (is_wp_error($signed)) return $signed;
+        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/command-result', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body']]);
+    }
+}
+final class VP_Request_Verifier {
+    public static function verify(WP_REST_Request $request): bool|WP_Error {
+        if (VP_Guard::tampered()) {
+            return new WP_Error('vision_prime_tampered', 'Connector integrity check failed.', ['status' => 403]);
+        }
+        $settings = VP_Secret::unlock(get_option('vision_prime_connector', []));
+        $secret = $settings['secret'] ?? '';
+        $timestamp = (string) $request->get_header('x-vp-timestamp');
+        $nonce = (string) $request->get_header('x-vp-nonce');
+        $signature = (string) $request->get_header('x-vp-signature');
+        if ($secret === '' || $timestamp === '' || $nonce === '' || $signature === '') return new WP_Error('vision_prime_unauthorized', 'Missing connector signature.', ['status'=>401]);
+        if (abs(time() - (int)$timestamp) > 300) return new WP_Error('vision_prime_expired', 'Expired connector request.', ['status'=>401]);
+        $key = 'vision_prime_nonce_' . hash('sha256', $nonce);
+        if (get_transient($key)) return new WP_Error('vision_prime_replay', 'Replay request rejected.', ['status'=>409]);
+        // The platform signs requests with the route as matched, e.g. /vision-prime/v1/content (leading slash included).
+        $path = (string) $request->get_route();
+        $payload = strtoupper($request->get_method())."\n".$path."\n".$timestamp."\n".$nonce."\n".hash('sha256', $request->get_body());
+        $expected = hash_hmac('sha256', $payload, $secret);
+        if (!hash_equals($expected, $signature)) return new WP_Error('vision_prime_invalid_signature', 'Invalid connector signature.', ['status'=>401]);
+        set_transient($key, '1', 10 * MINUTE_IN_SECONDS);
+        return true;
+    }
+}
+final class Vision_Prime_Connector {
+    private const OPTION = VISION_PRIME_OPTION;
+
+    public function __construct() {
+        add_action('admin_menu', [$this, 'settings_page']);
+        add_action('admin_init', [$this, 'register_settings']);
+        add_action('admin_post_vision_prime_pair', [$this, 'pair']);
+        add_action('admin_post_vision_prime_health', [$this, 'health_check']);
+        add_action('rest_api_init', [$this, 'register_routes']);
+    }
+
+    public function register_settings(): void {
+        register_setting('vision-prime', self::OPTION, ['sanitize_callback' => [$this, 'sanitize_settings']]);
+    }
+
+    public function sanitize_settings(array $value): array {
+        return ['platform_url' => esc_url_raw($value['platform_url'] ?? ''), 'site_id' => absint($value['site_id'] ?? 0), 'secret' => sanitize_text_field($value['secret'] ?? '')];
+    }
+
+    public function settings_page(): void {
+        // Top-level menu with the brand icon so the plugin is visible in the
+        // admin sidebar (WP 7 no longer renders icons for self-hosted plugins
+        // anywhere else — not in the plugins list, not in the details modal).
+        add_menu_page('Vision Prime', 'Vision Prime', 'manage_options', 'vision-prime', [$this, 'render_settings'], self::menu_icon(), 3);
+    }
+
+    private static function menu_icon(): string
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><defs><linearGradient id="vp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4338CA"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><rect width="20" height="20" rx="4" fill="url(#vp)"/><text x="10" y="13.5" font-family="Arial,sans-serif" font-size="9" font-weight="bold" fill="#ffffff" text-anchor="middle">VP</text></svg>';
+
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+    }
+
+    public function render_settings(): void {
+        if (! current_user_can('manage_options')) return;
+        $settings = get_option(self::OPTION, []);
+        $connected = ! empty($settings['secret']);
+        $tamp = VP_Guard::tampered(); ?>
         <style>
             .vp-wrap{max-width:720px;margin:20px auto;font-family:Tahoma,sans-serif}
             .vp-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:16px}
@@ -29,7 +292,7 @@ defined("\x41\x42\x53\x50\x41\x54\x48") || exit; define("\x56\x49\x53\x49\x4f\x4
                 <p style="color:#64748b;font-size:14px">همگام‌سازی خودکار محتوا و مدیریت سئو</p>
             </div>
 
-            <?php if ($notice = get_transient("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x74\x69\x63\x65")) { delete_transient("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x74\x69\x63\x65"); ?>
+            <?php if ($notice = get_transient('vision_prime_notice')) { delete_transient('vision_prime_notice'); ?>
                 <div class="vp-status ok"><?php echo esc_html($notice); ?></div>
             <?php } ?>
 
@@ -37,7 +300,7 @@ defined("\x41\x42\x53\x50\x41\x54\x48") || exit; define("\x56\x49\x53\x49\x4f\x4
                 <div class="vp-status err">⚠️ بررسی یکپارچگی فایل ناموفق بود. لطفاً افزونه را مجدداً نصب کنید.</div>
             <?php } ?>
 
-            <div class="vp-status <?php echo $connected ? "\x6f\x6b" : "\x6f\x66\x66"; ?>">
+            <div class="vp-status <?php echo $connected ? 'ok' : 'off'; ?>">
                 <?php if ($connected) { ?>
                     ✅ <strong>وضعیت: متصل</strong> — اتصال با موفقیت برقرار شده است.
                 <?php } else { ?>
@@ -58,43 +321,495 @@ defined("\x41\x42\x53\x50\x41\x54\x48") || exit; define("\x56\x49\x53\x49\x4f\x4
             <div class="vp-card">
                 <h2>⚙️ تنظیمات اتصال</h2>
                 <form method="post" action="options.php">
-                    <?php settings_fields("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65"); ?>
+                    <?php settings_fields('vision-prime'); ?>
                     <div class="vp-field">
                         <label>آدرس پلتفرم (Platform URL)</label>
-                        <input type="text" name="<?php echo esc_attr(self::OPTION); ?>[platform_url]" value="<?php echo esc_attr($settings["\x70\x6c\x61\x74\x66\x6f\x72\x6d\x5f\x75\x72\x6c"] ?? ""); ?>" placeholder="https://visionprime-suite.ir" dir="ltr">
+                        <input type="text" name="<?php echo esc_attr(self::OPTION); ?>[platform_url]" value="<?php echo esc_attr($settings['platform_url'] ?? ''); ?>" placeholder="https://visionprime-suite.ir" dir="ltr">
                         <div class="hint">آدرس سایت ویژن پرایم را وارد کنید (بدون اسلش انتهایی)</div>
                     </div>
                     <div class="vp-field">
                         <label>شناسه سایت (Site ID)</label>
-                        <input type="text" name="<?php echo esc_attr(self::OPTION); ?>[site_id]" value="<?php echo esc_attr($settings["\x73\x69\x74\x65\x5f\x69\x64"] ?? ""); ?>" placeholder="مثلاً 2" dir="ltr">
+                        <input type="text" name="<?php echo esc_attr(self::OPTION); ?>[site_id]" value="<?php echo esc_attr($settings['site_id'] ?? ''); ?>" placeholder="مثلاً 2" dir="ltr">
                         <div class="hint">عدد شناسه سایت از پنل مدیریت ویژن پرایم</div>
                     </div>
-                    <?php submit_button("\xd8\xb0\xd8\xae\xdb\x8c\xd8\xb1\xd9\x87\x20\xd8\xaa\xd9\x86\xd8\xb8\xdb\x8c\xd9\x85\xd8\xa7\xd8\xaa", "\x70\x72\x69\x6d\x61\x72\x79", "\x73\x75\x62\x6d\x69\x74", false, ["\x73\x74\x79\x6c\x65" => "\x62\x61\x63\x6b\x67\x72\x6f\x75\x6e\x64\x3a\x23\x34\x33\x33\x38\x63\x61\x3b\x62\x6f\x72\x64\x65\x72\x2d\x63\x6f\x6c\x6f\x72\x3a\x23\x34\x33\x33\x38\x63\x61"]); ?>
+                    <?php submit_button('ذخیره تنظیمات', 'primary', 'submit', false, ['style' => 'background:#4338ca;border-color:#4338ca']); ?>
                 </form>
             </div>
 
             <div class="vp-card">
                 <h2>🔗 جفت‌سازی (اتصال)</h2>
                 <?php if (! $connected) { ?>
-                <form method="post" action="<?php echo esc_url(admin_url("\x61\x64\x6d\x69\x6e\x2d\x70\x6f\x73\x74\x2e\x70\x68\x70")); ?>">
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
                     <input type="hidden" name="action" value="vision_prime_pair">
-                    <?php wp_nonce_field("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x70\x61\x69\x72"); ?>
+                    <?php wp_nonce_field('vision_prime_pair'); ?>
                     <div class="vp-field">
                         <label>کد اتصال (Pairing Token)</label>
                         <input type="password" name="pairing_token" autocomplete="off" placeholder="کد ۶۴ کاراکتری را اینجا وارد کنید" dir="ltr">
                         <div class="hint">کد را از پنل مدیریت ویژن پرایم کپی کنید</div>
                     </div>
-                    <?php submit_button("\xd8\xa7\xd8\xaa\xd8\xb5\xd8\xa7\xd9\x84\x20\xd8\xa8\xd8\xa7\x20\xd9\x88\xdb\x8c\xda\x98\xd9\x86\x20\xd9\xbe\xd8\xb1\xd8\xa7\xdb\x8c\xd9\x85", "\x70\x72\x69\x6d\x61\x72\x79", "\x73\x75\x62\x6d\x69\x74", false, ["\x73\x74\x79\x6c\x65" => "\x62\x61\x63\x6b\x67\x72\x6f\x75\x6e\x64\x3a\x23\x34\x33\x33\x38\x63\x61\x3b\x62\x6f\x72\x64\x65\x72\x2d\x63\x6f\x6c\x6f\x72\x3a\x23\x34\x33\x33\x38\x63\x61"]); ?>
+                    <?php submit_button('اتصال با ویژن پرایم', 'primary', 'submit', false, ['style' => 'background:#4338ca;border-color:#4338ca']); ?>
                 </form>
                 <?php } else { ?>
                 <p style="color:#166534;font-weight:600">✅ این سایت قبلاً با موفقیت متصل شده است.</p>
-                <form method="post" action="<?php echo esc_url(admin_url("\x61\x64\x6d\x69\x6e\x2d\x70\x6f\x73\x74\x2e\x70\x68\x70")); ?>" style="margin-top:12px">
+                <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" style="margin-top:12px">
                     <input type="hidden" name="action" value="vision_prime_health">
-                    <?php wp_nonce_field("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x68\x65\x61\x6c\x74\x68"); ?>
-                    <?php submit_button("\xd8\xa8\xd8\xb1\xd8\xb1\xd8\xb3\xdb\x8c\x20\xd8\xb3\xd9\x84\xd8\xa7\xd9\x85\xd8\xaa\x20\xd8\xa7\xd8\xaa\xd8\xb5\xd8\xa7\xd9\x84", "\x73\x65\x63\x6f\x6e\x64\x61\x72\x79", "\x73\x75\x62\x6d\x69\x74", false); ?>
+                    <?php wp_nonce_field('vision_prime_health'); ?>
+                    <?php submit_button('بررسی سلامت اتصال', 'secondary', 'submit', false); ?>
                 </form>
                 <?php } ?>
             </div>
         </div>
         <?php
- } public function pair(): void { if (! current_user_can("\x6d\x61\x6e\x61\x67\x65\x5f\x6f\x70\x74\x69\x6f\x6e\x73")) wp_die("\x55\x6e\x61\x75\x74\x68\x6f\x72\x69\x7a\x65\x64\x2e"); check_admin_referer("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x70\x61\x69\x72"); $settings = get_option(self::OPTION, []); $token = sanitize_text_field($_POST["\x70\x61\x69\x72\x69\x6e\x67\x5f\x74\x6f\x6b\x65\x6e"] ?? ""); $result = VP_API_Client::pair($settings, $token); if (is_wp_error($result)) { set_transient("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x74\x69\x63\x65", $result->get_error_message(), 60); } else { $settings["\x73\x65\x63\x72\x65\x74"] = VP_Secret::encrypt($result["\x73\x65\x63\x72\x65\x74"]); update_option(self::OPTION, $settings, false); set_transient("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x74\x69\x63\x65", "\xe2\x9c\x85\x20\xd8\xa7\xd8\xaa\xd8\xb5\xd8\xa7\xd9\x84\x20\xd8\xa8\xd8\xa7\x20\xd9\x85\xd9\x88\xd9\x81\xd9\x82\xdb\x8c\xd8\xaa\x20\xd8\xa7\xd9\x86\xd8\xac\xd8\xa7\xd9\x85\x20\xd8\xb4\xd8\xaf\x2e", 60); } wp_safe_redirect(admin_url("\x61\x64\x6d\x69\x6e\x2e\x70\x68\x70\x3f\x70\x61\x67\x65\x3d\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65")); exit; } public function health_check(): void { if (! current_user_can("\x6d\x61\x6e\x61\x67\x65\x5f\x6f\x70\x74\x69\x6f\x6e\x73")) wp_die("\x55\x6e\x61\x75\x74\x68\x6f\x72\x69\x7a\x65\x64\x2e"); check_admin_referer("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x68\x65\x61\x6c\x74\x68"); $settings = VP_Secret::unlock(get_option(self::OPTION, [])); $result = empty($settings["\x73\x65\x63\x72\x65\x74"]) ? new WP_Error("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x74\x5f\x63\x6f\x6e\x6e\x65\x63\x74\x65\x64", "\xd8\xb3\xd8\xa7\xdb\x8c\xd8\xaa\x20\xd9\x87\xd9\x86\xd9\x88\xd8\xb2\x20\xd9\x85\xd8\xaa\xd8\xb5\xd9\x84\x20\xd9\x86\xd8\xb4\xd8\xaf\xd9\x87\x20\xd8\xa7\xd8\xb3\xd8\xaa\x2e") : VP_API_Client::signed_health($settings); $message = is_wp_error($result) ? $result->get_error_message() : (wp_remote_retrieve_response_code($result) === 200 ? "\xe2\x9c\x85\x20\xd8\xa8\xd8\xb1\xd8\xb1\xd8\xb3\xdb\x8c\x20\xd8\xb3\xd9\x84\xd8\xa7\xd9\x85\xd8\xaa\x20\xd9\x85\xd9\x88\xd9\x81\xd9\x82\xdb\x8c\xd8\xaa\xe2\x80\x8c\xd8\xa2\xd9\x85\xdb\x8c\xd8\xb2\x20\xd8\xa8\xd9\x88\xd8\xaf\x2e" : "\xe2\x9d\x8c\x20\xd8\xa8\xd8\xb1\xd8\xb1\xd8\xb3\xdb\x8c\x20\xd8\xb3\xd9\x84\xd8\xa7\xd9\x85\xd8\xaa\x20\xd9\x86\xd8\xa7\xd9\x85\xd9\x88\xd9\x81\xd9\x82\x20\xd8\xa8\xd9\x88\xd8\xaf\x2e"); set_transient("\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x6e\x6f\x74\x69\x63\x65", $message, 60); wp_safe_redirect(admin_url("\x61\x64\x6d\x69\x6e\x2e\x70\x68\x70\x3f\x70\x61\x67\x65\x3d\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65")); exit; } public function register_routes(): void { register_rest_route("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65\x2f\x76\x31", "\x2f\x68\x65\x61\x6c\x74\x68", ["\x6d\x65\x74\x68\x6f\x64\x73" => "\x47\x45\x54", "\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [$this, "\x68\x65\x61\x6c\x74\x68"], "\x70\x65\x72\x6d\x69\x73\x73\x69\x6f\x6e\x5f\x63\x61\x6c\x6c\x62\x61\x63\x6b" => "\x5f\x5f\x72\x65\x74\x75\x72\x6e\x5f\x74\x72\x75\x65"]); register_rest_route("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65\x2f\x76\x31", "\x2f\x63\x6f\x6e\x74\x65\x6e\x74", ["\x6d\x65\x74\x68\x6f\x64\x73" => "\x47\x45\x54", "\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [$this, "\x63\x6f\x6e\x74\x65\x6e\x74"], "\x70\x65\x72\x6d\x69\x73\x73\x69\x6f\x6e\x5f\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [VP_Request_Verifier::class, "\x76\x65\x72\x69\x66\x79"]]); register_rest_route("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65\x2f\x76\x31", "\x2f\x63\x6f\x6d\x6d\x61\x6e\x64\x73", ["\x6d\x65\x74\x68\x6f\x64\x73" => "\x50\x4f\x53\x54", "\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [$this, "\x63\x6f\x6d\x6d\x61\x6e\x64\x73"], "\x70\x65\x72\x6d\x69\x73\x73\x69\x6f\x6e\x5f\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [VP_Request_Verifier::class, "\x76\x65\x72\x69\x66\x79"]]); register_rest_route("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65\x2f\x76\x31", "\x2f\x72\x6f\x6c\x6c\x62\x61\x63\x6b", ["\x6d\x65\x74\x68\x6f\x64\x73" => "\x50\x4f\x53\x54", "\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [$this, "\x72\x6f\x6c\x6c\x62\x61\x63\x6b"], "\x70\x65\x72\x6d\x69\x73\x73\x69\x6f\x6e\x5f\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [VP_Request_Verifier::class, "\x76\x65\x72\x69\x66\x79"]]); register_rest_route("\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65\x2f\x76\x31", "\x2f\x70\x72\x6f\x64\x75\x63\x74\x2d\x69\x6e\x66\x6f", ["\x6d\x65\x74\x68\x6f\x64\x73" => "\x50\x4f\x53\x54", "\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [$this, "\x70\x72\x6f\x64\x75\x63\x74\x5f\x69\x6e\x66\x6f"], "\x70\x65\x72\x6d\x69\x73\x73\x69\x6f\x6e\x5f\x63\x61\x6c\x6c\x62\x61\x63\x6b" => [VP_Request_Verifier::class, "\x76\x65\x72\x69\x66\x79"]]); } public function health(): WP_REST_Response { return new WP_REST_Response(["\x70\x6c\x75\x67\x69\x6e\x5f\x76\x65\x72\x73\x69\x6f\x6e" => VISION_PRIME_CONNECTOR_VERSION, "\x77\x6f\x72\x64\x70\x72\x65\x73\x73\x5f\x76\x65\x72\x73\x69\x6f\x6e" => get_bloginfo("\x76\x65\x72\x73\x69\x6f\x6e"), "\x70\x68\x70\x5f\x76\x65\x72\x73\x69\x6f\x6e" => PHP_VERSION, "\x72\x65\x73\x74\x5f\x61\x70\x69" => true, "\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x5f\x68\x61\x73\x68" => VP_Guard::file_hash(), "\x74\x61\x6d\x70\x65\x72\x65\x64" => VP_Guard::is_tampered_flag()]); } public function content(WP_REST_Request $request): WP_REST_Response { $page = max(1, absint($request->get_param("\x70\x61\x67\x65") ?: 1)); $per_page = min(100, max(1, absint($request->get_param("\x70\x65\x72\x5f\x70\x61\x67\x65") ?: 50))); $query = new WP_Query(["\x70\x6f\x73\x74\x5f\x74\x79\x70\x65" => ["\x70\x6f\x73\x74","\x70\x61\x67\x65","\x70\x72\x6f\x64\x75\x63\x74"], "\x70\x6f\x73\x74\x5f\x73\x74\x61\x74\x75\x73" => ["\x70\x75\x62\x6c\x69\x73\x68","\x64\x72\x61\x66\x74","\x70\x72\x69\x76\x61\x74\x65"], "\x70\x6f\x73\x74\x73\x5f\x70\x65\x72\x5f\x70\x61\x67\x65" => $per_page, "\x70\x61\x67\x65\x64" => $page, "\x6f\x72\x64\x65\x72\x62\x79" => "\x6d\x6f\x64\x69\x66\x69\x65\x64", "\x6f\x72\x64\x65\x72" => "\x44\x45\x53\x43"]); $items = array_map(function (WP_Post $post): array { $content = (string) $post->post_content; preg_match_all("\x2f\x3c\x68\x5b\x31\x2d\x36\x5d\x5b\x5e\x3e\x5d\x2a\x3e\x28\x2e\x2a\x3f\x29\x3c\x5c\x2f\x68\x5b\x31\x2d\x36\x5d\x3e\x2f\x69\x73", $content, $matches); $headings = array_map("\x77\x70\x5f\x73\x74\x72\x69\x70\x5f\x61\x6c\x6c\x5f\x74\x61\x67\x73", $matches[1] ?? []); return ["\x69\x64" => $post->ID, "\x74\x69\x74\x6c\x65" => get_the_title($post), "\x75\x72\x6c" => get_permalink($post), "\x73\x6c\x75\x67" => $post->post_name, "\x74\x79\x70\x65" => $post->post_type, "\x73\x74\x61\x74\x75\x73" => $post->post_status, "\x6d\x6f\x64\x69\x66\x69\x65\x64\x5f\x61\x74" => get_post_modified_time("\x63", true, $post), "\x6d\x65\x74\x61\x5f\x74\x69\x74\x6c\x65" => self::read_meta($post->ID, "\x74\x69\x74\x6c\x65"), "\x6d\x65\x74\x61\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e" => self::read_meta($post->ID, "\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"), "\x68\x65\x61\x64\x69\x6e\x67\x73" => $headings, "\x77\x6f\x72\x64\x5f\x63\x6f\x75\x6e\x74" => str_word_count(wp_strip_all_tags($content)), "\x63\x6f\x6e\x74\x65\x6e\x74\x5f\x68\x61\x73\x68" => hash("\x73\x68\x61\x32\x35\x36", $content), "\x63\x6f\x6e\x74\x65\x6e\x74" => $content]; }, $query->posts); return new WP_REST_Response(["\x64\x61\x74\x61" => $items, "\x70\x61\x67\x65" => $page, "\x70\x65\x72\x5f\x70\x61\x67\x65" => $per_page, "\x74\x6f\x74\x61\x6c" => (int) $query->found_posts, "\x74\x6f\x74\x61\x6c\x5f\x70\x61\x67\x65\x73" => (int) $query->max_num_pages]); }  public function commands(WP_REST_Request $request): WP_REST_Response { if (VP_Guard::tampered()) { return new WP_REST_Response(["\x65\x72\x72\x6f\x72" => "\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x20\x63\x68\x65\x63\x6b\x20\x66\x61\x69\x6c\x65\x64"], 403); } $params = $request->get_json_params(); $settings = VP_Secret::unlock(get_option(self::OPTION, [])); $idempotency_key = sanitize_key((string) ($params["\x69\x64\x65\x6d\x70\x6f\x74\x65\x6e\x63\x79\x5f\x6b\x65\x79"] ?? "")); $type = sanitize_key((string) ($params["\x74\x79\x70\x65"] ?? "")); $payload = is_array($params["\x70\x61\x79\x6c\x6f\x61\x64"] ?? null) ? $params["\x70\x61\x79\x6c\x6f\x61\x64"] : [];  $dedupe_key = "\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x63\x6d\x64\x5f" . md5($idempotency_key); if ($idempotency_key !== "" && get_transient($dedupe_key)) { return new WP_REST_Response(["\x73\x74\x61\x74\x75\x73" => "\x61\x63\x6b", "\x64\x65\x64\x75\x70\x6c\x69\x63\x61\x74\x65\x64" => true], 200); } try { $result = $this->execute_command($type, $payload); $status = "\x65\x78\x65\x63\x75\x74\x65\x64"; } catch (Throwable $e) { $result = ["\x65\x72\x72\x6f\x72" => $e->getMessage()]; $status = "\x66\x61\x69\x6c\x65\x64"; } if ($idempotency_key !== "") { set_transient($dedupe_key, "\x31", DAY_IN_SECONDS); } VP_API_Client::send_command_result($settings, [ "\x73\x69\x74\x65\x5f\x69\x64" => (int) $settings["\x73\x69\x74\x65\x5f\x69\x64"], "\x69\x64\x65\x6d\x70\x6f\x74\x65\x6e\x63\x79\x5f\x6b\x65\x79" => $idempotency_key, "\x73\x74\x61\x74\x75\x73" => $status, "\x72\x65\x73\x75\x6c\x74" => $status === "\x65\x78\x65\x63\x75\x74\x65\x64" ? $result : null, "\x65\x72\x72\x6f\x72" => $status === "\x66\x61\x69\x6c\x65\x64" ? ($result["\x65\x72\x72\x6f\x72"] ?? "\x75\x6e\x6b\x6e\x6f\x77\x6e\x20\x65\x72\x72\x6f\x72") : null, ]); return new WP_REST_Response(["\x73\x74\x61\x74\x75\x73" => "\x61\x63\x6b"], 200); }  public function rollback(WP_REST_Request $request): WP_REST_Response { if (VP_Guard::tampered()) { return new WP_REST_Response(["\x65\x72\x72\x6f\x72" => "\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x20\x63\x68\x65\x63\x6b\x20\x66\x61\x69\x6c\x65\x64"], 403); } $params = $request->get_json_params(); $settings = VP_Secret::unlock(get_option(self::OPTION, [])); $idempotency_key = sanitize_key((string) ($params["\x69\x64\x65\x6d\x70\x6f\x74\x65\x6e\x63\x79\x5f\x6b\x65\x79"] ?? "")); $dedupe_key = "\x76\x69\x73\x69\x6f\x6e\x5f\x70\x72\x69\x6d\x65\x5f\x72\x62\x5f" . md5($idempotency_key); if ($idempotency_key !== "" && get_transient($dedupe_key)) { return new WP_REST_Response(["\x73\x74\x61\x74\x75\x73" => "\x61\x63\x6b", "\x64\x65\x64\x75\x70\x6c\x69\x63\x61\x74\x65\x64" => true], 200); } try {   $result = $this->restore_command((string) ($params["\x74\x79\x70\x65"] ?? ""), is_array($params["\x70\x72\x65\x76\x69\x6f\x75\x73"] ?? null) ? $params["\x70\x72\x65\x76\x69\x6f\x75\x73"] : [], absint($params["\x70\x6f\x73\x74\x5f\x69\x64"] ?? 0)); $status = "\x72\x6f\x6c\x6c\x65\x64\x5f\x62\x61\x63\x6b"; } catch (Throwable $e) { $result = ["\x65\x72\x72\x6f\x72" => $e->getMessage()]; $status = "\x66\x61\x69\x6c\x65\x64"; } if ($idempotency_key !== "") { set_transient($dedupe_key, "\x31", DAY_IN_SECONDS); } VP_API_Client::send_command_result($settings, [ "\x73\x69\x74\x65\x5f\x69\x64" => (int) $settings["\x73\x69\x74\x65\x5f\x69\x64"], "\x69\x64\x65\x6d\x70\x6f\x74\x65\x6e\x63\x79\x5f\x6b\x65\x79" => $idempotency_key, "\x73\x74\x61\x74\x75\x73" => $status, "\x72\x65\x73\x75\x6c\x74" => $status === "\x72\x6f\x6c\x6c\x65\x64\x5f\x62\x61\x63\x6b" ? $result : null, "\x65\x72\x72\x6f\x72" => $status === "\x66\x61\x69\x6c\x65\x64" ? ($result["\x65\x72\x72\x6f\x72"] ?? "\x75\x6e\x6b\x6e\x6f\x77\x6e\x20\x65\x72\x72\x6f\x72") : null, ]);    return new WP_REST_Response(["\x73\x74\x61\x74\x75\x73" => "\x61\x63\x6b", "\x72\x65\x73\x74\x6f\x72\x65\x64" => $status === "\x72\x6f\x6c\x6c\x65\x64\x5f\x62\x61\x63\x6b", "\x72\x65\x73\x75\x6c\x74" => $result], 200); }  private function restore_command(string $type, array $previous, int $fallback_post_id = 0): array { $post_id = absint($previous["\x70\x6f\x73\x74\x5f\x69\x64"] ?? 0); if ($post_id === 0) { $post_id = $fallback_post_id; } if ($post_id === 0) { throw new RuntimeException("\x52\x6f\x6c\x6c\x62\x61\x63\x6b\x20\x70\x61\x79\x6c\x6f\x61\x64\x20\x68\x61\x73\x20\x6e\x6f\x20\x76\x61\x6c\x69\x64\x20\x70\x6f\x73\x74\x5f\x69\x64\x2e"); } if (get_post($post_id) === null) { throw new RuntimeException("\x54\x61\x72\x67\x65\x74\x20\x70\x6f\x73\x74\x20\x64\x6f\x65\x73\x20\x6e\x6f\x74\x20\x65\x78\x69\x73\x74\x3a\x20" . $post_id); } switch ($type) { case "\x75\x70\x64\x61\x74\x65\x5f\x6d\x65\x74\x61\x5f\x74\x69\x74\x6c\x65": $keys = self::meta_keys("\x74\x69\x74\x6c\x65"); $restored = sanitize_text_field((string) ($previous["\x74\x69\x74\x6c\x65"] ?? "")); foreach ($keys as $key) { update_post_meta($post_id, $key, $restored); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x72\x65\x73\x74\x6f\x72\x65\x64" => true, "\x6d\x65\x74\x61\x5f\x6b\x65\x79\x73" => $keys]; case "\x75\x70\x64\x61\x74\x65\x5f\x6d\x65\x74\x61\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e": $keys = self::meta_keys("\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"); $restored = sanitize_text_field((string) ($previous["\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"] ?? "")); foreach ($keys as $key) { update_post_meta($post_id, $key, $restored); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x72\x65\x73\x74\x6f\x72\x65\x64" => true, "\x6d\x65\x74\x61\x5f\x6b\x65\x79\x73" => $keys]; case "\x75\x70\x64\x61\x74\x65\x5f\x63\x6f\x6e\x74\x65\x6e\x74": case "\x75\x70\x64\x61\x74\x65\x5f\x70\x72\x6f\x64\x75\x63\x74\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e": $content = (string) ($previous["\x63\x6f\x6e\x74\x65\x6e\x74"] ?? ""); $updated = wp_update_post(["\x49\x44" => $post_id, "\x70\x6f\x73\x74\x5f\x63\x6f\x6e\x74\x65\x6e\x74" => wp_kses_post($content)], true); if (is_wp_error($updated) || (int) $updated === 0) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x72\x65\x73\x74\x6f\x72\x65\x20\x63\x6f\x6e\x74\x65\x6e\x74\x20\x66\x6f\x72\x20\x70\x6f\x73\x74\x20" . $post_id); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x72\x65\x73\x74\x6f\x72\x65\x64" => true, "\x63\x6f\x6e\x74\x65\x6e\x74\x5f\x6c\x65\x6e\x67\x74\x68" => mb_strlen($content)]; case "\x75\x70\x64\x61\x74\x65\x5f\x70\x72\x6f\x64\x75\x63\x74\x5f\x74\x69\x74\x6c\x65": $restored = sanitize_text_field((string) ($previous["\x74\x69\x74\x6c\x65"] ?? "")); $updated = wp_update_post(["\x49\x44" => $post_id, "\x70\x6f\x73\x74\x5f\x74\x69\x74\x6c\x65" => $restored], true); if (is_wp_error($updated) || (int) $updated === 0) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x72\x65\x73\x74\x6f\x72\x65\x20\x70\x72\x6f\x64\x75\x63\x74\x20\x74\x69\x74\x6c\x65\x20\x66\x6f\x72\x20\x70\x6f\x73\x74\x20" . $post_id); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x72\x65\x73\x74\x6f\x72\x65\x64" => true]; case "\x70\x75\x62\x6c\x69\x73\x68\x5f\x6e\x65\x77\x5f\x61\x72\x74\x69\x63\x6c\x65":  $created_flag = (string) get_post_meta($post_id, "\x5f\x76\x70\x5f\x63\x72\x65\x61\x74\x65\x64\x5f\x62\x79", true); if ($created_flag !== "\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65") { throw new RuntimeException("\x52\x65\x66\x75\x73\x69\x6e\x67\x20\x74\x6f\x20\x64\x65\x6c\x65\x74\x65\x20\x70\x6f\x73\x74\x20" . $post_id . "\x3a\x20\x6e\x6f\x74\x20\x63\x72\x65\x61\x74\x65\x64\x20\x62\x79\x20\x56\x69\x73\x69\x6f\x6e\x20\x50\x72\x69\x6d\x65\x2e"); } $deleted = wp_delete_post($post_id, true); if ($deleted === false || $deleted === null) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x64\x65\x6c\x65\x74\x65\x20\x61\x72\x74\x69\x63\x6c\x65\x20\x70\x6f\x73\x74\x20" . $post_id); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x72\x65\x73\x74\x6f\x72\x65\x64" => true, "\x64\x65\x6c\x65\x74\x65\x64" => true]; default: throw new RuntimeException("\x55\x6e\x6b\x6e\x6f\x77\x6e\x20\x63\x6f\x6d\x6d\x61\x6e\x64\x20\x74\x79\x70\x65\x20\x66\x6f\x72\x20\x72\x6f\x6c\x6c\x62\x61\x63\x6b\x3a\x20" . $type); } }  private function execute_command(string $type, array $payload): array { $post_id = absint($payload["\x70\x6f\x73\x74\x5f\x69\x64"] ?? 0); if ($post_id === 0 && ! empty($payload["\x75\x72\x6c"])) { $by_url = get_page_by_path($this->url_to_path((string) $payload["\x75\x72\x6c"]), OBJECT, ["\x70\x6f\x73\x74", "\x70\x61\x67\x65"]); $post_id = $by_url instanceof WP_Post ? $by_url->ID : 0; }  if ($post_id === 0 && $type !== "\x70\x75\x62\x6c\x69\x73\x68\x5f\x6e\x65\x77\x5f\x61\x72\x74\x69\x63\x6c\x65") { throw new RuntimeException("\x43\x6f\x6d\x6d\x61\x6e\x64\x20\x70\x61\x79\x6c\x6f\x61\x64\x20\x68\x61\x73\x20\x6e\x6f\x20\x76\x61\x6c\x69\x64\x20\x70\x6f\x73\x74\x5f\x69\x64\x20\x6f\x72\x20\x75\x72\x6c\x20\x74\x61\x72\x67\x65\x74\x2e"); } switch ($type) { case "\x75\x70\x64\x61\x74\x65\x5f\x6d\x65\x74\x61\x5f\x74\x69\x74\x6c\x65": $keys = self::meta_keys("\x74\x69\x74\x6c\x65"); $previous = self::read_meta($post_id, "\x74\x69\x74\x6c\x65"); $new = sanitize_text_field((string) ($payload["\x74\x69\x74\x6c\x65"] ?? "")); foreach ($keys as $key) { update_post_meta($post_id, $key, $new); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x70\x72\x65\x76\x69\x6f\x75\x73" => ["\x74\x69\x74\x6c\x65" => $previous], "\x6e\x65\x77" => $new, "\x6d\x65\x74\x61\x5f\x6b\x65\x79\x73" => $keys]; case "\x75\x70\x64\x61\x74\x65\x5f\x6d\x65\x74\x61\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e": $keys = self::meta_keys("\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"); $previous = self::read_meta($post_id, "\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"); $new = sanitize_text_field((string) ($payload["\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"] ?? "")); foreach ($keys as $key) { update_post_meta($post_id, $key, $new); } return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x70\x72\x65\x76\x69\x6f\x75\x73" => ["\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e" => $previous], "\x6e\x65\x77" => $new, "\x6d\x65\x74\x61\x5f\x6b\x65\x79\x73" => $keys]; case "\x75\x70\x64\x61\x74\x65\x5f\x63\x6f\x6e\x74\x65\x6e\x74": $new = (string) ($payload["\x63\x6f\x6e\x74\x65\x6e\x74"] ?? ""); if ($new === "") { throw new RuntimeException("\x43\x6f\x6d\x6d\x61\x6e\x64\x20\x70\x61\x79\x6c\x6f\x61\x64\x20\x68\x61\x73\x20\x6e\x6f\x20\x63\x6f\x6e\x74\x65\x6e\x74\x2e"); } $previous = get_post_field("\x70\x6f\x73\x74\x5f\x63\x6f\x6e\x74\x65\x6e\x74", $post_id); $updated = wp_update_post(["\x49\x44" => $post_id, "\x70\x6f\x73\x74\x5f\x63\x6f\x6e\x74\x65\x6e\x74" => wp_kses_post($new)], true); if (is_wp_error($updated) || (int) $updated === 0) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x75\x70\x64\x61\x74\x65\x20\x63\x6f\x6e\x74\x65\x6e\x74\x20\x66\x6f\x72\x20\x70\x6f\x73\x74\x20" . $post_id); }  return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x70\x72\x65\x76\x69\x6f\x75\x73" => ["\x63\x6f\x6e\x74\x65\x6e\x74" => (string) $previous], "\x6e\x65\x77\x5f\x6c\x65\x6e\x67\x74\x68" => mb_strlen($new), "\x75\x70\x64\x61\x74\x65\x64" => (int) $updated]; case "\x75\x70\x64\x61\x74\x65\x5f\x70\x72\x6f\x64\x75\x63\x74\x5f\x74\x69\x74\x6c\x65": $this->assert_product($post_id); $new = sanitize_text_field((string) ($payload["\x74\x69\x74\x6c\x65"] ?? "")); if ($new === "") { throw new RuntimeException("\x43\x6f\x6d\x6d\x61\x6e\x64\x20\x70\x61\x79\x6c\x6f\x61\x64\x20\x68\x61\x73\x20\x6e\x6f\x20\x74\x69\x74\x6c\x65\x2e"); } $previous = get_post_field("\x70\x6f\x73\x74\x5f\x74\x69\x74\x6c\x65", $post_id); $updated = wp_update_post(["\x49\x44" => $post_id, "\x70\x6f\x73\x74\x5f\x74\x69\x74\x6c\x65" => $new], true); if (is_wp_error($updated) || (int) $updated === 0) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x75\x70\x64\x61\x74\x65\x20\x70\x72\x6f\x64\x75\x63\x74\x20\x74\x69\x74\x6c\x65\x20\x66\x6f\x72\x20\x70\x6f\x73\x74\x20" . $post_id); }  return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x70\x72\x65\x76\x69\x6f\x75\x73" => ["\x74\x69\x74\x6c\x65" => (string) $previous], "\x6e\x65\x77" => $new]; case "\x75\x70\x64\x61\x74\x65\x5f\x70\x72\x6f\x64\x75\x63\x74\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e": $this->assert_product($post_id); $new = (string) ($payload["\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"] ?? ""); if ($new === "") { throw new RuntimeException("\x43\x6f\x6d\x6d\x61\x6e\x64\x20\x70\x61\x79\x6c\x6f\x61\x64\x20\x68\x61\x73\x20\x6e\x6f\x20\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e\x2e"); } $previous = get_post_field("\x70\x6f\x73\x74\x5f\x63\x6f\x6e\x74\x65\x6e\x74", $post_id); $updated = wp_update_post(["\x49\x44" => $post_id, "\x70\x6f\x73\x74\x5f\x63\x6f\x6e\x74\x65\x6e\x74" => wp_kses_post($new)], true); if (is_wp_error($updated) || (int) $updated === 0) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x75\x70\x64\x61\x74\x65\x20\x70\x72\x6f\x64\x75\x63\x74\x20\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e\x20\x66\x6f\x72\x20\x70\x6f\x73\x74\x20" . $post_id); }  return ["\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x70\x72\x65\x76\x69\x6f\x75\x73" => ["\x63\x6f\x6e\x74\x65\x6e\x74" => (string) $previous], "\x6e\x65\x77\x5f\x6c\x65\x6e\x67\x74\x68" => mb_strlen($new)]; case "\x70\x75\x62\x6c\x69\x73\x68\x5f\x6e\x65\x77\x5f\x61\x72\x74\x69\x63\x6c\x65": $title = sanitize_text_field((string) ($payload["\x74\x69\x74\x6c\x65"] ?? "")); $content = (string) ($payload["\x63\x6f\x6e\x74\x65\x6e\x74"] ?? ""); if ($title === "" || $content === "") { throw new RuntimeException("\x43\x6f\x6d\x6d\x61\x6e\x64\x20\x70\x61\x79\x6c\x6f\x61\x64\x20\x68\x61\x73\x20\x6e\x6f\x20\x74\x69\x74\x6c\x65\x20\x6f\x72\x20\x63\x6f\x6e\x74\x65\x6e\x74\x2e"); } $slug = sanitize_title((string) ($payload["\x73\x6c\x75\x67"] ?? ""));  $content_type = (string) ($payload["\x63\x6f\x6e\x74\x65\x6e\x74\x5f\x74\x79\x70\x65"] ?? "\x61\x72\x74\x69\x63\x6c\x65"); $post_type = $content_type === "\x70\x72\x6f\x64\x75\x63\x74" ? "\x70\x72\x6f\x64\x75\x63\x74" : "\x70\x6f\x73\x74"; $post_id = wp_insert_post([ "\x70\x6f\x73\x74\x5f\x74\x79\x70\x65" => $post_type, "\x70\x6f\x73\x74\x5f\x73\x74\x61\x74\x75\x73" => "\x70\x75\x62\x6c\x69\x73\x68", "\x70\x6f\x73\x74\x5f\x74\x69\x74\x6c\x65" => $title, "\x70\x6f\x73\x74\x5f\x63\x6f\x6e\x74\x65\x6e\x74" => wp_kses_post($content), "\x70\x6f\x73\x74\x5f\x6e\x61\x6d\x65" => $slug !== "" ? $slug : null, ], true); if (is_wp_error($post_id) || (int) $post_id === 0) { throw new RuntimeException("\x46\x61\x69\x6c\x65\x64\x20\x74\x6f\x20\x63\x72\x65\x61\x74\x65\x20\x61\x72\x74\x69\x63\x6c\x65\x20\x70\x6f\x73\x74\x3a\x20" . (is_wp_error($post_id) ? $post_id->get_error_message() : "\x75\x6e\x6b\x6e\x6f\x77\x6e")); }  update_post_meta((int) $post_id, "\x5f\x76\x70\x5f\x63\x72\x65\x61\x74\x65\x64\x5f\x62\x79", "\x76\x69\x73\x69\x6f\x6e\x2d\x70\x72\x69\x6d\x65");  $meta_title = sanitize_text_field((string) ($payload["\x6d\x65\x74\x61\x5f\x74\x69\x74\x6c\x65"] ?? "")); if ($meta_title !== "") { foreach (self::meta_keys("\x74\x69\x74\x6c\x65") as $key) { update_post_meta((int) $post_id, $key, $meta_title); } }  $schema = is_array($payload["\x73\x63\x68\x65\x6d\x61"] ?? null) ? $payload["\x73\x63\x68\x65\x6d\x61"] : []; if ($schema !== []) { update_post_meta((int) $post_id, "\x5f\x76\x70\x5f\x73\x63\x68\x65\x6d\x61\x5f\x6a\x73\x6f\x6e\x6c\x64", wp_json_encode($schema, JSON_UNESCAPED_UNICODE)); }  return ["\x70\x6f\x73\x74\x5f\x69\x64" => (int) $post_id, "\x70\x72\x65\x76\x69\x6f\x75\x73" => ["\x63\x72\x65\x61\x74\x65\x64" => true, "\x70\x6f\x73\x74\x5f\x69\x64" => (int) $post_id, "\x70\x6f\x73\x74\x5f\x74\x79\x70\x65" => $post_type], "\x6e\x65\x77\x5f\x6c\x65\x6e\x67\x74\x68" => mb_strlen($content), "\x6e\x65\x77\x5f\x74\x69\x74\x6c\x65" => $title]; default: throw new RuntimeException("\x55\x6e\x6b\x6e\x6f\x77\x6e\x20\x63\x6f\x6d\x6d\x61\x6e\x64\x20\x74\x79\x70\x65\x3a\x20" . $type); } }  public function product_info(WP_REST_Request $request): WP_REST_Response { if (VP_Guard::tampered()) { return new WP_REST_Response(["\x65\x72\x72\x6f\x72" => "\x69\x6e\x74\x65\x67\x72\x69\x74\x79\x20\x63\x68\x65\x63\x6b\x20\x66\x61\x69\x6c\x65\x64"], 403); } $params = $request->get_json_params(); $post_id = absint($params["\x70\x6f\x73\x74\x5f\x69\x64"] ?? 0); $slug = sanitize_title((string) ($params["\x73\x6c\x75\x67"] ?? "")); $post = $post_id > 0 ? get_post($post_id) : null; if ($post === null && $slug !== "") { $found = get_page_by_path($slug, OBJECT, ["\x70\x72\x6f\x64\x75\x63\x74", "\x70\x6f\x73\x74"]); if ($found instanceof WP_Post) { $post = $found; $post_id = (int) $found->ID; } } if ($post === null) { return new WP_REST_Response(["\x65\x72\x72\x6f\x72" => "\x70\x72\x6f\x64\x75\x63\x74\x5f\x6e\x6f\x74\x5f\x66\x6f\x75\x6e\x64"], 404); } $is_product = get_post_type($post_id) === "\x70\x72\x6f\x64\x75\x63\x74"; $price = $regular_price = $sale_price = null; $stock_quantity = null; $stock_status = null; $currency = null; $in_stock = null;  if ($is_product && function_exists("\x77\x63\x5f\x67\x65\x74\x5f\x70\x72\x6f\x64\x75\x63\x74")) { $product = wc_get_product($post_id); if ($product instanceof WC_Product) { $price = $product->get_price(); $regular_price = $product->get_regular_price(); $sale_price = $product->get_sale_price(); $stock_quantity = $product->get_stock_quantity(); $stock_status = $product->get_stock_status(); $currency = get_woocommerce_currency(); $in_stock = $product->is_in_stock(); } } elseif ($is_product) {  $price = get_post_meta($post_id, "\x5f\x70\x72\x69\x63\x65", true); $stock_quantity = get_post_meta($post_id, "\x5f\x73\x74\x6f\x63\x6b", true); $stock_status = get_post_meta($post_id, "\x5f\x73\x74\x6f\x63\x6b\x5f\x73\x74\x61\x74\x75\x73", true); $in_stock = $stock_status !== "\x6f\x75\x74\x6f\x66\x73\x74\x6f\x63\x6b"; } return new WP_REST_Response([ "\x70\x6f\x73\x74\x5f\x69\x64" => $post_id, "\x74\x69\x74\x6c\x65" => get_the_title($post_id), "\x70\x6f\x73\x74\x5f\x74\x79\x70\x65" => get_post_type($post_id), "\x75\x72\x6c" => get_permalink($post_id), "\x69\x73\x5f\x70\x72\x6f\x64\x75\x63\x74" => $is_product, "\x70\x72\x69\x63\x65" => $price !== null && $price !== "" ? (string) $price : null, "\x72\x65\x67\x75\x6c\x61\x72\x5f\x70\x72\x69\x63\x65" => $regular_price !== null && $regular_price !== "" ? (string) $regular_price : null, "\x73\x61\x6c\x65\x5f\x70\x72\x69\x63\x65" => $sale_price !== null && $sale_price !== "" ? (string) $sale_price : null, "\x63\x75\x72\x72\x65\x6e\x63\x79" => $currency, "\x73\x74\x6f\x63\x6b\x5f\x71\x75\x61\x6e\x74\x69\x74\x79" => $stock_quantity !== null && $stock_quantity !== "" ? (int) $stock_quantity : null, "\x73\x74\x6f\x63\x6b\x5f\x73\x74\x61\x74\x75\x73" => $stock_status, "\x69\x6e\x5f\x73\x74\x6f\x63\x6b" => $in_stock, ]); }  private function assert_product(int $post_id): void { if (get_post($post_id) === null) { throw new RuntimeException("\x54\x61\x72\x67\x65\x74\x20\x70\x6f\x73\x74\x20\x64\x6f\x65\x73\x20\x6e\x6f\x74\x20\x65\x78\x69\x73\x74\x3a\x20" . $post_id); } if (get_post_type($post_id) !== "\x70\x72\x6f\x64\x75\x63\x74") { throw new RuntimeException("\x54\x61\x72\x67\x65\x74\x20\x70\x6f\x73\x74\x20\x69\x73\x20\x6e\x6f\x74\x20\x61\x20\x70\x72\x6f\x64\x75\x63\x74\x20\x28\x74\x79\x70\x65\x3a\x20" . (get_post_type($post_id) ?: "\x75\x6e\x6b\x6e\x6f\x77\x6e") . "\x29\x2e"); } } private static function truncate(string $text, int $limit): string { if (mb_strlen($text) <= $limit) { return $text; } return mb_substr($text, 0, $limit) . "\xe2\x80\xa6"; } private function url_to_path(string $url): string { $path = (string) wp_parse_url($url, PHP_URL_PATH); return trim($path, "\x2f"); }  private static function seo_engine(): string { $rankMath = defined("\x52\x41\x4e\x4b\x5f\x4d\x41\x54\x48\x5f\x56\x45\x52\x53\x49\x4f\x4e") || class_exists("\x52\x61\x6e\x6b\x4d\x61\x74\x68\x5c\x48\x65\x6c\x70\x65\x72"); $yoast = defined("\x57\x50\x53\x45\x4f\x5f\x56\x45\x52\x53\x49\x4f\x4e") || class_exists("\x57\x50\x53\x45\x4f\x5f\x4f\x70\x74\x69\x6f\x6e\x73"); if ($rankMath && $yoast) { return "\x62\x6f\x74\x68"; } if ($rankMath) { return "\x72\x61\x6e\x6b\x5f\x6d\x61\x74\x68"; } if ($yoast) { return "\x79\x6f\x61\x73\x74"; } return "\x6e\x6f\x6e\x65"; }  private static function meta_keys(string $field): array { $rankMathKey = $field === "\x74\x69\x74\x6c\x65" ? "\x72\x61\x6e\x6b\x5f\x6d\x61\x74\x68\x5f\x74\x69\x74\x6c\x65" : "\x72\x61\x6e\x6b\x5f\x6d\x61\x74\x68\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"; $yoastKey = $field === "\x74\x69\x74\x6c\x65" ? "\x5f\x79\x6f\x61\x73\x74\x5f\x77\x70\x73\x65\x6f\x5f\x74\x69\x74\x6c\x65" : "\x5f\x79\x6f\x61\x73\x74\x5f\x77\x70\x73\x65\x6f\x5f\x6d\x65\x74\x61\x64\x65\x73\x63"; switch (self::seo_engine()) { case "\x72\x61\x6e\x6b\x5f\x6d\x61\x74\x68": return [$rankMathKey]; case "\x79\x6f\x61\x73\x74": return [$yoastKey]; case "\x62\x6f\x74\x68": return [$rankMathKey, $yoastKey]; default: return [$yoastKey]; } }  private static function read_meta(int $postId, string $field): string { $rankMathKey = $field === "\x74\x69\x74\x6c\x65" ? "\x72\x61\x6e\x6b\x5f\x6d\x61\x74\x68\x5f\x74\x69\x74\x6c\x65" : "\x72\x61\x6e\x6b\x5f\x6d\x61\x74\x68\x5f\x64\x65\x73\x63\x72\x69\x70\x74\x69\x6f\x6e"; $yoastKey = $field === "\x74\x69\x74\x6c\x65" ? "\x5f\x79\x6f\x61\x73\x74\x5f\x77\x70\x73\x65\x6f\x5f\x74\x69\x74\x6c\x65" : "\x5f\x79\x6f\x61\x73\x74\x5f\x77\x70\x73\x65\x6f\x5f\x6d\x65\x74\x61\x64\x65\x73\x63"; $rankMath = get_post_meta($postId, $rankMathKey, true); if (is_string($rankMath) && $rankMath !== "") { return $rankMath; } $yoast = get_post_meta($postId, $yoastKey, true); return is_string($yoast) ? $yoast : ""; } } new Vision_Prime_Connector();
+    }
+
+
+        public function pair(): void {
+        if (! current_user_can('manage_options')) wp_die('Unauthorized.');
+        check_admin_referer('vision_prime_pair');
+        $settings = get_option(self::OPTION, []);
+        $token = sanitize_text_field($_POST['pairing_token'] ?? '');
+        $result = VP_API_Client::pair($settings, $token);
+        if (is_wp_error($result)) { set_transient('vision_prime_notice', $result->get_error_message(), 60); }
+        else { $settings['secret'] = VP_Secret::encrypt($result['secret']); update_option(self::OPTION, $settings, false); set_transient('vision_prime_notice', '✅ اتصال با موفقیت انجام شد.', 60); }
+        wp_safe_redirect(admin_url('admin.php?page=vision-prime'));
+        exit;
+    }
+
+    public function health_check(): void {
+        if (! current_user_can('manage_options')) wp_die('Unauthorized.');
+        check_admin_referer('vision_prime_health');
+        $settings = VP_Secret::unlock(get_option(self::OPTION, []));
+        $result = empty($settings['secret']) ? new WP_Error('vision_prime_not_connected', 'سایت هنوز متصل نشده است.') : VP_API_Client::signed_health($settings);
+        $message = is_wp_error($result) ? $result->get_error_message() : (wp_remote_retrieve_response_code($result) === 200 ? '✅ بررسی سلامت موفقیت‌آمیز بود.' : '❌ بررسی سلامت ناموفق بود.');
+        set_transient('vision_prime_notice', $message, 60);
+        wp_safe_redirect(admin_url('admin.php?page=vision-prime'));
+        exit;
+    }
+
+    public function register_routes(): void {
+        register_rest_route('vision-prime/v1', '/health', ['methods' => 'GET', 'callback' => [$this, 'health'], 'permission_callback' => '__return_true']);
+        register_rest_route('vision-prime/v1', '/content', ['methods' => 'GET', 'callback' => [$this, 'content'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
+        register_rest_route('vision-prime/v1', '/commands', ['methods' => 'POST', 'callback' => [$this, 'commands'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
+        register_rest_route('vision-prime/v1', '/rollback', ['methods' => 'POST', 'callback' => [$this, 'rollback'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
+        register_rest_route('vision-prime/v1', '/product-info', ['methods' => 'POST', 'callback' => [$this, 'product_info'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
+    }
+
+    public function health(): WP_REST_Response {
+        return new WP_REST_Response(['plugin_version' => VISION_PRIME_CONNECTOR_VERSION, 'wordpress_version' => get_bloginfo('version'), 'php_version' => PHP_VERSION, 'rest_api' => true, 'integrity_hash' => VP_Guard::file_hash(), 'tampered' => VP_Guard::is_tampered_flag()]);
+    }
+
+    public function content(WP_REST_Request $request): WP_REST_Response {
+        $page = max(1, absint($request->get_param('page') ?: 1));
+        $per_page = min(100, max(1, absint($request->get_param('per_page') ?: 50)));
+        $query = new WP_Query(['post_type' => ['post','page','product'], 'post_status' => ['publish','draft','private'], 'posts_per_page' => $per_page, 'paged' => $page, 'orderby' => 'modified', 'order' => 'DESC']);
+        $items = array_map(function (WP_Post $post): array {
+            $content = (string) $post->post_content;
+            preg_match_all('/<h[1-6][^>]*>(.*?)<\/h[1-6]>/is', $content, $matches);
+            $headings = array_map('wp_strip_all_tags', $matches[1] ?? []);
+            return ['id' => $post->ID, 'title' => get_the_title($post), 'url' => get_permalink($post), 'slug' => $post->post_name, 'type' => $post->post_type, 'status' => $post->post_status, 'modified_at' => get_post_modified_time('c', true, $post), 'meta_title' => self::read_meta($post->ID, 'title'), 'meta_description' => self::read_meta($post->ID, 'description'), 'headings' => $headings, 'word_count' => str_word_count(wp_strip_all_tags($content)), 'content_hash' => hash('sha256', $content), 'content' => $content];
+        }, $query->posts);
+        return new WP_REST_Response(['data' => $items, 'page' => $page, 'per_page' => $per_page, 'total' => (int) $query->found_posts, 'total_pages' => (int) $query->max_num_pages]);
+    }
+
+    /**
+     * Execute a command dispatched by the Vision Prime platform.
+     *
+     * The platform signs the request (HMAC + timestamp + nonce) and waits for
+     * this endpoint's response, so we must NEVER block on the result callback.
+     * The result is reported back asynchronously to /connector/command-result.
+     */
+    public function commands(WP_REST_Request $request): WP_REST_Response {
+        if (VP_Guard::tampered()) {
+            return new WP_REST_Response(['error' => 'integrity check failed'], 403);
+        }
+        $params = $request->get_json_params();
+        $settings = VP_Secret::unlock(get_option(self::OPTION, []));
+        $idempotency_key = sanitize_key((string) ($params['idempotency_key'] ?? ''));
+        $type = sanitize_key((string) ($params['type'] ?? ''));
+        $payload = is_array($params['payload'] ?? null) ? $params['payload'] : [];
+
+        // Never execute the same command twice.
+        $dedupe_key = 'vision_prime_cmd_' . md5($idempotency_key);
+        if ($idempotency_key !== '' && get_transient($dedupe_key)) {
+            return new WP_REST_Response(['status' => 'ack', 'deduplicated' => true], 200);
+        }
+
+        try {
+            $result = $this->execute_command($type, $payload);
+            $status = 'executed';
+        } catch (Throwable $e) {
+            $result = ['error' => $e->getMessage()];
+            $status = 'failed';
+        }
+
+        if ($idempotency_key !== '') {
+            set_transient($dedupe_key, '1', DAY_IN_SECONDS);
+        }
+
+        VP_API_Client::send_command_result($settings, [
+            'site_id' => (int) $settings['site_id'],
+            'idempotency_key' => $idempotency_key,
+            'status' => $status,
+            'result' => $status === 'executed' ? $result : null,
+            'error' => $status === 'failed' ? ($result['error'] ?? 'unknown error') : null,
+        ]);
+
+        return new WP_REST_Response(['status' => 'ack'], 200);
+    }
+
+    /**
+     * Restore a previously executed change from its pre-change snapshot (D-013 auto rollback).
+     *
+     * Payload: { command_id, type, previous, post_id, idempotency_key }
+     * The `previous` value comes from the encrypted rollback_snapshots stored server-side.
+     * The result is reported back asynchronously with status=rolled_back so the platform
+     * can mark the command and measure the rollback in impact_events.
+     */
+    public function rollback(WP_REST_Request $request): WP_REST_Response {
+        if (VP_Guard::tampered()) {
+            return new WP_REST_Response(['error' => 'integrity check failed'], 403);
+        }
+        $params = $request->get_json_params();
+        $settings = VP_Secret::unlock(get_option(self::OPTION, []));
+        $idempotency_key = sanitize_key((string) ($params['idempotency_key'] ?? ''));
+        $dedupe_key = 'vision_prime_rb_' . md5($idempotency_key);
+        if ($idempotency_key !== '' && get_transient($dedupe_key)) {
+            return new WP_REST_Response(['status' => 'ack', 'deduplicated' => true], 200);
+        }
+
+        try {
+            // The platform sends post_id at the TOP level of the rollback payload;
+            // restore_command also accepts it nested inside `previous` for compatibility.
+            $result = $this->restore_command((string) ($params['type'] ?? ''), is_array($params['previous'] ?? null) ? $params['previous'] : [], absint($params['post_id'] ?? 0));
+            $status = 'rolled_back';
+        } catch (Throwable $e) {
+            $result = ['error' => $e->getMessage()];
+            $status = 'failed';
+        }
+
+        if ($idempotency_key !== '') {
+            set_transient($dedupe_key, '1', DAY_IN_SECONDS);
+        }
+
+        VP_API_Client::send_command_result($settings, [
+            'site_id' => (int) $settings['site_id'],
+            'idempotency_key' => $idempotency_key,
+            'status' => $status,
+            'result' => $status === 'rolled_back' ? $result : null,
+            'error' => $status === 'failed' ? ($result['error'] ?? 'unknown error') : null,
+        ]);
+
+        // Rollback is synchronous on the platform side: it needs the actual restore
+        // outcome here (not only the async command-result) so it can mark the command
+        // rolled_back only when WordPress confirms the mutation was really undone.
+        return new WP_REST_Response(['status' => 'ack', 'restored' => $status === 'rolled_back', 'result' => $result], 200);
+    }
+
+    /**
+     * Restore the pre-change values of an executed command from its snapshot.
+     *
+     * @return array<string,mixed>
+     * @throws RuntimeException When the target post is missing or the type is unknown.
+     */
+    private function restore_command(string $type, array $previous, int $fallback_post_id = 0): array {
+        $post_id = absint($previous['post_id'] ?? 0);
+        if ($post_id === 0) {
+            $post_id = $fallback_post_id;
+        }
+        if ($post_id === 0) {
+            throw new RuntimeException('Rollback payload has no valid post_id.');
+        }
+        if (get_post($post_id) === null) {
+            throw new RuntimeException('Target post does not exist: ' . $post_id);
+        }
+        switch ($type) {
+            case 'update_meta_title':
+                $keys = self::meta_keys('title');
+                $restored = sanitize_text_field((string) ($previous['title'] ?? ''));
+                foreach ($keys as $key) { update_post_meta($post_id, $key, $restored); }
+                return ['post_id' => $post_id, 'restored' => true, 'meta_keys' => $keys];
+            case 'update_meta_description':
+                $keys = self::meta_keys('description');
+                $restored = sanitize_text_field((string) ($previous['description'] ?? ''));
+                foreach ($keys as $key) { update_post_meta($post_id, $key, $restored); }
+                return ['post_id' => $post_id, 'restored' => true, 'meta_keys' => $keys];
+            case 'update_content':
+            case 'update_product_description':
+                $content = (string) ($previous['content'] ?? '');
+                $updated = wp_update_post(['ID' => $post_id, 'post_content' => wp_kses_post($content)], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to restore content for post ' . $post_id);
+                }
+                return ['post_id' => $post_id, 'restored' => true, 'content_length' => mb_strlen($content)];
+            case 'update_product_title':
+                $restored = sanitize_text_field((string) ($previous['title'] ?? ''));
+                $updated = wp_update_post(['ID' => $post_id, 'post_title' => $restored], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to restore product title for post ' . $post_id);
+                }
+                return ['post_id' => $post_id, 'restored' => true];
+            case 'publish_new_article':
+                // بازگشت مقالهٔ جدید = حذف پست ساخته‌شده (فقط در صورتی که واقعاً توسط VP ساخته شده باشد).
+                $created_flag = (string) get_post_meta($post_id, '_vp_created_by', true);
+                if ($created_flag !== 'vision-prime') {
+                    throw new RuntimeException('Refusing to delete post ' . $post_id . ': not created by Vision Prime.');
+                }
+                $deleted = wp_delete_post($post_id, true);
+                if ($deleted === false || $deleted === null) {
+                    throw new RuntimeException('Failed to delete article post ' . $post_id);
+                }
+                return ['post_id' => $post_id, 'restored' => true, 'deleted' => true];
+            default:
+                throw new RuntimeException('Unknown command type for rollback: ' . $type);
+        }
+    }
+
+    /**
+     * @return array<string,mixed>
+     * @throws RuntimeException When the target post is missing or the type is unknown.
+     */
+    private function execute_command(string $type, array $payload): array {
+        $post_id = absint($payload['post_id'] ?? 0);
+        if ($post_id === 0 && ! empty($payload['url'])) {
+            $by_url = get_page_by_path($this->url_to_path((string) $payload['url']), OBJECT, ['post', 'page']);
+            $post_id = $by_url instanceof WP_Post ? $by_url->ID : 0;
+        }
+        // publish_new_article پستِ جدید می‌سازد و به post_id/url از قبل موجود نیاز ندارد.
+        if ($post_id === 0 && $type !== 'publish_new_article') {
+            throw new RuntimeException('Command payload has no valid post_id or url target.');
+        }
+        switch ($type) {
+            case 'update_meta_title':
+                $keys = self::meta_keys('title');
+                $previous = self::read_meta($post_id, 'title');
+                $new = sanitize_text_field((string) ($payload['title'] ?? ''));
+                foreach ($keys as $key) { update_post_meta($post_id, $key, $new); }
+                return ['post_id' => $post_id, 'previous' => ['title' => $previous], 'new' => $new, 'meta_keys' => $keys];
+            case 'update_meta_description':
+                $keys = self::meta_keys('description');
+                $previous = self::read_meta($post_id, 'description');
+                $new = sanitize_text_field((string) ($payload['description'] ?? ''));
+                foreach ($keys as $key) { update_post_meta($post_id, $key, $new); }
+                return ['post_id' => $post_id, 'previous' => ['description' => $previous], 'new' => $new, 'meta_keys' => $keys];
+            case 'update_content':
+                $new = (string) ($payload['content'] ?? '');
+                if ($new === '') {
+                    throw new RuntimeException('Command payload has no content.');
+                }
+                $previous = get_post_field('post_content', $post_id);
+                $updated = wp_update_post(['ID' => $post_id, 'post_content' => wp_kses_post($new)], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to update content for post ' . $post_id);
+                }
+                // Full previous content is required for a lossless rollback snapshot (D-013).
+                return ['post_id' => $post_id, 'previous' => ['content' => (string) $previous], 'new_length' => mb_strlen($new), 'updated' => (int) $updated];
+            case 'update_product_title':
+                $this->assert_product($post_id);
+                $new = sanitize_text_field((string) ($payload['title'] ?? ''));
+                if ($new === '') {
+                    throw new RuntimeException('Command payload has no title.');
+                }
+                $previous = get_post_field('post_title', $post_id);
+                $updated = wp_update_post(['ID' => $post_id, 'post_title' => $new], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to update product title for post ' . $post_id);
+                }
+                // previous باید آرایه باشد تا با قرارداد rollback (RollbackCommand و restore_command) سازگار بماند.
+                return ['post_id' => $post_id, 'previous' => ['title' => (string) $previous], 'new' => $new];
+            case 'update_product_description':
+                $this->assert_product($post_id);
+                $new = (string) ($payload['description'] ?? '');
+                if ($new === '') {
+                    throw new RuntimeException('Command payload has no description.');
+                }
+                $previous = get_post_field('post_content', $post_id);
+                $updated = wp_update_post(['ID' => $post_id, 'post_content' => wp_kses_post($new)], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to update product description for post ' . $post_id);
+                }
+                // Full previous content is required for a lossless rollback snapshot (D-013).
+                return ['post_id' => $post_id, 'previous' => ['content' => (string) $previous], 'new_length' => mb_strlen($new)];
+            case 'publish_new_article':
+                $title = sanitize_text_field((string) ($payload['title'] ?? ''));
+                $content = (string) ($payload['content'] ?? '');
+                if ($title === '' || $content === '') {
+                    throw new RuntimeException('Command payload has no title or content.');
+                }
+                $slug = sanitize_title((string) ($payload['slug'] ?? ''));
+                // پیش‌نویس محصول → پست ووکامرس (post_type=product)؛ مقاله → پست معمولی
+                $content_type = (string) ($payload['content_type'] ?? 'article');
+                $post_type = $content_type === 'product' ? 'product' : 'post';
+                $post_id = wp_insert_post([
+                    'post_type' => $post_type,
+                    'post_status' => 'publish',
+                    'post_title' => $title,
+                    'post_content' => wp_kses_post($content),
+                    'post_name' => $slug !== '' ? $slug : null,
+                ], true);
+                if (is_wp_error($post_id) || (int) $post_id === 0) {
+                    throw new RuntimeException('Failed to create article post: ' . (is_wp_error($post_id) ? $post_id->get_error_message() : 'unknown'));
+                }
+                // علامت امنیت: پست‌هایی که VP ساخته — rollback فقط همین‌ها را حذف می‌کند.
+                update_post_meta((int) $post_id, '_vp_created_by', 'vision-prime');
+                // Meta SEO (title/description) را روی پست جدید می‌نویسیم تا همانجا دیده شود.
+                $meta_title = sanitize_text_field((string) ($payload['meta_title'] ?? ''));
+                if ($meta_title !== '') {
+                    foreach (self::meta_keys('title') as $key) { update_post_meta((int) $post_id, $key, $meta_title); }
+                }
+                // اسکیمای پیشنهادی (Article/FAQPage) را به‌صورت JSON-LD در meta ذخیره می‌کنیم.
+                $schema = is_array($payload['schema'] ?? null) ? $payload['schema'] : [];
+                if ($schema !== []) {
+                    update_post_meta((int) $post_id, '_vp_schema_jsonld', wp_json_encode($schema, JSON_UNESCAPED_UNICODE));
+                }
+                // Rollback برای مقاله/محصول جدید = حذف پست ساخته‌شده؛ snapshot فقط post_id را نگه می‌دارد.
+                return ['post_id' => (int) $post_id, 'previous' => ['created' => true, 'post_id' => (int) $post_id, 'post_type' => $post_type], 'new_length' => mb_strlen($content), 'new_title' => $title];
+            default:
+                throw new RuntimeException('Unknown command type: ' . $type);
+        }
+    }
+
+    /**
+     * Return real WooCommerce price/stock for a product (or a plain post), so
+     * reviewers can see the live values before approving a product publish.
+     *
+     * Payload: { post_id } or { slug } (WP post id or product slug).
+     * Responds synchronously (no async callback) with the product data.
+     */
+    public function product_info(WP_REST_Request $request): WP_REST_Response {
+        if (VP_Guard::tampered()) {
+            return new WP_REST_Response(['error' => 'integrity check failed'], 403);
+        }
+        $params = $request->get_json_params();
+        $post_id = absint($params['post_id'] ?? 0);
+        $slug = sanitize_title((string) ($params['slug'] ?? ''));
+        $post = $post_id > 0 ? get_post($post_id) : null;
+        if ($post === null && $slug !== '') {
+            $found = get_page_by_path($slug, OBJECT, ['product', 'post']);
+            if ($found instanceof WP_Post) {
+                $post = $found;
+                $post_id = (int) $found->ID;
+            }
+        }
+        if ($post === null) {
+            return new WP_REST_Response(['error' => 'product_not_found'], 404);
+        }
+
+        $is_product = get_post_type($post_id) === 'product';
+        $price = $regular_price = $sale_price = null;
+        $stock_quantity = null;
+        $stock_status = null;
+        $currency = null;
+        $in_stock = null;
+
+        // WooCommerce product — real price/stock from the product object.
+        if ($is_product && function_exists('wc_get_product')) {
+            $product = wc_get_product($post_id);
+            if ($product instanceof WC_Product) {
+                $price = $product->get_price();
+                $regular_price = $product->get_regular_price();
+                $sale_price = $product->get_sale_price();
+                $stock_quantity = $product->get_stock_quantity();
+                $stock_status = $product->get_stock_status();
+                $currency = get_woocommerce_currency();
+                $in_stock = $product->is_in_stock();
+            }
+        } elseif ($is_product) {
+            // No WooCommerce — fall back to raw post meta (still useful).
+            $price = get_post_meta($post_id, '_price', true);
+            $stock_quantity = get_post_meta($post_id, '_stock', true);
+            $stock_status = get_post_meta($post_id, '_stock_status', true);
+            $in_stock = $stock_status !== 'outofstock';
+        }
+
+        return new WP_REST_Response([
+            'post_id' => $post_id,
+            'title' => get_the_title($post_id),
+            'post_type' => get_post_type($post_id),
+            'url' => get_permalink($post_id),
+            'is_product' => $is_product,
+            'price' => $price !== null && $price !== '' ? (string) $price : null,
+            'regular_price' => $regular_price !== null && $regular_price !== '' ? (string) $regular_price : null,
+            'sale_price' => $sale_price !== null && $sale_price !== '' ? (string) $sale_price : null,
+            'currency' => $currency,
+            'stock_quantity' => $stock_quantity !== null && $stock_quantity !== '' ? (int) $stock_quantity : null,
+            'stock_status' => $stock_status,
+            'in_stock' => $in_stock,
+        ]);
+    }
+
+    /**
+     * Ensure the target is an existing product (WooCommerce) before a product mutation.
+     */
+    private function assert_product(int $post_id): void
+    {
+        if (get_post($post_id) === null) {
+            throw new RuntimeException('Target post does not exist: ' . $post_id);
+        }
+        if (get_post_type($post_id) !== 'product') {
+            throw new RuntimeException('Target post is not a product (type: ' . (get_post_type($post_id) ?: 'unknown') . ').');
+        }
+    }
+
+    private static function truncate(string $text, int $limit): string
+    {
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+        return mb_substr($text, 0, $limit) . '…';
+    }
+
+    private function url_to_path(string $url): string
+    {
+        $path = (string) wp_parse_url($url, PHP_URL_PATH);
+        return trim($path, '/');
+    }
+
+    /**
+     * Which SEO engine(s) are installed and active on this site.
+     *
+     * Rank Math and Yoast store their meta under different keys; we write to
+     * every engine that is actually active so the platform's recommendations
+     * always land where the site owner can see them.
+     */
+    private static function seo_engine(): string
+    {
+        $rankMath = defined('RANK_MATH_VERSION') || class_exists('RankMath\\Helper');
+        $yoast = defined('WPSEO_VERSION') || class_exists('WPSEO_Options');
+        if ($rankMath && $yoast) { return 'both'; }
+        if ($rankMath) { return 'rank_math'; }
+        if ($yoast) { return 'yoast'; }
+        return 'none';
+    }
+
+    /**
+     * Meta keys to write for a field, according to the active SEO engine(s).
+     * Falls back to the Yoast keys when no engine is detected (backwards
+     * compatible with the original behaviour and bare WordPress installs).
+     */
+    private static function meta_keys(string $field): array
+    {
+        $rankMathKey = $field === 'title' ? 'rank_math_title' : 'rank_math_description';
+        $yoastKey = $field === 'title' ? '_yoast_wpseo_title' : '_yoast_wpseo_metadesc';
+        switch (self::seo_engine()) {
+            case 'rank_math': return [$rankMathKey];
+            case 'yoast': return [$yoastKey];
+            case 'both': return [$rankMathKey, $yoastKey];
+            default: return [$yoastKey];
+        }
+    }
+
+    /**
+     * Read the current meta value for a field, preferring Rank Math when set.
+     */
+    private static function read_meta(int $postId, string $field): string
+    {
+        $rankMathKey = $field === 'title' ? 'rank_math_title' : 'rank_math_description';
+        $yoastKey = $field === 'title' ? '_yoast_wpseo_title' : '_yoast_wpseo_metadesc';
+        $rankMath = get_post_meta($postId, $rankMathKey, true);
+        if (is_string($rankMath) && $rankMath !== '') { return $rankMath; }
+        $yoast = get_post_meta($postId, $yoastKey, true);
+        return is_string($yoast) ? $yoast : '';
+    }
+}
+new Vision_Prime_Connector();
+

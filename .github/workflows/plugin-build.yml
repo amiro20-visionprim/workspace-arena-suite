@@ -1,0 +1,36 @@
+name: Plugin Build
+
+# ساخت قابل‌تکرار پلاگین وردپرس از سورسِ خوانا — خروجی: zip آمادهٔ نصب
+# (پیش از این zip دست‌ساز و اوبفاسکیت داخل مخزن کامیت می‌شد و قابل
+# دیباگ/بازبینی نبود.)
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, dom, tokenizer, fileinfo
+          coverage: none
+
+      - name: Build readable dist + zip
+        run: php build.php --readable
+        working-directory: vision-prime-wordpress-plugin
+
+      - name: Lint dist
+        run: php -l dist/vision-prime-connector.php
+        working-directory: vision-prime-wordpress-plugin
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vision-prime-connector
+          path: vision-prime-wordpress-plugin/dist/vision-prime-connector.zip
+          retention-days: 90
