@@ -668,6 +668,36 @@
 
 ---
 
+## فاز ۲ — Organization & Membership — 🚧 در حال اجرا
+
+### 2.1 — رفع escalation سطح دسترسی (اسکالیشن به super-admin) 🔴
+- **هدف:** جلوگیری از اینکه یک `agency-admin` (سطح سازمان) بتواند نقش `super-admin` (سطح پلتفرم) را به خود/دیگران تخصیص دهد و پلتفرم را تسخیر کند.
+- **تغییر:** `OrganizationSettingsController` — لیست `roles` ارسالی به فرانت، نقش `super-admin` را حذف می‌کند؛ validation در `store` و `update` با `Rule::exists(...)->where('key','!=','super-admin')` تخصیص آن را در سطح دیتابیس مسدود می‌کند.
+- **فایل:** `app/Http/Controllers/App/Settings/OrganizationSettingsController.php`
+- **تست:** `test_agency_admin_cannot_assign_super_admin_role`, `test_agency_admin_cannot_elevate_member_to_super_admin_via_update`
+- **وضعیت:** ✅ lint سبز
+
+### 2.2 — محافظ «آخرین مدیر» (last-admin guard) 🟠
+- **هدف:** جلوگیری از تنزل/حذف آخرین مدیر سازمان (که سازمان را بدون مدیر رها می‌کند).
+- **تغییر:** افزودن `assertNotLastAdminWhenDemoting` و `assertNotLastAdminWhenRemoving` + `otherAdminExists`.
+- **فایل:** همان کنترلر.
+- **تست:** `test_cannot_demote_the_last_agency_admin`, `test_cannot_remove_own_membership`, `test_admin_can_remove_a_non_admin_member`
+- **وضعیت:** ✅ lint سبز
+
+### 2.3 — بهینه‌سازی EnsurePlatformAccess 🟡
+- **هدف:** حذف تکرار منطق `get()->contains()` و استفاده از `isSuperAdmin()` بهینه.
+- **تغییر:** `EnsurePlatformAccess` → `$user->isSuperAdmin()`.
+- **فایل:** `app/Http/Middleware/EnsurePlatformAccess.php`
+- **وضعیت:** ✅ lint سبز
+
+### 2.4 — انتخاب قطعی سازمانِ پیش‌فرض 🟡
+- **هدف:** حذف رفتار غیرقطعی `orderBy('id')` در انتخاب سازمانِ پیش‌فرض.
+- **تغییر:** `EnsureCurrentOrganization` → `orderBy('created_at')` (قدیمی‌ترین عضویتِ فعال = نخستین سازمان کاربر).
+- **فایل:** `app/Http/Middleware/EnsureCurrentOrganization.php`
+- **وضعیت:** ✅ lint سبز
+
+---
+
 ## وضعیت کنونی
-- **فاز بعدی:** فاز ۲ — Organization & Membership (تسک‌ها فول شدند؛ آمادهٔ اجرا).
-- **اقدام بعدی:** اجرای تسک O2-01 تا O2-07، سپس lint + تست + داکیومنت + push.
+- **فاز جاری:** فاز ۲ — Organization & Membership (تسک‌های 2.1–2.4 اجرا شد؛ 2.5–2.7 در ادامه).
+- **اقدام بعدی:** ادامهٔ تسک‌های فاز ۲ (سوئیچ سازمان، ماتریس مجوز، تست‌های مرجع)، سپس commit + push + آپدیت داکیومنت‌های `vision-prime-docs/`.

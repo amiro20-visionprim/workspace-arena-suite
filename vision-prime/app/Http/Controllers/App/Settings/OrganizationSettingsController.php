@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,6 +53,7 @@ class OrganizationSettingsController extends Controller
             ],
             'members' => $members,
             'roles' => Role::query()
+                ->where('key', '!=', 'super-admin')
                 ->orderBy('name')
                 ->get()
                 ->map(fn (Role $role): array => [
@@ -72,7 +74,11 @@ class OrganizationSettingsController extends Controller
 
         $data = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
-            'role_id' => ['required', 'integer', 'exists:roles,id'],
+            'role_id' => [
+                'required',
+                'integer',
+                Rule::exists('roles', 'id')->where(fn ($query) => $query->where('key', '!=', 'super-admin')),
+            ],
         ]);
 
         $email = Str::lower($data['email']);
@@ -120,7 +126,17 @@ class OrganizationSettingsController extends Controller
         $this->authorizeManage($organization);
         $this->assertBelongsToOrganization($membership, $organization);
 
-        $data = $request->validate(['role_id' => ['required', 'integer', 'exists:roles,id']]);
+        $data = $request->validate([
+            'role_id' => [
+                'required',
+                'integer',
+                Rule::exists('roles', 'id')->where(fn ($query) => $query->where('key', '!=', 'super-admin')),
+            ],
+        ]);
+
+        $membership->loadMissing('role');
+        $this->assertNotLastAdminWhenDemoting($membership, $organization, (int) $data['role_id']);
+
         $previousRoleId = $membership->role_id;
         $membership->update(['role_id' => $data['role_id']]);
 
@@ -144,6 +160,9 @@ class OrganizationSettingsController extends Controller
         if ($membership->user_id === $request->user()?->getKey()) {
             abort(422, 'نمی‌توانید عضویت خودتان را حذف کنید.');
         }
+
+        $membership->loadMissing('role');
+        $this->assertNotLastAdminWhenRemoving($membership, $organization);
 
         $this->audit->handle(
             action: 'organization.member_removed',
@@ -190,5 +209,55 @@ class OrganizationSettingsController extends Controller
         if ($membership->organization_id !== $organization->getKey()) {
             abort(404);
         }
+    }
+
+    /** نقش‌هایی که «مدیر سازمان» محسوب می‌شوند و حذف آخرین‌شان خطرناک است. */
+    private const ADMIN_ROLE_KEYS = ['super-admin', 'agency-admin'];
+
+    private function isAdminRoleKey(?string $key): bool
+    {
+        return $key !== null && in_array($key, self::ADMIN_ROLE_KEYS, true);
+    }
+
+    /** هنگام تنزل نقش: اگر آخرین مدیر سازمان است، تنزل مجاز نیست. */
+    private function assertNotLastAdminWhenDemoting(Membership $membership, Organization $organization, int $newRoleId): void
+    {
+        // اگر نقش جدید همچنان مدیر باشد (agency-admin)، مشکلی نیست.
+        $newRole = Role::query()->find($newRoleId);
+
+        if ($this->isAdminRoleKey($newRole?->key)) {
+            return;
+        }
+
+        // تنزل از مدیر به غیرمدیر → باید مدیرِ دیگری باقی بماند.
+        if (! $this->isAdminRoleKey($membership->role?->key)) {
+            return;
+        }
+
+        if (! $this->otherAdminExists($membership, $organization)) {
+            abort(422, 'نمی‌توانید آخرین مدیر سازمان را تنزل دهید.');
+        }
+    }
+
+    /** هنگام حذف: اگر آخرین مدیر سازمان است، حذف مجاز نیست. */
+    private function assertNotLastAdminWhenRemoving(Membership $membership, Organization $organization): void
+    {
+        if (! $this->isAdminRoleKey($membership->role?->key)) {
+            return;
+        }
+
+        if (! $this->otherAdminExists($membership, $organization)) {
+            abort(422, 'نمی‌توانید آخرین مدیر سازمان را حذف کنید.');
+        }
+    }
+
+    private function otherAdminExists(Membership $membership, Organization $organization): bool
+    {
+        return Membership::query()
+            ->where('organization_id', $organization->getKey())
+            ->where('status', 'active')
+            ->where('id', '!=', $membership->getKey())
+            ->whereHas('role', fn ($query) => $query->whereIn('key', self::ADMIN_ROLE_KEYS))
+            ->exists();
     }
 }

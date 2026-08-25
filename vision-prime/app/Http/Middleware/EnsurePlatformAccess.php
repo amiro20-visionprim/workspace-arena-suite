@@ -32,11 +32,7 @@ class EnsurePlatformAccess
             abort(403, 'در حالت مشاهده به‌جای کاربر، دسترسی به پنل پلتفرم غیرفعال است.');
         }
 
-        $isSuperAdmin = $user !== null && $user->memberships()
-            ->where('status', 'active')
-            ->with('role')
-            ->get()
-            ->contains(fn ($membership): bool => $membership->role?->key === 'super-admin');
+        $isSuperAdmin = $user !== null && $user->isSuperAdmin();
 
         if (! $isSuperAdmin) {
             abort(403, 'دسترسی به پنل پلتفرم فقط برای مدیر ارشد است.');

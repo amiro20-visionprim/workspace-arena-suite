@@ -27,8 +27,10 @@ class EnsureCurrentOrganization
             ->where('status', 'active');
 
         $selectedOrganizationId = $request->session()->get('current_organization_id');
+        // انتخاب قطعیِ پیش‌فرض: قدیمی‌ترین عضویتِ فعال (نخستین سازمانِ کاربر)،
+        // به‌جای «کمترین id» که رفتاری غیرقطعی و مبهم دارد.
         $membership = $selectedOrganizationId === null
-            ? $membershipQuery->orderBy('id')->first()
+            ? $membershipQuery->orderBy('created_at')->first()
             : (clone $membershipQuery)->where('organization_id', $selectedOrganizationId)->first();
 
         if ($membership === null) {
