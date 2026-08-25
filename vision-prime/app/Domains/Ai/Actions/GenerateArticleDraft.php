@@ -6,8 +6,8 @@ namespace App\Domains\Ai\Actions;
 
 use App\Domains\Ai\Services\AiClient;
 use App\Domains\Audit\Actions\RecordAuditLog;
-use App\Domains\Content\Services\ContentProfiler;
 use App\Domains\Content\Models\ContentGuardrail;
+use App\Domains\Content\Services\ContentProfiler;
 use App\Domains\Content\Services\StandardsKB;
 use App\Domains\Workspace\Models\Site;
 use Illuminate\Support\Facades\DB;
@@ -187,13 +187,21 @@ class GenerateArticleDraft
         }
 
         // Top queries for this URL
+        // توجه: مرتب‌سازی بر اساس impressions داخل JSON در PHP انجام می‌شود تا
+        // روی هر دو درایور sqlite و pgsql کار کند (سینتکس ->> و ::int فقط pgsql است).
         $topQueries = DB::table('keyword_insights')
             ->where('site_id', $site->id)
             ->where('mapped_url_profile_id', $profile->id)
             ->where('status', 'active')
-            ->orderByDesc(DB::raw("(latest_metrics->>'impressions')::int"))
-            ->limit(10)
-            ->pluck('query_normalized')
+            ->limit(200)
+            ->get(['query_normalized', 'latest_metrics'])
+            ->map(fn ($row): array => [
+                'query' => (string) $row->query_normalized,
+                'impressions' => (int) (json_decode((string) ($row->latest_metrics ?? 'null'), true)['impressions'] ?? 0),
+            ])
+            ->sortByDesc('impressions')
+            ->take(10)
+            ->pluck('query')
             ->filter()
             ->values()
             ->toArray();
@@ -205,7 +213,7 @@ class GenerateArticleDraft
             ->where('canonical_url', '!=', '')
             ->limit(5)
             ->pluck('metadata')
-            ->map(fn($m) => json_decode($m ?? '{}', true)['title'] ?? '')
+            ->map(fn ($m) => json_decode($m ?? '{}', true)['title'] ?? '')
             ->filter()
             ->values()
             ->toArray();
