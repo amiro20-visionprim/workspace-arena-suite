@@ -61,9 +61,11 @@ class AiSettingsController extends Controller
     {
         $user = request()->user();
 
-        // فقط سوپر ادمین اجازه مدیریت AI Gateway رو داره
-        if (! $user?->isSuperAdmin()) {
-            abort(403, 'فقط مدیر سیستم اجازه پیکربندی هوش مصنوعی را دارد.');
+        // RBAC استاندارد: مجوز ai.provider.manage.organization (agency-admin و مانند آن).
+        // نکته: قبلاً اینجا یک استثنای «فقط سوپرادمین» بود که با ماتریس مجوزها
+        // (سند ۱۰) و تست‌ها ناسازگار بود و خطای 403 برای ادمین سازمان می‌داد.
+        if ($user === null || ! $this->permission->allows($user, $organization, 'ai.provider.manage.organization')) {
+            abort(403, 'اجازهٔ پیکربندی هوش مصنوعی را ندارید.');
         }
     }
 }

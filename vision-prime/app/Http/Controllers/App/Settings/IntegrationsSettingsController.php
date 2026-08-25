@@ -10,10 +10,10 @@ use App\Domains\Organization\Models\Organization;
 use App\Domains\Workspace\Services\OrganizationPermission;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -118,10 +118,19 @@ class IntegrationsSettingsController extends Controller
 
     private function authorizeView(?User $user, Organization $organization): void
     {
-        // همه کاربران مجاز می‌تونن صفحه یکپارچه‌سازی رو ببینن
-        // اما بخش AI فقط برای سوپر ادمین نمایش داده میشه
+        // صفحهٔ یکپارچه‌سازی برای اعضایی است که دسترسی کانکتور یا GSC دارند
+        // (سند ۱۰ — ماتریس مجوزها). قبلاً این بررسی حذف شده بود و هر عضوی
+        // می‌توانست صفحه را ببیند.
         if ($user === null) {
             abort(401);
+        }
+
+        $allowed = $this->organizationPermission->allows($user, $organization, 'connector.view.assigned')
+            || $this->organizationPermission->allows($user, $organization, 'gsc.view.assigned')
+            || $this->organizationPermission->allows($user, $organization, 'ai.provider.manage.organization');
+
+        if (! $allowed) {
+            abort(403, 'برای مشاهدهٔ یکپارچه‌سازی‌ها دسترسی ندارید.');
         }
     }
 }
