@@ -46,7 +46,8 @@ const plans: Plan[] = [
     id: 'review-only',
     title: 'فقط بررسی',
     badge: 'بدون اجرا',
-    tagline: 'فقط داده ببینید — اجرا با خودتان. برای تیم‌هایی که ترجیح می‌دهند عملیات داخلی انجام دهند.',
+    tagline:
+      'فقط داده ببینید — اجرا با خودتان. برای تیم‌هایی که ترجیح می‌دهند عملیات داخلی انجام دهند.',
     monthly: 4_900,
     annual: 49_000,
     cta: 'شروع بررسی',
@@ -92,14 +93,20 @@ function displayPrice(plan: Plan): { amount: string; suffix: string } {
 
   if (annual.value) {
     const perMonth = Math.round(plan.annual / 10)
-    return { amount: `${faNum(plan.annual)} تومان`, suffix: `/ سالانه — معادل ${faNum(perMonth)} در ماه` }
+    return {
+      amount: `${faNum(plan.annual)} تومان`,
+      suffix: `/ سالانه — معادل ${faNum(perMonth)} در ماه`,
+    }
   }
 
   return { amount: `${faNum(plan.monthly)} تومان`, suffix: '/ ماهانه — برای هر سایت' }
 }
 
 const comparisonRows = [
-  { label: 'تعداد سایت', values: ['۱ (هر سایت جداگانه)', '۱ (هر سایت جداگانه)', 'نامحدود', 'نامحدود'] },
+  {
+    label: 'تعداد سایت',
+    values: ['۱ (هر سایت جداگانه)', '۱ (هر سایت جداگانه)', 'نامحدود', 'نامحدود'],
+  },
   { label: 'اتصال سرچ کنسول', values: ['✓', '✓', '✓', '✓'] },
   { label: 'همگام‌سازی محتوا', values: ['✓', '—', '✓', '✓'] },
   { label: 'فرصت‌های رشد و تحلیل', values: ['✓', '✓', '✓', '✓'] },
@@ -157,8 +164,9 @@ const faqs = [
     <section class="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
       <div class="rounded-panel border-line bg-surface border p-6 text-center sm:p-8">
         <p class="text-ink-muted text-sm font-medium">قبل از مقایسهٔ قیمت‌ها، این را بدانید:</p>
-        <p class="text-ink-strong font-display mt-3 text-xl font-bold leading-9 sm:text-2xl">
-          یک سئوکار تمام‌وقت در ایران از <span class="text-gradient-brand">۲۰ میلیون تومان در ماه</span>
+        <p class="text-ink-strong font-display mt-3 text-xl leading-9 font-bold sm:text-2xl">
+          یک سئوکار تمام‌وقت در ایران از
+          <span class="text-gradient-brand">۲۰ میلیون تومان در ماه</span>
           شروع می‌شود — با ابزارهای جداگانه، گزارش‌های دستی و بدون کنترل شما.
         </p>
         <p class="text-ink-muted mt-3 leading-7">
@@ -210,7 +218,7 @@ const faqs = [
           class="rounded-panel relative flex flex-col overflow-hidden border p-6 sm:p-7"
           :class="
             plan.featured
-              ? 'bg-brand-900 text-white shadow-panel border-brand-900'
+              ? 'bg-brand-900 shadow-panel border-brand-900 text-white'
               : 'border-line bg-surface'
           "
         >
@@ -220,12 +228,18 @@ const faqs = [
             class="pointer-events-none absolute -top-20 -left-20 size-56 rounded-full bg-white/15 blur-2xl"
           />
           <div class="relative flex items-center justify-between gap-3">
-            <h2 class="font-display text-ink-strong text-xl font-bold" :class="{ 'text-white': plan.featured }">
+            <h2
+              class="font-display text-ink-strong text-xl font-bold"
+              :class="{ 'text-white': plan.featured }"
+            >
               {{ plan.title }}
             </h2>
             <VBadge :tone="plan.featured ? 'success' : 'info'">{{ plan.badge }}</VBadge>
           </div>
-          <p class="mt-2 text-sm leading-6" :class="plan.featured ? 'text-brand-100' : 'text-ink-muted'">
+          <p
+            class="mt-2 text-sm leading-6"
+            :class="plan.featured ? 'text-brand-100' : 'text-ink-muted'"
+          >
             {{ plan.tagline }}
           </p>
 
@@ -245,7 +259,9 @@ const faqs = [
               class="flex gap-2 text-sm leading-6"
               :class="plan.featured ? 'text-brand-50' : 'text-ink'"
             >
-              <span class="shrink-0 font-bold" :class="plan.featured ? 'text-success-300' : 'text-success-600'"
+              <span
+                class="shrink-0 font-bold"
+                :class="plan.featured ? 'text-success-300' : 'text-success-600'"
                 >✓</span
               >
               {{ feature }}
@@ -269,7 +285,9 @@ const faqs = [
       </div>
 
       <!-- Enterprise band -->
-      <div class="rounded-panel border-line bg-surface-muted mt-5 flex flex-col gap-6 border p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+      <div
+        class="rounded-panel border-line bg-surface-muted mt-5 flex flex-col gap-6 border p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between"
+      >
         <div>
           <h2 class="font-display text-ink-strong text-lg font-bold">سازمانی — برای ۲۰+ سایت</h2>
           <p class="text-ink-muted mt-2 max-w-2xl text-sm leading-7">
@@ -277,7 +295,9 @@ const faqs = [
             سازمان‌های چندسایته. قیمت بر اساس scope جلسهٔ مشاوره تعیین می‌شود.
           </p>
         </div>
-        <VButton href="/contact" size="lg" variant="secondary" class="shrink-0">تماس با تیم فروش</VButton>
+        <VButton href="/contact" size="lg" variant="secondary" class="shrink-0"
+          >تماس با تیم فروش</VButton
+        >
       </div>
     </section>
 
@@ -286,8 +306,8 @@ const faqs = [
       <div class="rounded-panel bg-success-50 border-success-200 border p-6 text-center sm:p-8">
         <p class="text-success-700 font-display text-lg font-bold">🛡 ضمانت ۱۴ روزهٔ بازگشت وجه</p>
         <p class="text-ink-muted mx-auto mt-2 max-w-2xl text-sm leading-7">
-          اگر تا ۱۴ روز پس از شروع، به هر دلیلی راضی نبودید، کل مبلغ بدون سؤال بازگردانده
-          می‌شود. ما ریسک را بر عهده می‌گیریم تا شما با خیال راحت شروع کنید.
+          اگر تا ۱۴ روز پس از شروع، به هر دلیلی راضی نبودید، کل مبلغ بدون سؤال بازگردانده می‌شود. ما
+          ریسک را بر عهده می‌گیریم تا شما با خیال راحت شروع کنید.
         </p>
       </div>
     </section>
@@ -303,24 +323,40 @@ const faqs = [
             برای اینکه دقیقاً بدانید روی چه چیزی حساب می‌کنید — بدون ابهام و سورپرایز.
           </p>
         </div>
-        <div v-reveal class="rounded-panel border-line mt-8 overflow-x-auto border bg-surface">
+        <div v-reveal class="rounded-panel border-line bg-surface mt-8 overflow-x-auto border">
           <table class="w-full min-w-[640px] border-collapse text-sm">
             <thead>
-              <tr class="border-line border-b bg-surface-muted/60">
+              <tr class="border-line bg-surface-muted/60 border-b">
                 <th class="text-ink-muted px-4 py-4 text-start font-medium">امکانات</th>
-                <th v-for="col in comparisonColumns" :key="col" class="px-4 py-4 text-center font-bold">
-                  <span :class="col === 'فقط بررسی' ? 'text-brand-700' : 'text-ink-strong'">{{ col }}</span>
+                <th
+                  v-for="col in comparisonColumns"
+                  :key="col"
+                  class="px-4 py-4 text-center font-bold"
+                >
+                  <span :class="col === 'فقط بررسی' ? 'text-brand-700' : 'text-ink-strong'">{{
+                    col
+                  }}</span>
                 </th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in comparisonRows" :key="row.label" class="border-line border-b last:border-0">
+              <tr
+                v-for="row in comparisonRows"
+                :key="row.label"
+                class="border-line border-b last:border-0"
+              >
                 <td class="text-ink-strong px-4 py-3.5 font-semibold">{{ row.label }}</td>
                 <td
                   v-for="(value, index) in row.values"
                   :key="index"
                   class="px-4 py-3.5 text-center"
-                  :class="value === '✓' ? 'text-success-600 font-bold' : value === '—' ? 'text-ink-muted' : 'text-ink'"
+                  :class="
+                    value === '✓'
+                      ? 'text-success-600 font-bold'
+                      : value === '—'
+                        ? 'text-ink-muted'
+                        : 'text-ink'
+                  "
                 >
                   {{ value }}
                 </td>
@@ -351,7 +387,8 @@ const faqs = [
             class="text-ink-strong flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-bold sm:text-base"
           >
             {{ faq.q }}
-            <span class="text-brand-700 transition-transform group-open:rotate-45 text-xl leading-none"
+            <span
+              class="text-brand-700 text-xl leading-none transition-transform group-open:rotate-45"
               >+</span
             >
           </summary>
@@ -364,7 +401,7 @@ const faqs = [
     <section class="mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:px-10 lg:pb-20">
       <div
         v-reveal
-        class="rounded-panel relative overflow-hidden bg-brand-900 px-6 py-10 text-center text-white sm:px-10 sm:py-14"
+        class="rounded-panel bg-brand-900 relative overflow-hidden px-6 py-10 text-center text-white sm:px-10 sm:py-14"
       >
         <div
           aria-hidden="true"
@@ -372,22 +409,25 @@ const faqs = [
         />
         <div
           aria-hidden="true"
-          class="pointer-events-none absolute -bottom-28 right-1/4 size-72 rounded-full bg-indigo-500/30 blur-3xl"
+          class="pointer-events-none absolute right-1/4 -bottom-28 size-72 rounded-full bg-indigo-500/30 blur-3xl"
         />
         <div class="relative">
-        <h2 class="font-display text-2xl font-bold leading-relaxed sm:text-3xl">
-          مطمئن نیستید کدام پلن مناسب شماست؟
-        </h2>
-        <p class="text-brand-100 mx-auto mt-3 max-w-2xl leading-8">
-          در جلسهٔ دموی رایگان، وضعیت سایت خودتان را بررسی می‌کنیم و بهترین مسیر را پیشنهاد
-          می‌دهیم — بدون هیچ تعهدی.
-        </p>
-        <div class="mt-8 flex flex-wrap justify-center gap-3">
-          <VButton href="/demo" size="lg" variant="secondary" class="relative">درخواست دموی اختصاصی</VButton>
-          <a
-            href="/contact"
-            class="transition-ui rounded-ui inline-flex min-h-12 items-center justify-center gap-2 border border-white/25 bg-white/10 px-5 text-base font-semibold text-white whitespace-nowrap hover:bg-white/20"
-            >تماس با تیم فروش</a>
+          <h2 class="font-display text-2xl leading-relaxed font-bold sm:text-3xl">
+            مطمئن نیستید کدام پلن مناسب شماست؟
+          </h2>
+          <p class="text-brand-100 mx-auto mt-3 max-w-2xl leading-8">
+            در جلسهٔ دموی رایگان، وضعیت سایت خودتان را بررسی می‌کنیم و بهترین مسیر را پیشنهاد
+            می‌دهیم — بدون هیچ تعهدی.
+          </p>
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <VButton href="/demo" size="lg" variant="secondary" class="relative"
+              >درخواست دموی اختصاصی</VButton
+            >
+            <a
+              href="/contact"
+              class="transition-ui rounded-ui inline-flex min-h-12 items-center justify-center gap-2 border border-white/25 bg-white/10 px-5 text-base font-semibold whitespace-nowrap text-white hover:bg-white/20"
+              >تماس با تیم فروش</a
+            >
           </div>
         </div>
       </div>

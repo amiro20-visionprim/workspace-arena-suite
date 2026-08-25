@@ -28,7 +28,11 @@ const search = ref(props.filters.search)
 const statusFilter = ref(props.filters.status)
 
 function applyFilters() {
-  router.get('/app/ai-drafts', { status: statusFilter.value, search: search.value }, { preserveState: true })
+  router.get(
+    '/app/ai-drafts',
+    { status: statusFilter.value, search: search.value },
+    { preserveState: true },
+  )
 }
 
 const statusLabels: Record<string, string> = {
@@ -49,7 +53,10 @@ const statusTones: Record<string, BadgeTone> = {
 <template>
   <Head title="پیش‌نویس‌های محتوا" />
   <AppLayout>
-    <VPageHeader title="پیش‌نویس‌های محتوا" description="مقاله‌ها و محتواهای تولید شده با هوش مصنوعی.">
+    <VPageHeader
+      title="پیش‌نویس‌های محتوا"
+      description="مقاله‌ها و محتواهای تولید شده با هوش مصنوعی."
+    >
       <template #actions>
         <Link href="/app/ai-drafts/article/create">
           <VButton variant="primary">تولید مقاله جدید</VButton>
@@ -58,36 +65,67 @@ const statusTones: Record<string, BadgeTone> = {
     </VPageHeader>
 
     <VCard class="mt-6">
-      <div class="flex flex-wrap items-center gap-3 mb-4">
-        <select v-model="statusFilter" class="border-line rounded-xl border px-3 py-2 text-sm" @change="applyFilters">
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <select
+          v-model="statusFilter"
+          class="border-line rounded-xl border px-3 py-2 text-sm"
+          @change="applyFilters"
+        >
           <option value="">همه وضعیت‌ها</option>
           <option value="draft">پیش‌نویس</option>
           <option value="review">در حال بررسی</option>
           <option value="published">منتشر شده</option>
           <option value="archived">بایگانی</option>
         </select>
-        <input v-model="search" type="text" placeholder="جستجوی عنوان..." class="border-line rounded-xl border px-3 py-2 text-sm" @keyup.enter="applyFilters" />
+        <input
+          v-model="search"
+          type="text"
+          placeholder="جستجوی عنوان..."
+          class="border-line rounded-xl border px-3 py-2 text-sm"
+          @keyup.enter="applyFilters"
+        />
         <VButton variant="secondary" size="sm" @click="applyFilters">جستجو</VButton>
       </div>
 
-      <div v-if="drafts.data.length === 0" class="text-center py-12">
+      <div v-if="drafts.data.length === 0" class="py-12 text-center">
         <p class="text-ink-muted">هنوز پیش‌نویسی تولید نشده.</p>
-        <Link href="/app/ai-drafts/article/create" class="text-brand-700 text-sm mt-2 inline-block">تولید اولین مقاله</Link>
+        <Link href="/app/ai-drafts/article/create" class="text-brand-700 mt-2 inline-block text-sm"
+          >تولید اولین مقاله</Link
+        >
       </div>
 
       <div v-else class="space-y-3">
-        <div v-for="draft in drafts.data" :key="draft.id" class="border-line flex items-center justify-between gap-4 rounded-xl border p-4 hover:bg-surface-muted transition-colors">
+        <div
+          v-for="draft in drafts.data"
+          :key="draft.id"
+          class="border-line hover:bg-surface-muted flex items-center justify-between gap-4 rounded-xl border p-4 transition-colors"
+        >
           <div class="min-w-0 flex-1">
-            <Link :href="`/app/ai-drafts/${draft.id}/edit`" class="text-ink-strong font-semibold text-sm hover:text-brand-700">{{ draft.title }}</Link>
-            <div class="flex items-center gap-3 mt-1 text-xs text-ink-muted">
+            <Link
+              :href="`/app/ai-drafts/${draft.id}/edit`"
+              class="text-ink-strong hover:text-brand-700 text-sm font-semibold"
+              >{{ draft.title }}</Link
+            >
+            <div class="text-ink-muted mt-1 flex items-center gap-3 text-xs">
               <span>{{ draft.site?.name }}</span>
               <span>{{ draft.model_used }}</span>
               <span>{{ new Date(draft.created_at).toLocaleDateString('fa-IR') }}</span>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <VBadge :tone="statusTones[draft.status] || 'neutral'">{{ statusLabels[draft.status] || draft.status }}</VBadge>
-            <VBadge :tone="draft.quality_score >= 70 ? 'success' : draft.quality_score >= 40 ? 'warning' : 'danger'">{{ draft.quality_score }}/100</VBadge>
+            <VBadge :tone="statusTones[draft.status] || 'neutral'">{{
+              statusLabels[draft.status] || draft.status
+            }}</VBadge>
+            <VBadge
+              :tone="
+                draft.quality_score >= 70
+                  ? 'success'
+                  : draft.quality_score >= 40
+                    ? 'warning'
+                    : 'danger'
+              "
+              >{{ draft.quality_score }}/100</VBadge
+            >
             <Link :href="`/app/ai-drafts/${draft.id}/edit`">
               <VButton variant="secondary" size="sm">ویرایش</VButton>
             </Link>
@@ -96,7 +134,13 @@ const statusTones: Record<string, BadgeTone> = {
       </div>
 
       <div v-if="drafts.last_page > 1" class="mt-4 flex justify-center gap-2">
-        <Link v-for="page in drafts.last_page" :key="page" :href="`/app/ai-drafts?page=${page}&status=${statusFilter}&search=${search}`" class="px-3 py-1 rounded-lg text-sm" :class="page === drafts.current_page ? 'bg-brand-600 text-white' : 'border border-line'">
+        <Link
+          v-for="page in drafts.last_page"
+          :key="page"
+          :href="`/app/ai-drafts?page=${page}&status=${statusFilter}&search=${search}`"
+          class="rounded-lg px-3 py-1 text-sm"
+          :class="page === drafts.current_page ? 'bg-brand-600 text-white' : 'border-line border'"
+        >
           {{ page }}
         </Link>
       </div>

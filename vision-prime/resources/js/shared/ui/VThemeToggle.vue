@@ -6,7 +6,9 @@ import VIcon from '@/shared/ui/VIcon.vue'
 const pref = ref(getStoredPreference())
 
 const isDark = computed(
-  () => pref.value === 'dark' || (pref.value === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches),
+  () =>
+    pref.value === 'dark' ||
+    (pref.value === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches),
 )
 
 function toggle(): void {

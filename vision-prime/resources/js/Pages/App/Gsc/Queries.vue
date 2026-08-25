@@ -17,12 +17,7 @@ defineProps<{
       title="عملکرد جستارها"
       description="جستجوهای کاربران و عملکرد آن‌ها در سرچ کنسول."
     />
-    <MetricFilters
-      class="mt-8"
-      base-url="/app/gsc/queries"
-      :sites="sites"
-      :filters="filters"
-    />
+    <MetricFilters class="mt-8" base-url="/app/gsc/queries" :sites="sites" :filters="filters" />
     <div class="mt-6 overflow-x-auto">
       <table class="w-full text-sm">
         <thead>

@@ -20,7 +20,9 @@ export const THEME_STORAGE_KEY = 'suite-theme'
 export function getStoredPreference(): ThemePreference {
   if (typeof window === 'undefined') return DEFAULT_PREFERENCE
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-  return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : DEFAULT_PREFERENCE
+  return stored === 'light' || stored === 'dark' || stored === 'system'
+    ? stored
+    : DEFAULT_PREFERENCE
 }
 
 export function systemPrefersDark(): boolean {
@@ -53,10 +55,8 @@ export function setThemePreference(pref: ThemePreference): 'light' | 'dark' {
 export function initTheme(): void {
   applyTheme(getStoredPreference())
   if (typeof window !== 'undefined' && window.matchMedia) {
-    window
-      .matchMedia('(prefers-color-scheme: dark)')
-      .addEventListener('change', () => {
-        if (getStoredPreference() === 'system') applyTheme('system')
-      })
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (getStoredPreference() === 'system') applyTheme('system')
+    })
   }
 }

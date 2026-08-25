@@ -85,17 +85,17 @@ function skip(): void {
 <template>
   <section
     v-if="visible"
-    class="rounded-panel bg-gradient-brand text-white relative overflow-hidden p-6 shadow-card sm:p-8"
+    class="rounded-panel bg-gradient-brand shadow-card relative overflow-hidden p-6 text-white sm:p-8"
     role="region"
     aria-label="راهنمای شروع کار"
   >
     <div class="relative z-10 flex flex-wrap items-start justify-between gap-6">
       <div class="flex min-w-0 items-start gap-4">
-        <span class="bg-white/15 flex size-12 shrink-0 items-center justify-center rounded-xl">
+        <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
           <VIcon :name="currentStep.icon" size="xl" />
         </span>
-        <div class="min-w-0 max-w-xl">
-          <p class="text-white/80 text-xs font-bold">قدم {{ step + 1 }} از {{ steps.length }}</p>
+        <div class="max-w-xl min-w-0">
+          <p class="text-xs font-bold text-white/80">قدم {{ step + 1 }} از {{ steps.length }}</p>
           <h2 class="font-display mt-1 text-lg font-bold">{{ currentStep.title }}</h2>
           <p class="mt-2 text-sm leading-7 text-white/90">{{ currentStep.body }}</p>
         </div>
@@ -103,14 +103,14 @@ function skip(): void {
       <div class="flex shrink-0 items-center gap-3">
         <button
           type="button"
-          class="text-white/80 hover:text-white text-sm font-semibold"
+          class="text-sm font-semibold text-white/80 hover:text-white"
           @click="skip"
         >
           رد کردن
         </button>
         <button
           type="button"
-          class="rounded-ui bg-white px-5 py-2 text-sm font-bold text-brand-700 transition-transform hover:scale-105"
+          class="rounded-ui text-brand-700 bg-white px-5 py-2 text-sm font-bold transition-transform hover:scale-105"
           @click="next"
         >
           {{ step === steps.length - 1 ? 'شروع میکنم ✨' : 'بعدی' }}
@@ -130,7 +130,7 @@ function skip(): void {
       <a
         v-if="currentStep.cta"
         :href="currentStep.cta.href"
-        class="bg-white/15 hover:bg-white/25 rounded-ui inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white transition-colors"
+        class="rounded-ui inline-flex items-center gap-1.5 bg-white/15 px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-white/25"
       >
         <VIcon name="arrow-up" size="sm" class="rotate-45" />
         {{ currentStep.cta.label }}

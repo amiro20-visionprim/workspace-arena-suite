@@ -10,8 +10,7 @@ withDefaults(
   }>(),
   {
     title: 'چرا سوئیت، نه یک سئوکار تمام‌وقت یا ابزار خارجی؟',
-    description:
-      'مقایسه بر اساس سناریوهای رایج در همین حوزه — صادقانه، نه با وعده‌های تبلیغاتی.',
+    description: 'مقایسه بر اساس سناریوهای رایج در همین حوزه — صادقانه، نه با وعده‌های تبلیغاتی.',
     rows: () => [],
   },
 )
@@ -27,9 +26,7 @@ withDefaults(
         <thead>
           <tr class="border-line border-b">
             <th class="text-ink-muted px-4 py-3 text-start font-medium">سناریو و دغدغه</th>
-            <th
-              class="bg-gradient-brand text-white rounded-t-xl px-4 py-3 text-center font-bold"
-            >
+            <th class="bg-gradient-brand rounded-t-xl px-4 py-3 text-center font-bold text-white">
               سوئیت
             </th>
             <th class="text-ink-muted px-4 py-3 text-center font-medium">سئوکار تمام‌وقت</th>
@@ -47,7 +44,7 @@ withDefaults(
               <p class="text-ink-muted mt-1 text-xs leading-5">{{ row.scenario }}</p>
             </td>
             <td class="bg-brand-50/70 px-4 py-4 text-center">
-              <p class="text-brand-700 font-semibold leading-6">{{ row.vision }}</p>
+              <p class="text-brand-700 leading-6 font-semibold">{{ row.vision }}</p>
             </td>
             <td class="text-ink-muted px-4 py-4 text-center leading-6">{{ row.inhouse }}</td>
             <td class="text-ink-muted px-4 py-4 text-center leading-6">{{ row.saas }}</td>

@@ -130,7 +130,9 @@ const trendTone = {
       <VGuideTip v-if="hint" :text="hint" />
     </div>
 
-    <div class="font-display text-ink-strong mt-4 text-3xl leading-none font-extrabold tracking-tight">
+    <div
+      class="font-display text-ink-strong mt-4 text-3xl leading-none font-extrabold tracking-tight"
+    >
       {{ typeof display === 'number' ? faNum(display) : display }}
     </div>
     <p class="text-ink-muted mt-1.5 text-sm">{{ label }}</p>

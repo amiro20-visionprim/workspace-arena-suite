@@ -32,18 +32,19 @@ function handleCta(): void {
 </script>
 
 <template>
-  <section class="relative overflow-hidden border-b border-line bg-canvas">
+  <section class="border-line bg-canvas relative overflow-hidden border-b">
     <!-- ambient background -->
     <div aria-hidden="true" class="pointer-events-none absolute inset-0">
       <div class="bg-radial-fade bg-hero-grid absolute inset-0" />
-      <div class="absolute -top-32 right-[-10%] size-[520px] rounded-full bg-brand-200/50 blur-3xl" />
-      <div class="absolute top-24 left-[-12%] size-[480px] rounded-full bg-violet-200/40 blur-3xl" />
+      <div
+        class="bg-brand-200/50 absolute -top-32 right-[-10%] size-[520px] rounded-full blur-3xl"
+      />
+      <div
+        class="absolute top-24 left-[-12%] size-[480px] rounded-full bg-violet-200/40 blur-3xl"
+      />
     </div>
 
-    <div
-      v-reveal
-      class="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24"
-    >
+    <div v-reveal class="relative mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
       <div class="max-w-3xl">
         <VBadge tone="info">
           <Sparkles class="size-3.5" aria-hidden="true" />
@@ -70,7 +71,7 @@ function handleCta(): void {
       <!-- stats strip -->
       <div
         v-if="stats.length"
-        class="mt-12 grid grid-cols-2 gap-6 rounded-2xl border border-line bg-surface/80 p-6 shadow-card backdrop-blur sm:grid-cols-3 lg:grid-cols-4 lg:px-10"
+        class="border-line bg-surface/80 shadow-card mt-12 grid grid-cols-2 gap-6 rounded-2xl border p-6 backdrop-blur sm:grid-cols-3 lg:grid-cols-4 lg:px-10"
       >
         <div
           v-for="(stat, index) in stats"

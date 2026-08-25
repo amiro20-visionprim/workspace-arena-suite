@@ -91,7 +91,11 @@ async function submitOtp(): Promise<void> {
       },
       body: JSON.stringify({ phone: otpForm.phone, code: otpForm.code }),
     })
-    const data = (await response.json()) as { success?: boolean; message?: string; location?: string }
+    const data = (await response.json()) as {
+      success?: boolean
+      message?: string
+      location?: string
+    }
     if (response.redirected && response.url) {
       window.location.href = response.url
       return
@@ -124,12 +128,14 @@ function csrfToken(): string {
     }}</VAlert>
 
     <!-- Tabs -->
-    <div class="border-line mb-6 flex rounded-ui border bg-surface-muted/50 p-1">
+    <div class="border-line rounded-ui bg-surface-muted/50 mb-6 flex border p-1">
       <button
         type="button"
-        class="flex-1 rounded-ui px-4 py-2 text-sm font-bold transition"
+        class="rounded-ui flex-1 px-4 py-2 text-sm font-bold transition"
         :class="
-          mode === 'password' ? 'bg-brand-700 text-white shadow-sm' : 'text-ink-muted hover:text-ink-strong'
+          mode === 'password'
+            ? 'bg-brand-700 text-white shadow-sm'
+            : 'text-ink-muted hover:text-ink-strong'
         "
         @click="switchMode('password')"
       >
@@ -137,8 +143,12 @@ function csrfToken(): string {
       </button>
       <button
         type="button"
-        class="flex-1 rounded-ui px-4 py-2 text-sm font-bold transition"
-        :class="mode === 'otp' ? 'bg-brand-700 text-white shadow-sm' : 'text-ink-muted hover:text-ink-strong'"
+        class="rounded-ui flex-1 px-4 py-2 text-sm font-bold transition"
+        :class="
+          mode === 'otp'
+            ? 'bg-brand-700 text-white shadow-sm'
+            : 'text-ink-muted hover:text-ink-strong'
+        "
         @click="switchMode('otp')"
       >
         کد یکبارمصرف
@@ -232,10 +242,15 @@ function csrfToken(): string {
           placeholder="••••••"
           :error="otpError"
         />
-        <p v-if="otpCode" class="text-ink-muted mt-2 rounded-ui bg-surface-muted border-line border p-2 text-xs">
+        <p
+          v-if="otpCode"
+          class="text-ink-muted rounded-ui bg-surface-muted border-line mt-2 border p-2 text-xs"
+        >
           حالت آزمایشی — کد: <b dir="ltr">{{ otpCode }}</b>
         </p>
-        <p v-if="otpMessage" class="text-success-700 mt-2 text-xs font-semibold">{{ otpMessage }}</p>
+        <p v-if="otpMessage" class="text-success-700 mt-2 text-xs font-semibold">
+          {{ otpMessage }}
+        </p>
       </div>
 
       <VButton class="w-full" type="submit" :loading="otpBusy">

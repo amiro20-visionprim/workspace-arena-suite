@@ -48,7 +48,8 @@ const subjectLabels = reviewSubjectLabels
 
 const commandReasons: Record<string, string> = {
   update_meta_title: 'عنوان صفحه در نتایج گوگل جذاب‌تر می‌شود و کلیک بیشتری می‌گیرد.',
-  update_meta_description: 'توضیح زیر عنوان در گوگل واضح‌تر می‌شود و کاربران بهتر متوجه موضوع می‌شوند.',
+  update_meta_description:
+    'توضیح زیر عنوان در گوگل واضح‌تر می‌شود و کاربران بهتر متوجه موضوع می‌شوند.',
   update_content: 'متن صفحه کامل‌تر و مفیدتر می‌شود.',
   add_internal_link: 'لینکی از یک صفحه به صفحهٔ دیگر اضافه می‌شود تا کاربران راحت‌تر حرکت کنند.',
   update_schema: 'اطلاعات ساختاریافته به گوگل داده می‌شود تا سایت شما را بهتر بشناسد.',
@@ -107,7 +108,11 @@ function isPending(type: 'command' | 'review', id: number): boolean {
   return pending !== null && pending.type === type && pending.id === id
 }
 
-function choose(type: 'command' | 'review', id: number, decision: PendingDecision['decision']): void {
+function choose(
+  type: 'command' | 'review',
+  id: number,
+  decision: PendingDecision['decision'],
+): void {
   pendingDecision.value = { type, id, decision }
 }
 
@@ -125,13 +130,17 @@ function confirmDecision(): void {
       ? `/client/decisions/commands/${pending.id}`
       : `/client/decisions/reviews/${pending.id}`
 
-  router.post(url, { decision: pending.decision }, {
-    preserveScroll: true,
-    onFinish: () => {
-      processing.value = false
-      pendingDecision.value = null
+  router.post(
+    url,
+    { decision: pending.decision },
+    {
+      preserveScroll: true,
+      onFinish: () => {
+        processing.value = false
+        pendingDecision.value = null
+      },
     },
-  })
+  )
 }
 
 function openAsk(type: 'command' | 'review', id: number, title: string): void {
@@ -170,8 +179,9 @@ function sendQuestion(): void {
       description="چیزهایی که منتظر تصمیم شماست. بدون تأیید شما، هیچ تغییری روی سایت اعمال نمی‌شود."
     >
       <template #actions
-        ><VGuideTip :text="'پیشنهادهایی که تیم ما آماده کرده و منتظر تأیید شماست. بدون تأیید شما هیچ تغییری روی سایت انجام نمی‌شود.'" /></template
-      >
+        ><VGuideTip
+          :text="'پیشنهادهایی که تیم ما آماده کرده و منتظر تأیید شماست. بدون تأیید شما هیچ تغییری روی سایت انجام نمی‌شود.'"
+      /></template>
     </VPageHeader>
 
     <VAlert v-if="flashStatus" tone="success" class="mt-6">{{ flashStatus }}</VAlert>
@@ -181,12 +191,16 @@ function sendQuestion(): void {
     <section class="mt-8">
       <div class="flex items-center gap-3">
         <h2 class="text-ink-strong text-lg font-bold">تغییرات در انتظار تأیید</h2>
-        <VBadge v-if="props.commands.length" tone="warning">{{ props.commands.length }} مورد</VBadge>
+        <VBadge v-if="props.commands.length" tone="warning"
+          >{{ props.commands.length }} مورد</VBadge
+        >
       </div>
       <div v-if="props.commands.length" class="mt-4 space-y-4">
         <VCard v-for="command in props.commands" :key="command.id">
           <div class="flex items-start gap-4">
-            <span class="rounded-ui bg-brand-50 text-brand-700 flex size-11 shrink-0 items-center justify-center">
+            <span
+              class="rounded-ui bg-brand-50 text-brand-700 flex size-11 shrink-0 items-center justify-center"
+            >
               <VIcon :name="commandIcons[command.type] ?? 'zap'" size="lg" />
             </span>
             <div class="min-w-0 flex-1">
@@ -197,7 +211,7 @@ function sendQuestion(): void {
                 <VBadge tone="neutral">{{ command.site_name }}</VBadge>
               </div>
 
-              <div class="bg-surface-muted rounded-ui mt-3 border border-line p-3">
+              <div class="bg-surface-muted rounded-ui border-line mt-3 border p-3">
                 <p class="text-ink-muted text-xs font-bold">چرا این پیشنهاد شده؟</p>
                 <p class="text-ink mt-1 text-sm leading-6">
                   {{ commandReasons[command.type] ?? 'این تغییر به رشد سایت کمک می‌کند.' }}
@@ -264,7 +278,9 @@ function sendQuestion(): void {
       <div v-if="props.reviews.length" class="mt-4 space-y-4">
         <VCard v-for="review in props.reviews" :key="review.id">
           <div class="flex items-start gap-4">
-            <span class="rounded-ui bg-violet-50 text-violet-600 flex size-11 shrink-0 items-center justify-center">
+            <span
+              class="rounded-ui flex size-11 shrink-0 items-center justify-center bg-violet-50 text-violet-600"
+            >
               <VIcon name="eye" size="lg" />
             </span>
             <div class="min-w-0 flex-1">
@@ -336,7 +352,7 @@ function sendQuestion(): void {
           <textarea
             v-model="askText"
             rows="5"
-            class="mt-2 w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm leading-6 outline-none focus:border-brand-600"
+            class="border-line bg-surface focus:border-brand-600 mt-2 w-full rounded-lg border px-3 py-2 text-sm leading-6 outline-none"
             placeholder="مثلاً: این تغییر دقیقاً چه تأثیری روی سایت من دارد؟"
           />
         </label>
@@ -344,7 +360,11 @@ function sendQuestion(): void {
           تیم ما پاسخ را برای شما می‌فرستد؛ در این فاصله، این مورد در انتظار می‌ماند.
         </p>
         <div class="mt-5 flex gap-3">
-          <VButton :loading="askSending" :disabled="askText.trim().length < 5" @click="sendQuestion">
+          <VButton
+            :loading="askSending"
+            :disabled="askText.trim().length < 5"
+            @click="sendQuestion"
+          >
             ارسال سؤال
           </VButton>
           <VButton variant="ghost" @click="askSubject = null">انصراف</VButton>

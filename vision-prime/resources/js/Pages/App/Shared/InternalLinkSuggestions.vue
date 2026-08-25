@@ -49,10 +49,13 @@ function updateAnchor(index: number, event: Event): void {
 </script>
 
 <template>
-  <VCard title="🔗 لینک‌های داخلی پیشنهادی" description="صفحات مرتبط با محتوای شما بر اساس شباهت موضوعی رتبه‌بندی شده‌اند.">
+  <VCard
+    title="🔗 لینک‌های داخلی پیشنهادی"
+    description="صفحات مرتبط با محتوای شما بر اساس شباهت موضوعی رتبه‌بندی شده‌اند."
+  >
     <div v-if="suggestions.length === 0" class="text-ink-muted text-sm leading-7">
-      هنوز صفحه‌ای در سایت وجود ندارد که لینک داخلی پیشنهاد شود.
-      پس از انتشار محتوا و همگام‌سازی سایت، لینک‌ها به‌صورت خودکار پیشنهاد می‌شوند.
+      هنوز صفحه‌ای در سایت وجود ندارد که لینک داخلی پیشنهاد شود. پس از انتشار محتوا و همگام‌سازی
+      سایت، لینک‌ها به‌صورت خودکار پیشنهاد می‌شوند.
     </div>
 
     <div v-else class="space-y-3">
@@ -73,7 +76,9 @@ function updateAnchor(index: number, event: Event): void {
               />
               <p class="text-ink-strong truncate text-sm font-semibold">{{ link.title }}</p>
               <VBadge :tone="scoreColor(link.relevance_score)">
-                {{ scoreLabel(link.relevance_score) }} ({{ (link.relevance_score * 100).toFixed(0) }}%)
+                {{ scoreLabel(link.relevance_score) }} ({{
+                  (link.relevance_score * 100).toFixed(0)
+                }}%)
               </VBadge>
             </div>
             <p class="text-ink-muted mt-1 text-xs" dir="ltr">{{ link.url }}</p>
@@ -93,8 +98,8 @@ function updateAnchor(index: number, event: Event): void {
     </div>
 
     <p v-if="suggestions.length > 0" class="text-ink-muted mt-3 text-xs leading-5">
-      ✅ لینک‌های انتخاب‌شده به‌صورت خودکار در محتوا قرار داده می‌شوند.
-      تعداد پیشنهادی: حداقل {{ Math.min(2, suggestions.length) }} — حداکثر {{ Math.min(8, suggestions.length) }} لینک.
+      ✅ لینک‌های انتخاب‌شده به‌صورت خودکار در محتوا قرار داده می‌شوند. تعداد پیشنهادی: حداقل
+      {{ Math.min(2, suggestions.length) }} — حداکثر {{ Math.min(8, suggestions.length) }} لینک.
     </p>
   </VCard>
 </template>

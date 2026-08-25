@@ -173,7 +173,9 @@ const doughnutData: DoughnutDatum[] = [
   <main class="bg-canvas min-h-screen px-5 py-10 sm:px-8 lg:px-12" dir="rtl">
     <div class="mx-auto max-w-6xl space-y-10">
       <header class="border-line border-b pb-8">
-        <p class="text-brand-700 text-sm font-bold tracking-wide">VISION PRIME SUITE / DEVELOPMENT</p>
+        <p class="text-brand-700 text-sm font-bold tracking-wide">
+          VISION PRIME SUITE / DEVELOPMENT
+        </p>
         <h1 class="font-display text-display text-ink-strong mt-3 font-bold">سیستم طراحی</h1>
         <p class="text-ink-muted mt-3 max-w-2xl leading-8">
           مرجع بصری tokenها و الگوهای پایه. این صفحه برای کنترل یکپارچگی طراحی در توسعه نگه‌داری
@@ -211,11 +213,7 @@ const doughnutData: DoughnutDatum[] = [
           کارت KPI با آیکون، شمارندهٔ متحرک، روند و نکتهٔ راهنمای «💡» — مخصوص کاربر غیرفنی.
         </p>
         <div v-stagger class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <VStatCard
-            v-for="card in statCards"
-            :key="card.label"
-            v-bind="card"
-          />
+          <VStatCard v-for="card in statCards" :key="card.label" v-bind="card" />
         </div>
       </section>
 
@@ -225,7 +223,10 @@ const doughnutData: DoughnutDatum[] = [
           چارت‌های گرادیانی با انیمیشن ورود و tooltip — بدون وابستگی جدید (SVG سفارشی).
         </p>
         <div class="grid gap-5 lg:grid-cols-3">
-          <VCard title="میله‌ای (VBarChart)" description="مقایسهٔ ماهانه — ماه‌های خنثی با مقایسهٔ قبل">
+          <VCard
+            title="میله‌ای (VBarChart)"
+            description="مقایسهٔ ماهانه — ماه‌های خنثی با مقایسهٔ قبل"
+          >
             <VBarChart :data="barData" unit=" بازدید" aria-label="بازدید ماهانه" />
           </VCard>
           <VCard title="مساحت (VAreaChart)" description="روند هفتگی با گرادیان و tooltip">
@@ -238,12 +239,31 @@ const doughnutData: DoughnutDatum[] = [
       </section>
 
       <section aria-labelledby="icons-heading">
-        <h2 id="icons-heading" class="text-section-title text-ink-strong font-bold">آیکون‌ها (VIcon)</h2>
+        <h2 id="icons-heading" class="text-section-title text-ink-strong font-bold">
+          آیکون‌ها (VIcon)
+        </h2>
         <p class="text-ink-muted mt-1 mb-5 text-sm">
           نگاشت یکپارچهٔ آیکون‌ها؛ هر وضعیت در کل سوئیت یک آیکون ثابت دارد.
         </p>
-        <div class="rounded-card border-line bg-surface shadow-card flex flex-wrap gap-5 border p-6">
-          <div v-for="name in (['eye','trend-up','trend-down','check','x','user-check','clock','calendar','sparkles','support'] as const)" :key="name" class="flex items-center gap-2">
+        <div
+          class="rounded-card border-line bg-surface shadow-card flex flex-wrap gap-5 border p-6"
+        >
+          <div
+            v-for="name in [
+              'eye',
+              'trend-up',
+              'trend-down',
+              'check',
+              'x',
+              'user-check',
+              'clock',
+              'calendar',
+              'sparkles',
+              'support',
+            ] as const"
+            :key="name"
+            class="flex items-center gap-2"
+          >
             <VIcon :name="name" tone="brand" size="lg" />
             <span class="font-latin text-ink-muted text-xs">{{ name }}</span>
           </div>
@@ -452,9 +472,7 @@ const doughnutData: DoughnutDatum[] = [
         <article class="rounded-panel border-line bg-surface shadow-card border p-6">
           <h2 class="text-section-title text-ink-strong font-bold">تایپوگرافی</h2>
           <div class="mt-6 space-y-5">
-            <p class="font-display text-display text-ink-strong font-bold">
-              تیتر نمایشی سوئیت
-            </p>
+            <p class="font-display text-display text-ink-strong font-bold">تیتر نمایشی سوئیت</p>
             <p class="text-page-title text-ink-strong font-bold">عنوان اصلی صفحه</p>
             <p class="text-section-title text-ink-strong font-semibold">عنوان بخش</p>
             <p class="text-ink leading-8">

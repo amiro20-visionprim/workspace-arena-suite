@@ -153,7 +153,10 @@ function csrfToken(): string {
             placeholder="••••••"
             :error="form.errors.otp_code"
           />
-          <p v-if="sandboxCode" class="text-ink-muted rounded-ui bg-surface-muted border-line border p-2 text-xs">
+          <p
+            v-if="sandboxCode"
+            class="text-ink-muted rounded-ui bg-surface-muted border-line border p-2 text-xs"
+          >
             حالت آزمایشی — کد: <b dir="ltr">{{ sandboxCode }}</b>
           </p>
           <p v-if="otpMessage" class="text-success-700 text-xs font-semibold">{{ otpMessage }}</p>
@@ -223,7 +226,9 @@ function csrfToken(): string {
         {{ form.errors.terms }}
       </p>
 
-      <VButton class="w-full" type="submit" :loading="form.processing">ساخت حساب و شروع کار</VButton>
+      <VButton class="w-full" type="submit" :loading="form.processing"
+        >ساخت حساب و شروع کار</VButton
+      >
       <p class="text-ink-muted text-center text-sm">
         قبلاً حساب ساخته‌اید؟
         <Link href="/login" class="text-brand-700 hover:text-brand-900 font-semibold"

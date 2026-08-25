@@ -188,7 +188,11 @@ const impressionBars = computed(() =>
           <VGuideTip :text="tips.impressions" />
         </div>
         <div class="mt-4">
-          <VBarChart :data="impressionBars" :height="190" aria-label="نمودار نمایش روزانه در گوگل" />
+          <VBarChart
+            :data="impressionBars"
+            :height="190"
+            aria-label="نمودار نمایش روزانه در گوگل"
+          />
         </div>
       </VCard>
     </section>
@@ -217,8 +221,7 @@ const impressionBars = computed(() =>
               </div>
               <p class="text-ink-muted mt-1.5 text-sm leading-6">{{ opportunity.explanation }}</p>
             </div>
-            <span
-              class="rounded-ui bg-warning-50 text-warning-700 px-2.5 py-1 text-xs font-bold"
+            <span class="rounded-ui bg-warning-50 text-warning-700 px-2.5 py-1 text-xs font-bold"
               >امتیاز {{ faNum(opportunity.score) }} از ۱۰۰</span
             >
           </div>

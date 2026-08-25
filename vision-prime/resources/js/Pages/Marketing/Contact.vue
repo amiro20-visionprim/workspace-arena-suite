@@ -58,9 +58,7 @@ const channels = [
       title="همین حالا گفت‌وگو را شروع کنیم."
       description="برای مشاوره، جلسهٔ دمو یا سؤال دربارهٔ پلن‌ها، از هر راهی که راحت‌ترید در تماس باشید — پاسخ‌گویی در کمتر از ۲۴ ساعت کاری."
     >
-      <template #actions
-        ><VButton href="/demo" size="lg">درخواست دموی اختصاصی</VButton></template
-      >
+      <template #actions><VButton href="/demo" size="lg">درخواست دموی اختصاصی</VButton></template>
     </MarketingPageHero>
 
     <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
@@ -100,8 +98,10 @@ const channels = [
         </div>
       </div>
 
-      <div class="rounded-panel bg-brand-900 mt-10 flex flex-col items-center gap-4 px-6 py-10 text-center text-white sm:px-10">
-        <p class="font-display text-xl font-bold leading-relaxed sm:text-2xl">
+      <div
+        class="rounded-panel bg-brand-900 mt-10 flex flex-col items-center gap-4 px-6 py-10 text-center text-white sm:px-10"
+      >
+        <p class="font-display text-xl leading-relaxed font-bold sm:text-2xl">
           ترجیح می‌دهید اول جواب سؤال‌هایتان را بگیرید؟
         </p>
         <p class="text-brand-100 max-w-xl leading-7">

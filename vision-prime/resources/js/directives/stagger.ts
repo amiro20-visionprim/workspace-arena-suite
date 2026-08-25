@@ -9,8 +9,7 @@ interface StaggerOptions {
 }
 
 const prefersReducedMotion =
-  typeof window !== 'undefined' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /**
  * Staggered entrance. Applies `vp-stagger-item` to direct children so each one

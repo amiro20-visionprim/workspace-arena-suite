@@ -38,7 +38,12 @@ interface Draft {
 
 interface MoneyPageAuditSubject {
   kind: 'money_page_audit'
-  audit: { id: number; score: number; summary: Record<string, unknown> | null; auditedAt: string } | null
+  audit: {
+    id: number
+    score: number
+    summary: Record<string, unknown> | null
+    auditedAt: string
+  } | null
   issues: { key: string; severity: string; explanation: string }[]
   url: string | null
   urlProfileId: number | null
@@ -114,7 +119,14 @@ interface AiGenerationSubject {
 
 interface CommandSubject {
   kind: 'command'
-  command: { id: number; type: string; riskTier: string; payload: Record<string, unknown> | null; status: string; expiresAt: string | null } | null
+  command: {
+    id: number
+    type: string
+    riskTier: string
+    payload: Record<string, unknown> | null
+    status: string
+    expiresAt: string | null
+  } | null
 }
 
 interface UrlProfileSubject {
@@ -269,7 +281,7 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
             <div
               v-for="issue in p.subject.issues"
               :key="issue.key"
-              class="border-line flex items-start gap-3 rounded-ui border p-3"
+              class="border-line rounded-ui flex items-start gap-3 border p-3"
             >
               <VBadge :tone="issueSeverityTone[issue.severity] ?? 'neutral'">
                 {{ issueSeverityLabels[issue.severity] ?? issue.severity }}
@@ -282,7 +294,11 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
           <div v-if="p.subject.urlProfileId" class="border-line mt-4 border-t pt-4">
             <p class="text-ink-strong mb-2 text-sm font-semibold">تولید پیشنویس با هوش مصنوعی</p>
             <div class="flex flex-wrap gap-2">
-              <VButton size="sm" :loading="draftForm.processing && draftForm.kind === 'meta_title'" @click="generateDraft('meta_title')">
+              <VButton
+                size="sm"
+                :loading="draftForm.processing && draftForm.kind === 'meta_title'"
+                @click="generateDraft('meta_title')"
+              >
                 پیشنویس عنوان متا
               </VButton>
               <VButton
@@ -303,7 +319,8 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
               </VButton>
             </div>
             <p class="text-ink-muted mt-2 text-xs">
-              پیشنویس تولیدشده با ContentProfiler (زیرنوع/قصد) و استاندارد مؤثر استانداردKB ساخته و وارد صف «بررسی و تأییدها» می‌شود.
+              پیشنویس تولیدشده با ContentProfiler (زیرنوع/قصد) و استاندارد مؤثر استانداردKB ساخته و
+              وارد صف «بررسی و تأییدها» می‌شود.
             </p>
           </div>
 
@@ -332,10 +349,17 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
       <template v-else-if="p.subject?.kind === 'ai_generation'">
         <div v-if="p.subject.generation" class="space-y-4">
           <!-- مقاله/محصول: رندر HTML امن + پیش‌نمایش ساختار -->
-          <template v-if="p.subject.generation.kind === 'article' || p.subject.generation.kind === 'product'">
+          <template
+            v-if="
+              p.subject.generation.kind === 'article' || p.subject.generation.kind === 'product'
+            "
+          >
             <div
-              v-if="p.subject.generation.structure?.headings.length || p.subject.generation.structure?.elements"
-              class="border-line grid gap-4 rounded-ui border p-4 sm:grid-cols-2"
+              v-if="
+                p.subject.generation.structure?.headings.length ||
+                p.subject.generation.structure?.elements
+              "
+              class="border-line rounded-ui grid gap-4 border p-4 sm:grid-cols-2"
             >
               <div>
                 <p class="text-ink-strong mb-2 text-sm font-semibold">
@@ -346,7 +370,9 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
                     v-for="(heading, index) in p.subject.generation.structure.headings"
                     :key="index"
                     class="text-ink-muted text-sm"
-                    :class="heading.level === 1 ? 'font-semibold' : heading.level === 2 ? 'ps-3' : 'ps-6'"
+                    :class="
+                      heading.level === 1 ? 'font-semibold' : heading.level === 2 ? 'ps-3' : 'ps-6'
+                    "
                   >
                     {{ 'H'.concat(String(heading.level)) }} · {{ heading.text }}
                   </li>
@@ -374,7 +400,9 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
               <div class="flex flex-wrap gap-2">
                 <VBadge tone="info">{{ p.subject.generation.featured_image.aspect }}</VBadge>
                 <VBadge tone="neutral">
-                  {{ p.subject.generation.featured_image.suggested_width }}×{{ p.subject.generation.featured_image.suggested_height }}
+                  {{ p.subject.generation.featured_image.suggested_width }}×{{
+                    p.subject.generation.featured_image.suggested_height
+                  }}
                 </VBadge>
               </div>
               <p class="text-ink-muted mt-2 text-xs" dir="rtl">
@@ -395,9 +423,14 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
               >
                 <div class="mb-2 flex items-center justify-between gap-2">
                   <VBadge tone="info">{{ node['@type'] ?? 'Schema' }}</VBadge>
-                  <span class="text-ink-muted text-xs" dir="ltr">schema.org/{{ node['@type'] ?? '' }}</span>
+                  <span class="text-ink-muted text-xs" dir="ltr"
+                    >schema.org/{{ node['@type'] ?? '' }}</span
+                  >
                 </div>
-                <pre class="bg-surface-muted text-ink-muted font-latin max-h-56 overflow-auto rounded-ui p-3 text-xs" dir="ltr">{{ JSON.stringify(node, null, 2) }}</pre>
+                <pre
+                  class="bg-surface-muted text-ink-muted font-latin rounded-ui max-h-56 overflow-auto p-3 text-xs"
+                  dir="ltr"
+                  >{{ JSON.stringify(node, null, 2) }}</pre>
               </div>
             </div>
 
@@ -420,160 +453,164 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
             >
               {{ p.subject.generation.text }}
             </p>
-            <p v-else-if="p.subject.generation.input" class="text-ink-strong text-sm whitespace-pre-wrap">
+            <p
+              v-else-if="p.subject.generation.input"
+              class="text-ink-strong text-sm whitespace-pre-wrap"
+            >
               {{ p.subject.generation.input }}
             </p>
             <p v-else class="text-ink-muted text-sm">محتوا در دسترس نیست.</p>
-          </template>            <p class="text-ink-muted text-sm">
-              وضعیت: {{ p.subject.generation.status }} · ایجاد در
-              {{ formatJalaliDate(p.subject.generation.createdAt) }}
-              <span v-if="p.subject.generation.model" dir="ltr">· {{ p.subject.generation.model }}</span>
+          </template>
+          <p class="text-ink-muted text-sm">
+            وضعیت: {{ p.subject.generation.status }} · ایجاد در
+            {{ formatJalaliDate(p.subject.generation.createdAt) }}
+            <span v-if="p.subject.generation.model" dir="ltr"
+              >· {{ p.subject.generation.model }}</span
+            >
+          </p>
+
+          <!-- دادهٔ واقعی ووکامرس (قیمت/موجودی) -->
+          <div v-if="p.subject.generation.woo_product" class="border-line rounded-ui border p-4">
+            <p class="text-ink-strong mb-2 text-sm font-semibold">🛒 دادهٔ واقعی ووکامرس</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <VBadge tone="info">
+                {{
+                  p.subject.generation.woo_product.price !== null
+                    ? p.subject.generation.woo_product.price +
+                      ' ' +
+                      (p.subject.generation.woo_product.currency ?? '')
+                    : 'بدون قیمت'
+                }}
+              </VBadge>
+              <VBadge :tone="p.subject.generation.woo_product.in_stock ? 'success' : 'danger'">
+                {{ p.subject.generation.woo_product.in_stock ? 'موجود' : 'ناموجود' }}
+              </VBadge>
+              <VBadge
+                v-if="p.subject.generation.woo_product.stock_quantity !== null"
+                tone="neutral"
+              >
+                موجودی: {{ p.subject.generation.woo_product.stock_quantity }}
+              </VBadge>
+            </div>
+            <p class="text-ink-muted mt-2 text-sm">
+              {{ p.subject.generation.woo_product.title }}
+              <span v-if="p.subject.generation.woo_product.url" dir="ltr" class="font-latin ms-1">
+                · {{ p.subject.generation.woo_product.url }}
+              </span>
+            </p>
+            <p class="text-ink-muted mt-1 text-xs">
+              قیمت واقعی محصول از ووکامرس — برای تصمیم آگاهانهٔ بازبین پیش از انتشار.
+            </p>
+          </div>
+
+          <!-- ویجت وضعیت بلادرنگ کامند فاز ۲ -->
+          <div v-if="p.subject.generation.command" class="border-line rounded-ui border p-4">
+            <p class="text-ink-strong mb-2 text-sm font-semibold">🚀 وضعیت انتشار خودکار</p>
+            <div class="flex flex-wrap items-center gap-2">
+              <VBadge
+                :tone="
+                  p.subject.generation.command.status === 'executed'
+                    ? 'success'
+                    : p.subject.generation.command.status === 'rolled_back'
+                      ? 'warning'
+                      : p.subject.generation.command.status === 'pending_approval'
+                        ? 'warning'
+                        : 'info'
+                "
+              >
+                {{ labelOf(commandStatusLabels, p.subject.generation.command.status) }}
+              </VBadge>
+              <VBadge v-if="p.subject.generation.command.auto_approved" tone="success">
+                انتشار خودکار تأیید شد
+              </VBadge>
+              <VBadge v-if="p.subject.generation.command.confidence_score !== null" tone="neutral">
+                اطمینان: {{ p.subject.generation.command.confidence_score }}
+              </VBadge>
+              <span class="text-ink-muted text-sm" dir="ltr"
+                >#{{ p.subject.generation.command.id }}</span
+              >
+            </div>
+            <div
+              v-if="p.subject.generation.command.gate_snapshot"
+              class="mt-2 flex flex-wrap gap-2"
+            >
+              <VBadge
+                v-for="[label, value] in gateRows(p.subject.generation.command.gate_snapshot)"
+                :key="label"
+                tone="neutral"
+              >
+                {{ label }}: {{ value }}
+              </VBadge>
+            </div>
+            <div v-if="p.subject.generation.command.post_url" class="mt-2">
+              <span class="text-ink-strong text-sm">📄 مقالهٔ منتشرشده:</span>
+              <a
+                :href="p.subject.generation.command.post_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-latin text-brand-700 hover:text-brand-900 ms-2 text-sm underline"
+                dir="ltr"
+              >
+                {{ p.subject.generation.command.post_url }}
+              </a>
+            </div>
+            <p
+              v-else-if="p.subject.generation.command.status === 'pending_approval'"
+              class="text-ink-muted mt-2 text-sm"
+            >
+              کامند ساخته شد و در صف «تغییرات اجرایی» منتظر تأیید انسانی است.
             </p>
 
-            <!-- دادهٔ واقعی ووکامرس (قیمت/موجودی) -->
-            <div v-if="p.subject.generation.woo_product" class="border-line rounded-ui border p-4">
-              <p class="text-ink-strong mb-2 text-sm font-semibold">🛒 دادهٔ واقعی ووکامرس</p>
-              <div class="flex flex-wrap items-center gap-2">
-                <VBadge tone="info">
-                  {{ p.subject.generation.woo_product.price !== null ? p.subject.generation.woo_product.price + ' ' + (p.subject.generation.woo_product.currency ?? '') : 'بدون قیمت' }}
-                </VBadge>
-                <VBadge
-                  :tone="p.subject.generation.woo_product.in_stock ? 'success' : 'danger'"
-                >
-                  {{ p.subject.generation.woo_product.in_stock ? 'موجود' : 'ناموجود' }}
-                </VBadge>
-                <VBadge
-                  v-if="p.subject.generation.woo_product.stock_quantity !== null"
-                  tone="neutral"
-                >
-                  موجودی: {{ p.subject.generation.woo_product.stock_quantity }}
-                </VBadge>
-              </div>
-              <p class="text-ink-muted mt-2 text-sm">
-                {{ p.subject.generation.woo_product.title }}
-                <span v-if="p.subject.generation.woo_product.url" dir="ltr" class="font-latin ms-1">
-                  · {{ p.subject.generation.woo_product.url }}
-                </span>
-              </p>
-              <p class="text-ink-muted mt-1 text-xs">
-                قیمت واقعی محصول از ووکامرس — برای تصمیم آگاهانهٔ بازبین پیش از انتشار.
-              </p>
-            </div>
-
-            <!-- ویجت وضعیت بلادرنگ کامند فاز ۲ -->
-            <div
-              v-if="p.subject.generation.command"
-              class="border-line rounded-ui border p-4"
-            >
-              <p class="text-ink-strong mb-2 text-sm font-semibold">🚀 وضعیت انتشار خودکار</p>
-              <div class="flex flex-wrap items-center gap-2">
-                <VBadge
-                  :tone="
-                    p.subject.generation.command.status === 'executed'
-                      ? 'success'
-                      : p.subject.generation.command.status === 'rolled_back'
-                        ? 'warning'
-                        : p.subject.generation.command.status === 'pending_approval'
-                          ? 'warning'
-                          : 'info'
-                  "
-                >
-                  {{ labelOf(commandStatusLabels, p.subject.generation.command.status) }}
-                </VBadge>
-                <VBadge v-if="p.subject.generation.command.auto_approved" tone="success">
-                  انتشار خودکار تأیید شد
-                </VBadge>
-                <VBadge
-                  v-if="p.subject.generation.command.confidence_score !== null"
-                  tone="neutral"
-                >
-                  اطمینان: {{ p.subject.generation.command.confidence_score }}
-                </VBadge>
-                <span class="text-ink-muted text-sm" dir="ltr">#{{ p.subject.generation.command.id }}</span>
-              </div>
-              <div
-                v-if="p.subject.generation.command.gate_snapshot"
-                class="mt-2 flex flex-wrap gap-2"
-              >
-                <VBadge
-                  v-for="[label, value] in gateRows(p.subject.generation.command.gate_snapshot)"
-                  :key="label"
-                  tone="neutral"
-                >
-                  {{ label }}: {{ value }}
-                </VBadge>
-              </div>
-              <div v-if="p.subject.generation.command.post_url" class="mt-2">
-                <span class="text-ink-strong text-sm">📄 مقالهٔ منتشرشده:</span>
-                <a
-                  :href="p.subject.generation.command.post_url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="font-latin ms-2 text-sm text-brand-700 underline hover:text-brand-900"
-                  dir="ltr"
-                >
-                  {{ p.subject.generation.command.post_url }}
-                </a>
-              </div>
-              <p
-                v-else-if="p.subject.generation.command.status === 'pending_approval'"
-                class="text-ink-muted mt-2 text-sm"
-              >
-                کامند ساخته شد و در صف «تغییرات اجرایی» منتظر تأیید انسانی است.
-              </p>
-
-              <!-- گزارش تأثیر پس از انتشار (GSC) -->
-              <div v-if="p.subject.generation.command.impact" class="border-line mt-3 border-t pt-3">
-                <template v-if="p.subject.generation.command.impact.status === 'ready'">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-ink-strong text-sm font-semibold">📈 تأثیر پس از انتشار</span>
-                    <VBadge
-                      :tone="
-                        p.subject.generation.command.impact.verdict === 'improved'
-                          ? 'success'
-                          : p.subject.generation.command.impact.verdict === 'declined'
-                            ? 'danger'
-                            : 'neutral'
-                      "
-                    >
-                      {{ impactVerdictLabel(p.subject.generation.command.impact.verdict) }}
-                    </VBadge>
-                  </div>
-                  <div class="text-ink-muted mt-1 flex flex-wrap gap-x-4 text-sm">
-                    <span>
-                      جایگاه:
-                      <b class="text-ink-strong" dir="ltr">
-                        {{ impactDelta(p.subject.generation.command.impact.delta?.position) }}
-                      </b>
-                    </span>
-                    <span>
-                      کلیک:
-                      <b class="text-ink-strong" dir="ltr">
-                        {{ impactDelta(p.subject.generation.command.impact.delta?.clicks) }}
-                      </b>
-                    </span>
-                    <span>
-                      نمایش:
-                      <b class="text-ink-strong" dir="ltr">
-                        {{ impactDelta(p.subject.generation.command.impact.delta?.impressions) }}
-                      </b>
-                    </span>
-                  </div>
-                  <VTrendChart
-                    v-if="
-                      p.subject.generation.command.impact.series &&
-                      p.subject.generation.command.impact.series.length
+            <!-- گزارش تأثیر پس از انتشار (GSC) -->
+            <div v-if="p.subject.generation.command.impact" class="border-line mt-3 border-t pt-3">
+              <template v-if="p.subject.generation.command.impact.status === 'ready'">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-ink-strong text-sm font-semibold">📈 تأثیر پس از انتشار</span>
+                  <VBadge
+                    :tone="
+                      p.subject.generation.command.impact.verdict === 'improved'
+                        ? 'success'
+                        : p.subject.generation.command.impact.verdict === 'declined'
+                          ? 'danger'
+                          : 'neutral'
                     "
-                    class="mt-3"
-                    :points="p.subject.generation.command.impact.series"
-                    :publish-date="p.subject.generation.command.impact.published_at ?? ''"
-                  />
-                </template>
-                <p v-else class="text-ink-muted text-sm">
-                  دادهٔ GSC کافی برای مقایسه در دسترس نیست.
-                </p>
-              </div>
+                  >
+                    {{ impactVerdictLabel(p.subject.generation.command.impact.verdict) }}
+                  </VBadge>
+                </div>
+                <div class="text-ink-muted mt-1 flex flex-wrap gap-x-4 text-sm">
+                  <span>
+                    جایگاه:
+                    <b class="text-ink-strong" dir="ltr">
+                      {{ impactDelta(p.subject.generation.command.impact.delta?.position) }}
+                    </b>
+                  </span>
+                  <span>
+                    کلیک:
+                    <b class="text-ink-strong" dir="ltr">
+                      {{ impactDelta(p.subject.generation.command.impact.delta?.clicks) }}
+                    </b>
+                  </span>
+                  <span>
+                    نمایش:
+                    <b class="text-ink-strong" dir="ltr">
+                      {{ impactDelta(p.subject.generation.command.impact.delta?.impressions) }}
+                    </b>
+                  </span>
+                </div>
+                <VTrendChart
+                  v-if="
+                    p.subject.generation.command.impact.series &&
+                    p.subject.generation.command.impact.series.length
+                  "
+                  class="mt-3"
+                  :points="p.subject.generation.command.impact.series"
+                  :publish-date="p.subject.generation.command.impact.published_at ?? ''"
+                />
+              </template>
+              <p v-else class="text-ink-muted text-sm">دادهٔ GSC کافی برای مقایسه در دسترس نیست.</p>
             </div>
+          </div>
         </div>
         <p v-else class="text-ink-muted text-sm">محتوا در دسترس نیست.</p>
       </template>
@@ -613,7 +650,15 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
     </VCard>
 
     <VCard class="mt-6" title="وضعیت">
-      <VBadge :tone="p.item.status === 'approved' ? 'success' : p.item.status === 'rejected' ? 'danger' : 'warning'">
+      <VBadge
+        :tone="
+          p.item.status === 'approved'
+            ? 'success'
+            : p.item.status === 'rejected'
+              ? 'danger'
+              : 'warning'
+        "
+      >
         {{ labelOf(reviewStatusLabels, p.item.status) }}
       </VBadge>
     </VCard>
@@ -634,7 +679,15 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
       <div v-if="decisions.length">
         <div v-for="d in decisions" :key="d.id" class="border-line border-b py-3">
           <div class="flex items-center gap-2">
-            <VBadge :tone="d.decision === 'approved' ? 'success' : d.decision === 'rejected' ? 'danger' : 'warning'">
+            <VBadge
+              :tone="
+                d.decision === 'approved'
+                  ? 'success'
+                  : d.decision === 'rejected'
+                    ? 'danger'
+                    : 'warning'
+              "
+            >
               {{ labelOf(decisionLabels, d.decision) }}
             </VBadge>
             <span class="text-ink-muted text-sm">{{ formatJalaliDate(d.decided_at) }}</span>

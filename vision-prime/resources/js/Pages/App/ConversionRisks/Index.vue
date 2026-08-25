@@ -31,11 +31,10 @@ const severityOptions = [
 ]
 
 function applySeverity(value: string): void {
-  router.get(
-    '/app/conversion-risks',
-    value ? { severity: value } : {},
-    { preserveState: true, replace: true },
-  )
+  router.get('/app/conversion-risks', value ? { severity: value } : {}, {
+    preserveState: true,
+    replace: true,
+  })
 }
 </script>
 <template>
@@ -47,7 +46,7 @@ function applySeverity(value: string): void {
     <div class="mt-8 flex items-center gap-3">
       <label class="text-ink-strong text-sm font-semibold">فیلتر سطح ریسک:</label>
       <select
-        class="border-line rounded-ui min-h-10 w-44 border bg-surface px-3 text-sm"
+        class="border-line rounded-ui bg-surface min-h-10 w-44 border px-3 text-sm"
         :value="props.filters.severity ?? ''"
         @change="applySeverity(($event.target as HTMLSelectElement).value)"
       >
@@ -60,8 +59,12 @@ function applySeverity(value: string): void {
       <Link
         v-for="risk in risks.data"
         :key="risk.id"
-        :href="risk.audit_id ? `/app/money-pages/${risk.audit_id}` : `/app/url-profiles/${risk.url_profile_id}`"
-        class="rounded-card border-line bg-surface block border p-5 transition-colors hover:border-brand-300"
+        :href="
+          risk.audit_id
+            ? `/app/money-pages/${risk.audit_id}`
+            : `/app/url-profiles/${risk.url_profile_id}`
+        "
+        class="rounded-card border-line bg-surface hover:border-brand-300 block border p-5 transition-colors"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">

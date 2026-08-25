@@ -73,7 +73,8 @@ const attribution: { label: string; value: string | null | undefined }[] = [
         <div>
           <h2 class="text-ink-strong text-sm font-bold">امتیاز خودکار لید</h2>
           <p class="text-ink-muted mt-1 text-sm">
-            بر اساس دادهٔ کمپین و سیگنال‌های رفتاری محاسبه می‌شود — هرچه بالاتر، اولویت پیگیری بیشتر.
+            بر اساس دادهٔ کمپین و سیگنال‌های رفتاری محاسبه می‌شود — هرچه بالاتر، اولویت پیگیری
+            بیشتر.
           </p>
         </div>
         <div
@@ -93,7 +94,7 @@ const attribution: { label: string; value: string | null | undefined }[] = [
         <div
           v-for="item in lead.scoreBreakdown"
           :key="item.key"
-          class="border-line bg-surface-muted/50 flex items-center justify-between gap-3 rounded-card border px-3 py-2"
+          class="border-line bg-surface-muted/50 rounded-card flex items-center justify-between gap-3 border px-3 py-2"
         >
           <span class="text-ink text-xs leading-5">{{ item.label }}</span>
           <span class="text-success-700 shrink-0 text-sm font-bold">+{{ item.points }}</span>
@@ -104,12 +105,34 @@ const attribution: { label: string; value: string | null | undefined }[] = [
     <!-- Status decisions -->
     <div v-if="canManage" class="rounded-panel border-line bg-surface mt-8 border p-5">
       <h2 class="text-ink-strong text-sm font-bold">تصمیم دربارهٔ این لید</h2>
-      <p class="text-ink-muted mt-1 text-sm">وضعیت فعلی: <span class="text-ink font-semibold">{{ statusLabels[lead.status] }}</span></p>
+      <p class="text-ink-muted mt-1 text-sm">
+        وضعیت فعلی: <span class="text-ink font-semibold">{{ statusLabels[lead.status] }}</span>
+      </p>
       <div class="mt-4 flex flex-wrap gap-2">
-        <VButton size="sm" variant="secondary" :disabled="lead.status === 'new'" @click="setStatus('new')">جدید</VButton>
-        <VButton size="sm" variant="secondary" :disabled="lead.status === 'contacted'" @click="setStatus('contacted')">تماس گرفته‌شده</VButton>
-        <VButton size="sm" :disabled="lead.status === 'qualified'" @click="setStatus('qualified')">واجد شرایط ✓</VButton>
-        <VButton size="sm" variant="danger" :disabled="lead.status === 'unqualified'" @click="setStatus('unqualified')">رد شد</VButton>
+        <VButton
+          size="sm"
+          variant="secondary"
+          :disabled="lead.status === 'new'"
+          @click="setStatus('new')"
+          >جدید</VButton
+        >
+        <VButton
+          size="sm"
+          variant="secondary"
+          :disabled="lead.status === 'contacted'"
+          @click="setStatus('contacted')"
+          >تماس گرفته‌شده</VButton
+        >
+        <VButton size="sm" :disabled="lead.status === 'qualified'" @click="setStatus('qualified')"
+          >واجد شرایط ✓</VButton
+        >
+        <VButton
+          size="sm"
+          variant="danger"
+          :disabled="lead.status === 'unqualified'"
+          @click="setStatus('unqualified')"
+          >رد شد</VButton
+        >
       </div>
     </div>
 
@@ -136,14 +159,16 @@ const attribution: { label: string; value: string | null | undefined }[] = [
           </div>
           <div class="flex justify-between gap-4">
             <dt class="text-ink-muted shrink-0">وب‌سایت</dt>
-            <dd class="text-ink max-w-[60%] break-all font-semibold" dir="ltr">{{ lead.website ?? '—' }}</dd>
+            <dd class="text-ink max-w-[60%] font-semibold break-all" dir="ltr">
+              {{ lead.website ?? '—' }}
+            </dd>
           </div>
           <div class="flex justify-between gap-4">
             <dt class="text-ink-muted shrink-0">تاریخ ثبت</dt>
             <dd class="text-ink font-semibold">{{ formatJalaliDateTime(lead.createdAt) }}</dd>
           </div>
         </dl>
-        <div v-if="lead.message" class="border-line bg-surface-muted mt-5 rounded-card border p-4">
+        <div v-if="lead.message" class="border-line bg-surface-muted rounded-card mt-5 border p-4">
           <p class="text-ink-strong text-xs font-bold">پیام لید</p>
           <p class="text-ink mt-2 text-sm leading-7">{{ lead.message }}</p>
         </div>
@@ -155,10 +180,15 @@ const attribution: { label: string; value: string | null | undefined }[] = [
         <dl class="mt-4 space-y-3 text-sm">
           <div v-for="item in attribution" :key="item.label" class="flex justify-between gap-4">
             <dt class="text-ink-muted shrink-0">{{ item.label }}</dt>
-            <dd class="text-ink max-w-[65%] break-all text-start font-semibold" dir="ltr">{{ item.value ?? '—' }}</dd>
+            <dd class="text-ink max-w-[65%] text-start font-semibold break-all" dir="ltr">
+              {{ item.value ?? '—' }}
+            </dd>
           </div>
         </dl>
-        <p v-if="lead.userAgent" class="text-ink-muted mt-5 border-line border-t pt-4 text-xs leading-6 break-all">
+        <p
+          v-if="lead.userAgent"
+          class="text-ink-muted border-line mt-5 border-t pt-4 text-xs leading-6 break-all"
+        >
           User-Agent: {{ lead.userAgent }}
         </p>
       </div>
@@ -172,7 +202,11 @@ const attribution: { label: string; value: string | null | undefined }[] = [
       </p>
 
       <div v-if="notes.length" class="mt-5 space-y-3">
-        <div v-for="note in notes" :key="note.id" class="border-line bg-surface-muted/50 rounded-card border p-4">
+        <div
+          v-for="note in notes"
+          :key="note.id"
+          class="border-line bg-surface-muted/50 rounded-card border p-4"
+        >
           <div class="flex items-center justify-between gap-3">
             <p class="text-ink-strong text-xs font-bold">{{ note.user?.name ?? 'سیستم' }}</p>
             <p class="text-ink-muted text-xs">{{ formatJalaliDateTime(note.createdAt) }}</p>
@@ -183,7 +217,12 @@ const attribution: { label: string; value: string | null | undefined }[] = [
       <p v-else class="text-ink-muted mt-4 text-sm">هنوز یادداشتی ثبت نشده است.</p>
 
       <form v-if="canManage" class="mt-5 space-y-3" @submit.prevent="addNote">
-        <VTextarea v-model="noteForm.body" label="یادداشت جدید" placeholder="پیشنهاد یا بازخورد تیم دربارهٔ این لید…" :error="noteForm.errors.body" />
+        <VTextarea
+          v-model="noteForm.body"
+          label="یادداشت جدید"
+          placeholder="پیشنهاد یا بازخورد تیم دربارهٔ این لید…"
+          :error="noteForm.errors.body"
+        />
         <VButton type="submit" :loading="noteForm.processing">ثبت یادداشت</VButton>
       </form>
     </div>

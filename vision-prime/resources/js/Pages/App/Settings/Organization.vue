@@ -84,9 +84,7 @@ const columns = computed<TableColumn[]>(() => [
   { key: 'role', label: 'نقش', align: 'center' },
   { key: 'status', label: 'وضعیت' },
   { key: 'joinedAt', label: 'عضویت از', align: 'end' },
-  ...(props.canManage
-    ? [{ key: 'actions', label: 'عملیات', align: 'end' as const }]
-    : []),
+  ...(props.canManage ? [{ key: 'actions', label: 'عملیات', align: 'end' as const }] : []),
 ])
 </script>
 
@@ -102,14 +100,20 @@ const columns = computed<TableColumn[]>(() => [
     }}</VAlert>
 
     <div class="mt-8 grid gap-6 lg:grid-cols-3">
-      <VCard class="lg:col-span-2" title="اعضای تیم" description="نقش هر عضو، سطح دسترسی او را در سازمان مشخص می‌کند.">
+      <VCard
+        class="lg:col-span-2"
+        title="اعضای تیم"
+        description="نقش هر عضو، سطح دسترسی او را در سازمان مشخص می‌کند."
+      >
         <div v-if="members.length">
           <VTable :columns="columns" :rows="members" row-key="id" mobile-mode="cards">
             <template #cell-name="{ row }">
               <div>
                 <p class="text-ink-strong font-semibold">
                   {{ row.name ?? '—' }}
-                  <span v-if="row.isSelf" class="text-ink-muted text-xs font-normal"> (خودتان)</span>
+                  <span v-if="row.isSelf" class="text-ink-muted text-xs font-normal">
+                    (خودتان)</span
+                  >
                 </p>
                 <p class="text-ink-muted text-sm" dir="ltr">{{ row.email ?? '—' }}</p>
               </div>
@@ -187,8 +191,15 @@ const columns = computed<TableColumn[]>(() => [
           </dl>
         </VCard>
 
-        <VCard v-if="canManage" title="افزودن عضو" description="کاربر باید قبلاً در سامانه ثبت‌نام کرده باشد.">
-          <form class="space-y-4" @submit.prevent="addForm.post('/app/settings/organization/members')">
+        <VCard
+          v-if="canManage"
+          title="افزودن عضو"
+          description="کاربر باید قبلاً در سامانه ثبت‌نام کرده باشد."
+        >
+          <form
+            class="space-y-4"
+            @submit.prevent="addForm.post('/app/settings/organization/members')"
+          >
             <VInput
               v-model="addForm.email"
               label="ایمیل کاربر"
@@ -205,9 +216,7 @@ const columns = computed<TableColumn[]>(() => [
               :options="roleOptions"
               :error="addForm.errors.role_id"
             />
-            <VButton type="submit" :loading="addForm.processing" class="w-full"
-              >افزودن عضو</VButton
-            >
+            <VButton type="submit" :loading="addForm.processing" class="w-full">افزودن عضو</VButton>
           </form>
         </VCard>
       </div>
@@ -216,13 +225,19 @@ const columns = computed<TableColumn[]>(() => [
     <VConfirmDialog
       :model-value="memberToRemove !== null"
       title="حذف عضو از سازمان"
-      :description="memberToRemove ? `${memberToRemove.name ?? memberToRemove.email} از این سازمان حذف شود؟ دسترسی او به تمام بخش‌ها قطع خواهد شد.` : ''"
+      :description="
+        memberToRemove
+          ? `${memberToRemove.name ?? memberToRemove.email} از این سازمان حذف شود؟ دسترسی او به تمام بخش‌ها قطع خواهد شد.`
+          : ''
+      "
       confirm-label="حذف عضو"
       tone="danger"
       :loading="removing"
-      @update:model-value="(open) => {
-        if (!open) memberToRemove = null
-      }"
+      @update:model-value="
+        (open) => {
+          if (!open) memberToRemove = null
+        }
+      "
       @confirm="removeMember"
     />
   </AppLayout>

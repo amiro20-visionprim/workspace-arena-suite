@@ -43,7 +43,13 @@ interface ConnectorStatus {
 interface ContentSummary {
   total: number
   byType: Record<string, number>
-  recent: Array<{ id: number; url: string; type: string; status: string; lastSyncedAt: string | null }>
+  recent: Array<{
+    id: number
+    url: string
+    type: string
+    status: string
+    lastSyncedAt: string | null
+  }>
 }
 
 const props = defineProps<{
@@ -72,7 +78,8 @@ const runStatusTone: Record<string, BadgeTone> = {
 }
 
 function disconnectSite(): void {
-  if (!confirm('آیا مطمئنید اتصال این سایت قطع شود؟ تمام داده‌های همگام‌سازی حذف خواهند شد.')) return
+  if (!confirm('آیا مطمئنید اتصال این سایت قطع شود؟ تمام داده‌های همگام‌سازی حذف خواهند شد.'))
+    return
   router.post(`/app/sites/${props.site.id}/connector/disconnect`)
 }
 </script>
@@ -104,18 +111,13 @@ function disconnectSite(): void {
                 {{ formatJalaliDate(gsc.latestRun.finishedAt) }}
               </span>
             </div>
-            <p
-              v-if="gsc.latestRun.summary && gsc.latestRun.summary.rows"
-              class="mt-1"
-            >
+            <p v-if="gsc.latestRun.summary && gsc.latestRun.summary.rows" class="mt-1">
               {{ gsc.latestRun.summary.rows }} ردیف همگام‌سازی شد.
             </p>
           </div>
           <div v-else class="text-ink-muted mt-3 text-sm">هنوز همگام‌سازی‌ای اجرا نشده است.</div>
           <div class="mt-4">
-            <VButton :href="`/app/gsc`" variant="secondary" size="sm">
-              رفتن به سرچ کنسول
-            </VButton>
+            <VButton :href="`/app/gsc`" variant="secondary" size="sm"> رفتن به سرچ کنسول </VButton>
           </div>
         </template>
         <template v-else>
@@ -170,11 +172,21 @@ function disconnectSite(): void {
     <!-- Content Summary -->
     <div v-if="content.total > 0" class="mt-8">
       <h2 class="text-ink-strong mb-4 text-lg font-bold">محتوای همگام‌سازی شده</h2>
-      <div class="grid gap-4 md:grid-cols-3 mb-5">
+      <div class="mb-5 grid gap-4 md:grid-cols-3">
         <VCard v-for="(count, type) in content.byType" :key="type">
           <div class="text-center">
             <p class="text-ink-strong text-2xl font-bold">{{ count }}</p>
-            <p class="text-ink-muted text-sm">{{ type === 'page' ? 'صفحه' : type === 'post' ? 'مقاله' : type === 'product' ? 'محصول' : type }}</p>
+            <p class="text-ink-muted text-sm">
+              {{
+                type === 'page'
+                  ? 'صفحه'
+                  : type === 'post'
+                    ? 'مقاله'
+                    : type === 'product'
+                      ? 'محصول'
+                      : type
+              }}
+            </p>
           </div>
         </VCard>
       </div>

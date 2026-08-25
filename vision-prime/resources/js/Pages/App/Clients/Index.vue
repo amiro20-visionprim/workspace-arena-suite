@@ -74,7 +74,6 @@ const columns: TableColumn[] = [
         title="هنوز مشتری‌ای اضافه نشده است"
         description="با ایجاد اولین مشتری، می‌توانید پروژه‌ها، سایت‌ها و دسترسی پرتال او را در یک جریان واحد مدیریت کنید."
         action-label="افزودن مشتری"
-        @action="$inertia.visit('/app/clients/create')"
-      /></div
+        @action="$inertia.visit('/app/clients/create')" /></div
   ></AppLayout>
 </template>

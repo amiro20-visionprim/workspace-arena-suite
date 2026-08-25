@@ -15,7 +15,7 @@ withDefaults(
 </script>
 
 <template>
-  <section class="border-y border-line bg-surface">
+  <section class="border-line bg-surface border-y">
     <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
       <div v-reveal>
         <SectionHeading :eyebrow="eyebrow" :title="title" />
@@ -25,7 +25,7 @@ withDefaults(
           v-for="(item, index) in items"
           :key="item.title"
           v-reveal="{ delay: index * 110 }"
-          class="group rounded-2xl border border-line bg-canvas p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-panel"
+          class="group border-line bg-canvas shadow-card hover:shadow-panel rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1"
         >
           <span
             class="bg-gradient-brand inline-flex size-11 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110"

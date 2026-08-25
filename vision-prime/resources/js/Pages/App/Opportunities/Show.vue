@@ -79,10 +79,7 @@ function convertToRecommendation(): void {
     <VPageHeader
       title="جزئیات فرصت رشد"
       :description="opportunity.explanation"
-      :breadcrumbs="[
-        { label: 'فرصت‌های رشد', href: '/app/opportunities' },
-        { label: 'جزئیات' },
-      ]"
+      :breadcrumbs="[{ label: 'فرصت‌های رشد', href: '/app/opportunities' }, { label: 'جزئیات' }]"
     >
       <template #actions>
         <VButton :loading="form.processing" @click="convertToRecommendation"
@@ -119,10 +116,7 @@ function convertToRecommendation(): void {
                 {{ opportunity.canonical_url }}
               </dd>
             </div>
-            <div
-              v-if="opportunity.query_normalized"
-              class="flex items-start justify-between gap-4"
-            >
+            <div v-if="opportunity.query_normalized" class="flex items-start justify-between gap-4">
               <dt class="text-ink-muted shrink-0">کلیدواژه</dt>
               <dd class="text-ink-strong text-end font-medium">
                 {{ opportunity.query_normalized }}

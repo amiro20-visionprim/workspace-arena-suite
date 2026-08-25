@@ -41,7 +41,11 @@ const emergencyOpen = ref(false)
 const emergencyReason = ref('')
 
 function emergencyStop(): void {
-  router.post('/platform/emergency-stop', { reason: emergencyReason.value }, { preserveScroll: true })
+  router.post(
+    '/platform/emergency-stop',
+    { reason: emergencyReason.value },
+    { preserveScroll: true },
+  )
 }
 </script>
 
@@ -128,16 +132,23 @@ function emergencyStop(): void {
                 <p class="text-ink-muted text-xs">پلن: {{ org.plan }}</p>
               </div>
               <VBadge :tone="usageTone(org.usage_percent)">
-                {{ org.cap ? `${faNum(org.tokens)} / ${faNum(org.cap)} توکن (${org.usage_percent}٪)` : 'بدون سقف' }}
+                {{
+                  org.cap
+                    ? `${faNum(org.tokens)} / ${faNum(org.cap)} توکن (${org.usage_percent}٪)`
+                    : 'بدون سقف'
+                }}
               </VBadge>
             </div>
-            <div
-              v-if="org.cap"
-              class="bg-surface-muted mt-3 h-2 overflow-hidden rounded-full"
-            >
+            <div v-if="org.cap" class="bg-surface-muted mt-3 h-2 overflow-hidden rounded-full">
               <div
                 class="h-full rounded-full transition-all"
-                :class="org.usage_percent >= 100 ? 'bg-danger-500' : org.usage_percent >= 80 ? 'bg-warning-500' : 'bg-brand-500'"
+                :class="
+                  org.usage_percent >= 100
+                    ? 'bg-danger-500'
+                    : org.usage_percent >= 80
+                      ? 'bg-warning-500'
+                      : 'bg-brand-500'
+                "
                 :style="{ width: `${Math.min(100, org.usage_percent)}%` }"
               />
             </div>
@@ -153,11 +164,11 @@ function emergencyStop(): void {
       class="bg-ink-900/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="emergencyOpen = false"
     >
-      <div class="bg-surface rounded-2xl w-full max-w-md p-6 shadow-2xl">
+      <div class="bg-surface w-full max-w-md rounded-2xl p-6 shadow-2xl">
         <h3 class="text-danger-600 font-display text-lg font-bold">🚨 تأیید توقف اضطراری</h3>
         <p class="text-ink-muted mt-1 text-sm">
-          این اقدام همهٔ دستورهای خودکار در صف را لغو و سیاست‌های اتوماسیون را متوقف می‌کند.
-          دلیل ثبت و در گزارش ممیزی ذخیره می‌شود.
+          این اقدام همهٔ دستورهای خودکار در صف را لغو و سیاست‌های اتوماسیون را متوقف می‌کند. دلیل
+          ثبت و در گزارش ممیزی ذخیره می‌شود.
         </p>
         <textarea
           v-model="emergencyReason"
@@ -167,7 +178,12 @@ function emergencyStop(): void {
         />
         <div class="mt-5 flex justify-end gap-3">
           <VButton variant="ghost" size="sm" @click="emergencyOpen = false">انصراف</VButton>
-          <VButton variant="danger" size="sm" :disabled="!emergencyReason.trim()" @click="emergencyStop">
+          <VButton
+            variant="danger"
+            size="sm"
+            :disabled="!emergencyReason.trim()"
+            @click="emergencyStop"
+          >
             بله، توقف کن
           </VButton>
         </div>

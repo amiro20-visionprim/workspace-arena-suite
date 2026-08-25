@@ -156,20 +156,18 @@ const modules = [
   <MarketingLayout>
     <main>
       <!-- HERO -->
-      <section class="relative overflow-hidden border-b border-line bg-canvas">
+      <section class="border-line bg-canvas relative overflow-hidden border-b">
         <!-- ambient background -->
         <div aria-hidden="true" class="pointer-events-none absolute inset-0">
+          <div class="bg-radial-fade bg-hero-grid absolute inset-0" />
           <div
-            class="bg-radial-fade bg-hero-grid absolute inset-0"
-          />
-          <div
-            class="absolute -top-32 right-[-10%] size-[560px] rounded-full bg-brand-200/50 blur-3xl"
+            class="bg-brand-200/50 absolute -top-32 right-[-10%] size-[560px] rounded-full blur-3xl"
           />
           <div
             class="absolute top-10 left-[-12%] size-[520px] rounded-full bg-violet-200/40 blur-3xl"
           />
           <div
-            class="absolute bottom-[-20%] right-1/3 size-[420px] rounded-full bg-indigo-200/30 blur-3xl"
+            class="absolute right-1/3 bottom-[-20%] size-[420px] rounded-full bg-indigo-200/30 blur-3xl"
           />
         </div>
 
@@ -188,8 +186,8 @@ const modules = [
               <span class="text-gradient-brand">یک مرکز فرماندهی</span> برای رشد SEO.
             </h1>
             <p class="text-ink-muted mt-5 max-w-2xl text-base leading-8 sm:text-lg">
-              سوئیت فرصت‌های رشد را شناسایی می‌کند، اقدامات را در مسیر کنترل‌شده پیش می‌برد و
-              اثر هر تصمیم را به زبان روشن نشان می‌دهد.
+              سوئیت فرصت‌های رشد را شناسایی می‌کند، اقدامات را در مسیر کنترل‌شده پیش می‌برد و اثر هر
+              تصمیم را به زبان روشن نشان می‌دهد.
             </p>
             <div class="mt-8 flex flex-wrap gap-3">
               <VButton href="/demo" size="lg" variant="gradient">
@@ -200,11 +198,11 @@ const modules = [
             </div>
             <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2">
               <span class="text-ink-muted flex items-center gap-1.5 text-sm">
-                <ShieldCheck class="size-4 text-success-600" aria-hidden="true" />
+                <ShieldCheck class="text-success-600 size-4" aria-hidden="true" />
                 بدون انتشار مستقیم AI
               </span>
               <span class="text-ink-muted flex items-center gap-1.5 text-sm">
-                <CheckCircle2 class="size-4 text-success-600" aria-hidden="true" />
+                <CheckCircle2 class="text-success-600 size-4" aria-hidden="true" />
                 بدون تغییر پرریسک خارج از سیاست سایت
               </span>
             </div>
@@ -215,19 +213,23 @@ const modules = [
       </section>
 
       <!-- TRUSTED BY / LOGO STRIP -->
-      <section class="border-b border-line bg-surface">
+      <section class="border-line bg-surface border-b">
         <div v-reveal class="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10">
           <p class="text-ink-muted text-center text-xs font-bold tracking-wide">
             بدون تغییر زیرساخت شما؛ سازگار با اکوسیستمی که از قبل دارید
           </p>
-          <div class="mt-7 grid grid-cols-2 items-center gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-6">
+          <div
+            class="mt-7 grid grid-cols-2 items-center gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-6"
+          >
             <div
               v-for="item in integrations"
               :key="item.name"
               class="text-ink-muted flex items-center justify-center gap-2 opacity-70 transition-all duration-300 hover:opacity-100"
             >
               <component :is="item.icon" class="size-5" aria-hidden="true" />
-              <span class="font-latin text-ink text-base font-bold tracking-tight" dir="ltr">{{ item.name }}</span>
+              <span class="font-latin text-ink text-base font-bold tracking-tight" dir="ltr">{{
+                item.name
+              }}</span>
             </div>
           </div>
         </div>
@@ -247,7 +249,7 @@ const modules = [
             v-for="(pillar, index) in pillars"
             :key="pillar.title"
             v-reveal="{ delay: index * 120 }"
-            class="group rounded-2xl border border-line bg-surface p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:shadow-panel hover:border-brand-200"
+            class="group border-line bg-surface shadow-card hover:shadow-panel hover:border-brand-200 rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1.5"
           >
             <span
               class="bg-gradient-brand inline-flex size-11 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110"
@@ -262,11 +264,13 @@ const modules = [
         <!-- STATS BAND -->
         <div
           v-reveal
-          class="relative mt-16 overflow-hidden rounded-3xl border border-line bg-surface px-6 py-10 shadow-card sm:px-10"
+          class="border-line bg-surface shadow-card relative mt-16 overflow-hidden rounded-3xl border px-6 py-10 sm:px-10"
         >
           <div aria-hidden="true" class="pointer-events-none absolute inset-0">
-            <div class="absolute -top-24 right-1/4 size-64 rounded-full bg-brand-200/40 blur-3xl" />
-            <div class="absolute -bottom-24 left-1/4 size-64 rounded-full bg-violet-200/40 blur-3xl" />
+            <div class="bg-brand-200/40 absolute -top-24 right-1/4 size-64 rounded-full blur-3xl" />
+            <div
+              class="absolute -bottom-24 left-1/4 size-64 rounded-full bg-violet-200/40 blur-3xl"
+            />
           </div>
           <div class="relative grid grid-cols-2 gap-8 lg:grid-cols-4">
             <div
@@ -302,7 +306,7 @@ const modules = [
               :key="item.href"
               v-reveal="{ delay: index * 90 }"
               :href="item.href"
-              class="group rounded-2xl border border-line bg-surface p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-panel"
+              class="group border-line bg-surface shadow-card hover:border-brand-200 hover:shadow-panel rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1"
             >
               <span
                 class="bg-gradient-brand inline-flex size-11 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110"
@@ -321,7 +325,7 @@ const modules = [
       </section>
 
       <!-- MODULES (bento) -->
-      <section class="border-y border-line bg-surface">
+      <section class="border-line bg-surface border-y">
         <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
           <div v-reveal>
             <SectionHeading
@@ -338,7 +342,7 @@ const modules = [
               class="group relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1"
               :class="
                 module.featured
-                  ? 'bg-gradient-brand border-transparent text-white shadow-panel lg:col-span-2 lg:row-span-2'
+                  ? 'bg-gradient-brand shadow-panel border-transparent text-white lg:col-span-2 lg:row-span-2'
                   : 'border-line bg-canvas hover:border-brand-200 hover:shadow-card'
               "
             >
@@ -369,11 +373,7 @@ const modules = [
               >
                 {{ module.text }}
               </p>
-              <div
-                v-if="module.featured"
-                class="mt-6 flex flex-wrap gap-2"
-                aria-hidden="true"
-              >
+              <div v-if="module.featured" class="mt-6 flex flex-wrap gap-2" aria-hidden="true">
                 <span class="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white"
                   >۴۸ صفحه تحلیل‌شده</span
                 >
@@ -403,14 +403,13 @@ const modules = [
             v-for="(scenario, index) in scenarios"
             :key="scenario.name"
             v-reveal="{ delay: index * 140 }"
-            class="relative rounded-2xl border border-line bg-surface p-7 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-panel sm:p-8"
+            class="border-line bg-surface shadow-card hover:shadow-panel relative rounded-2xl border p-7 transition-all duration-300 hover:-translate-y-1 sm:p-8"
           >
-            <Quote
-              class="text-brand-200 absolute top-6 left-6 size-8"
-              aria-hidden="true"
-            />
+            <Quote class="text-brand-200 absolute top-6 left-6 size-8" aria-hidden="true" />
             <VBadge tone="info" class="mt-1">سناریوی نمونه</VBadge>
-            <blockquote class="text-ink-strong mt-4 text-base leading-8 font-medium sm:text-lg sm:leading-9">
+            <blockquote
+              class="text-ink-strong mt-4 text-base leading-8 font-medium sm:text-lg sm:leading-9"
+            >
               «{{ scenario.quote }}»
             </blockquote>
             <figcaption class="mt-6 flex items-center gap-3.5">
@@ -430,14 +429,19 @@ const modules = [
       <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
         <div
           v-reveal
-          class="relative overflow-hidden rounded-3xl bg-brand-900 px-6 py-12 text-white sm:px-12 sm:py-16"
+          class="bg-brand-900 relative overflow-hidden rounded-3xl px-6 py-12 text-white sm:px-12 sm:py-16"
         >
           <div aria-hidden="true" class="pointer-events-none absolute inset-0">
             <div class="absolute -top-24 left-1/4 size-72 rounded-full bg-violet-500/30 blur-3xl" />
-            <div class="absolute -bottom-28 right-1/4 size-72 rounded-full bg-indigo-500/30 blur-3xl" />
+            <div
+              class="absolute right-1/4 -bottom-28 size-72 rounded-full bg-indigo-500/30 blur-3xl"
+            />
             <div
               class="absolute inset-0 opacity-[0.12]"
-              style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 26px 26px"
+              style="
+                background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0);
+                background-size: 26px 26px;
+              "
             />
           </div>
           <div class="relative">
@@ -446,12 +450,14 @@ const modules = [
             </p>
             <div class="mt-4 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <h2 class="max-w-2xl text-3xl leading-relaxed font-bold sm:text-4xl sm:leading-relaxed">
+                <h2
+                  class="max-w-2xl text-3xl leading-relaxed font-bold sm:text-4xl sm:leading-relaxed"
+                >
                   رشد سایت‌هایتان را با داده، کنترل و گزارش‌پذیری جلو ببرید.
                 </h2>
                 <p class="text-brand-100 mt-4 max-w-2xl leading-8">
-                  در دمو، جریان کاری مناسب آژانس و سایت‌های وردپرسی شما را بررسی می‌کنیم؛ بدون تعهد و
-                  بدون نیاز به کارت اعتباری.
+                  در دمو، جریان کاری مناسب آژانس و سایت‌های وردپرسی شما را بررسی می‌کنیم؛ بدون تعهد
+                  و بدون نیاز به کارت اعتباری.
                 </p>
               </div>
               <div class="flex flex-wrap gap-3">
@@ -461,7 +467,7 @@ const modules = [
                 </VButton>
                 <a
                   href="/pricing"
-                  class="transition-ui rounded-ui inline-flex min-h-12 items-center justify-center gap-2 border border-white/25 bg-white/10 px-5 text-base font-semibold text-white whitespace-nowrap hover:bg-white/20"
+                  class="transition-ui rounded-ui inline-flex min-h-12 items-center justify-center gap-2 border border-white/25 bg-white/10 px-5 text-base font-semibold whitespace-nowrap text-white hover:bg-white/20"
                   >مشاهدهٔ قیمت‌گذاری</a
                 >
               </div>

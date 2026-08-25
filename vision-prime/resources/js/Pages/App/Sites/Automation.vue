@@ -95,24 +95,45 @@ const CONTENT_TYPES = [
 
 function saveRoutes(): void {
   savingRoutes.value = true
-  const routes = CONTENT_TYPES
-    .filter((type) => routeMap[type.key] !== '')
-    .map((type) => ({ content_type: type.key, profile_id: Number(routeMap[type.key]) }))
-  router.post(`/app/sites/${props.site.id}/automation/routes`, { routes }, { onFinish: () => (savingRoutes.value = false) })
+  const routes = CONTENT_TYPES.filter((type) => routeMap[type.key] !== '').map((type) => ({
+    content_type: type.key,
+    profile_id: Number(routeMap[type.key]),
+  }))
+  router.post(
+    `/app/sites/${props.site.id}/automation/routes`,
+    { routes },
+    { onFinish: () => (savingRoutes.value = false) },
+  )
 }
 
 function copyProfile(profileId: number): void {
   if (!window.confirm('یک کپی قابل شخصی‌سازی از این پروفایل ساخته شود؟')) return
   copyingProfile.value = profileId
-  router.post(`/app/sites/${props.site.id}/automation/profiles/copy`, { profile_id: profileId }, { onFinish: () => (copyingProfile.value = null) })
+  router.post(
+    `/app/sites/${props.site.id}/automation/profiles/copy`,
+    { profile_id: profileId },
+    { onFinish: () => (copyingProfile.value = null) },
+  )
 }
 
 const LEVELS = [
   { value: '0', label: 'L0 — فقط مشاهده', hint: 'بدون توصیهٔ اجرایی یا تغییر' },
-  { value: '1', label: 'L1 — پیشنهاد با تأیید کامل', hint: 'پیشنویس ساخته می‌شود؛ هر مورد تأیید انسانی' },
+  {
+    value: '1',
+    label: 'L1 — پیشنهاد با تأیید کامل',
+    hint: 'پیشنویس ساخته می‌شود؛ هر مورد تأیید انسانی',
+  },
   { value: '2', label: 'L2 — اجرای کنترل‌شده', hint: 'تغییرات کم‌ریسک از‌پیش‌مجاز خودکار' },
-  { value: '3', label: 'L3 — خودکارسازی نظارت‌شده', hint: 'اجرای قاعده‌مند + نمونه‌برداری بازبینی' },
-  { value: '4', label: 'L4 — Autopilot محدود', hint: 'خودکار در budget و دامنهٔ مجاز؛ R3 همیشه تأیید' },
+  {
+    value: '3',
+    label: 'L3 — خودکارسازی نظارت‌شده',
+    hint: 'اجرای قاعده‌مند + نمونه‌برداری بازبینی',
+  },
+  {
+    value: '4',
+    label: 'L4 — Autopilot محدود',
+    hint: 'خودکار در budget و دامنهٔ مجاز؛ R3 همیشه تأیید',
+  },
 ]
 
 const AI_POLICIES = [
@@ -125,14 +146,32 @@ const AI_POLICIES = [
 const RISK_TIERS = ['R0', 'R1', 'R2', 'R3'].map((t) => ({ value: t, label: t }))
 
 const AUTO_PUBLISH_SCOPES = [
-  { value: 'none', label: 'غیرفعال (همه‌چیز با تأیید انسانی)', hint: 'پیش‌فرض — هیچ تغییری خودکار منتشر نمی‌شود' },
-  { value: 'meta', label: 'فقط متا (title/description)', hint: 'انتشار خودکار تغییرات متای کم‌خطر' },
-  { value: 'article', label: 'متا + محتوا/مقالات', hint: 'شامل انتشار مقالهٔ جدید با گیت‌های سخت‌گیرانه‌تر' },
+  {
+    value: 'none',
+    label: 'غیرفعال (همه‌چیز با تأیید انسانی)',
+    hint: 'پیش‌فرض — هیچ تغییری خودکار منتشر نمی‌شود',
+  },
+  {
+    value: 'meta',
+    label: 'فقط متا (title/description)',
+    hint: 'انتشار خودکار تغییرات متای کم‌خطر',
+  },
+  {
+    value: 'article',
+    label: 'متا + محتوا/مقالات',
+    hint: 'شامل انتشار مقالهٔ جدید با گیت‌های سخت‌گیرانه‌تر',
+  },
   { value: 'product', label: 'متا + محصولات ووکامرس', hint: 'انتشار خودکار تغییرات محصول' },
-  { value: 'all', label: 'همهٔ انواع محتوا', hint: 'متا + مقاله + محصول — فقط برای سایت‌های کم‌حساسیت' },
+  {
+    value: 'all',
+    label: 'همهٔ انواع محتوا',
+    hint: 'متا + مقاله + محصول — فقط برای سایت‌های کم‌حساسیت',
+  },
 ]
 
-const activeProfileId = ref<string>(props.policy.activeProfileId ? String(props.policy.activeProfileId) : '')
+const activeProfileId = ref<string>(
+  props.policy.activeProfileId ? String(props.policy.activeProfileId) : '',
+)
 
 const form = reactive({
   automation_level: String(props.policy.level),
@@ -195,42 +234,57 @@ function toggleChannel(channel: string): void {
 
 function save(): void {
   saving.value = true
-  router.put(`/app/sites/${props.site.id}/automation`, {
-    active_profile_id: activeProfileId.value || null,
-    auto_publish_scope: form.auto_publish_scope,
-    overrides: {
-      automation_level: Number(form.automation_level),
-      ai_policy: form.ai_policy,
-      confidence_threshold: Number(form.confidence_threshold),
-      high_risk_threshold: Number(form.high_risk_threshold),
-      risk_tier_max: form.risk_tier_max,
-      enabled_content_types: form.enabled_content_types,
-      daily_command_limit: Number(form.daily_command_limit),
-      daily_mutation_limit: Number(form.daily_mutation_limit),
-      auto_rollback: form.auto_rollback,
-      notification_policy: {
-        enabled: form.notification_enabled,
-        channels: form.notification_channels,
-        webhooks: {
-          telegram: form.webhook_telegram || null,
-          whatsapp: form.webhook_whatsapp || null,
+  router.put(
+    `/app/sites/${props.site.id}/automation`,
+    {
+      active_profile_id: activeProfileId.value || null,
+      auto_publish_scope: form.auto_publish_scope,
+      overrides: {
+        automation_level: Number(form.automation_level),
+        ai_policy: form.ai_policy,
+        confidence_threshold: Number(form.confidence_threshold),
+        high_risk_threshold: Number(form.high_risk_threshold),
+        risk_tier_max: form.risk_tier_max,
+        enabled_content_types: form.enabled_content_types,
+        daily_command_limit: Number(form.daily_command_limit),
+        daily_mutation_limit: Number(form.daily_mutation_limit),
+        auto_rollback: form.auto_rollback,
+        notification_policy: {
+          enabled: form.notification_enabled,
+          channels: form.notification_channels,
+          webhooks: {
+            telegram: form.webhook_telegram || null,
+            whatsapp: form.webhook_whatsapp || null,
+          },
         },
       },
     },
-  }, { onFinish: () => (saving.value = false) })
+    { onFinish: () => (saving.value = false) },
+  )
 }
 
 function emergencyStop(): void {
-  if (!window.confirm('توقف اضطراری خودکارسازی؟ دستورهای در صف لغو می‌شوند و هیچ تغییری تا رفع توقف اجرا نخواهد شد.')) return
+  if (
+    !window.confirm(
+      'توقف اضطراری خودکارسازی؟ دستورهای در صف لغو می‌شوند و هیچ تغییری تا رفع توقف اجرا نخواهد شد.',
+    )
+  )
+    return
   stopping.value = true
-  router.post(`/app/sites/${props.site.id}/automation/emergency-stop`, {}, { onFinish: () => (stopping.value = false) })
+  router.post(
+    `/app/sites/${props.site.id}/automation/emergency-stop`,
+    {},
+    { onFinish: () => (stopping.value = false) },
+  )
 }
 
 function resume(): void {
   router.post(`/app/sites/${props.site.id}/automation/resume`)
 }
 
-const currentLevel = computed(() => LEVELS.find((l) => l.value === form.automation_level)?.label ?? `L${form.automation_level}`)
+const currentLevel = computed(
+  () => LEVELS.find((l) => l.value === form.automation_level)?.label ?? `L${form.automation_level}`,
+)
 
 const executionsColumns: TableColumn[] = [
   { key: 'type', label: 'نوع تغییر' },
@@ -270,65 +324,152 @@ const statusTone = (status: string): 'success' | 'danger' | 'warning' | 'neutral
         </template>
 
         <div class="space-y-6">
-          <div class="rounded-ui border border-line-strong bg-surface-muted p-4">
+          <div class="rounded-ui border-line-strong bg-surface-muted border p-4">
             <p class="text-sm font-semibold">سطح فعلی: {{ currentLevel }}</p>
             <p class="text-ink-muted mt-1 text-sm">
               {{ LEVELS.find((l) => l.value === form.automation_level)?.hint }}
             </p>
           </div>
 
-          <VSelect v-model="activeProfileId" label="پروفایل پایه" :options="profileOptions" hint="پروفایل آماده را انتخاب کن؛ مقادیر پایین قابل شخصی‌سازی per-site است." />
+          <VSelect
+            v-model="activeProfileId"
+            label="پروفایل پایه"
+            :options="profileOptions"
+            hint="پروفایل آماده را انتخاب کن؛ مقادیر پایین قابل شخصی‌سازی per-site است."
+          />
 
-          <VSelect v-model="form.auto_publish_scope" label="دامنهٔ انتشار خودکار" :options="AUTO_PUBLISH_SCOPES" hint="فقط برای سایت‌های کم‌حساسیت. همهٔ گیت‌های کیفیت/گرمایش/اعتماد همیشه فعال‌اند." />
+          <VSelect
+            v-model="form.auto_publish_scope"
+            label="دامنهٔ انتشار خودکار"
+            :options="AUTO_PUBLISH_SCOPES"
+            hint="فقط برای سایت‌های کم‌حساسیت. همهٔ گیت‌های کیفیت/گرمایش/اعتماد همیشه فعال‌اند."
+          />
 
-          <div class="rounded-ui border border-warning-strong/30 bg-warning-weak p-3 text-xs">
+          <div class="rounded-ui border-warning-strong/30 bg-warning-weak border p-3 text-xs">
             <span class="font-semibold">نکتهٔ امنیتی:</span>
-            انتشار خودکار فقط بعد از پاس شدن همهٔ گیت‌ها فعال می‌شود: گرمایش (۳ اجرای موفق انسانی برای متا/محصول، ۵ برای مقاله)، گیت‌های کیفیت محتوا (StandardsKB) و آستانهٔ اطمینان.
-            R3 (به‌جز انتشار مقالهٔ جدید در scope=article با L3+) همیشه با تأیید انسانی می‌ماند.
+            انتشار خودکار فقط بعد از پاس شدن همهٔ گیت‌ها فعال می‌شود: گرمایش (۳ اجرای موفق انسانی
+            برای متا/محصول، ۵ برای مقاله)، گیت‌های کیفیت محتوا (StandardsKB) و آستانهٔ اطمینان. R3
+            (به‌جز انتشار مقالهٔ جدید در scope=article با L3+) همیشه با تأیید انسانی می‌ماند.
           </div>
 
           <div class="grid gap-5 sm:grid-cols-2">
-            <VSelect v-model="form.automation_level" label="سطح خودکارسازی (L0–L4)" :options="LEVELS" />
+            <VSelect
+              v-model="form.automation_level"
+              label="سطح خودکارسازی (L0–L4)"
+              :options="LEVELS"
+            />
             <VSelect v-model="form.ai_policy" label="سیاست هوش مصنوعی" :options="AI_POLICIES" />
-            <VSelect v-model="form.risk_tier_max" label="حداکثر ریسک مجاز خودکار" :options="RISK_TIERS" />
-            <VInput v-model.number="form.confidence_threshold" type="number" min="50" max="100" label="آستانهٔ اطمینان (R0/R1) ٪" />
-            <VInput v-model.number="form.high_risk_threshold" type="number" min="50" max="100" label="آستانهٔ اطمینان (R2) ٪" />
-            <VInput v-model.number="form.daily_command_limit" type="number" min="0" label="سقف روزانهٔ دستورها" />
-            <VInput v-model.number="form.daily_mutation_limit" type="number" min="0" label="سقف روزانهٔ تغییرات" />
+            <VSelect
+              v-model="form.risk_tier_max"
+              label="حداکثر ریسک مجاز خودکار"
+              :options="RISK_TIERS"
+            />
+            <VInput
+              v-model.number="form.confidence_threshold"
+              type="number"
+              min="50"
+              max="100"
+              label="آستانهٔ اطمینان (R0/R1) ٪"
+            />
+            <VInput
+              v-model.number="form.high_risk_threshold"
+              type="number"
+              min="50"
+              max="100"
+              label="آستانهٔ اطمینان (R2) ٪"
+            />
+            <VInput
+              v-model.number="form.daily_command_limit"
+              type="number"
+              min="0"
+              label="سقف روزانهٔ دستورها"
+            />
+            <VInput
+              v-model.number="form.daily_mutation_limit"
+              type="number"
+              min="0"
+              label="سقف روزانهٔ تغییرات"
+            />
           </div>
 
           <div>
-            <p class="text-ink-strong mb-2 text-sm font-medium">انواع محتوای مجاز برای انتشار خودکار</p>
+            <p class="text-ink-strong mb-2 text-sm font-medium">
+              انواع محتوای مجاز برای انتشار خودکار
+            </p>
             <div class="flex flex-wrap gap-3">
-              <label v-for="type in ['meta', 'article', 'product']" :key="type" class="flex cursor-pointer items-center gap-2 text-sm">
-                <input type="checkbox" class="h-4 w-4 rounded border-line-strong" :checked="form.enabled_content_types.includes(type)" @change="toggleContentType(type)" />
-                {{ type === 'meta' ? 'متا (title/description)' : type === 'article' ? 'محتوا و مقالات' : 'محصولات ووکامرس' }}
+              <label
+                v-for="type in ['meta', 'article', 'product']"
+                :key="type"
+                class="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  class="border-line-strong h-4 w-4 rounded"
+                  :checked="form.enabled_content_types.includes(type)"
+                  @change="toggleContentType(type)"
+                />
+                {{
+                  type === 'meta'
+                    ? 'متا (title/description)'
+                    : type === 'article'
+                      ? 'محتوا و مقالات'
+                      : 'محصولات ووکامرس'
+                }}
               </label>
             </div>
           </div>
 
           <label class="flex cursor-pointer items-center gap-2 text-sm">
-            <input v-model="form.auto_rollback" type="checkbox" class="h-4 w-4 rounded border-line-strong" />
+            <input
+              v-model="form.auto_rollback"
+              type="checkbox"
+              class="border-line-strong h-4 w-4 rounded"
+            />
             بازگشت خودکار وقتی بازدید/CTR زیر baseline افتاد (فقط R3)
           </label>
 
-          <div class="border-t border-line-strong pt-5">
-            <p class="text-ink-strong mb-1 text-sm font-medium">اعلان‌ها (هشدار افت R1 و رویدادهای خودکار)</p>
+          <div class="border-line-strong border-t pt-5">
+            <p class="text-ink-strong mb-1 text-sm font-medium">
+              اعلان‌ها (هشدار افت R1 و رویدادهای خودکار)
+            </p>
             <label class="flex cursor-pointer items-center gap-2 text-sm">
-              <input v-model="form.notification_enabled" type="checkbox" class="h-4 w-4 rounded border-line-strong" />
+              <input
+                v-model="form.notification_enabled"
+                type="checkbox"
+                class="border-line-strong h-4 w-4 rounded"
+              />
               فعال بودن اعلان‌ها
             </label>
             <div class="mt-3 flex flex-wrap gap-3">
-              <label v-for="channel in NOTIFICATION_CHANNELS" :key="channel.key" class="flex cursor-pointer items-center gap-2 text-sm">
-                <input type="checkbox" class="h-4 w-4 rounded border-line-strong" :checked="form.notification_channels.includes(channel.key)" @change="toggleChannel(channel.key)" />
+              <label
+                v-for="channel in NOTIFICATION_CHANNELS"
+                :key="channel.key"
+                class="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  class="border-line-strong h-4 w-4 rounded"
+                  :checked="form.notification_channels.includes(channel.key)"
+                  @change="toggleChannel(channel.key)"
+                />
                 {{ channel.label }}
               </label>
             </div>
             <div v-if="form.notification_channels.includes('telegram')" class="mt-4">
-              <VInput v-model="form.webhook_telegram" type="url" label="Webhook تلگرام" placeholder="https://api.telegram.org/bot…/sendMessage" />
+              <VInput
+                v-model="form.webhook_telegram"
+                type="url"
+                label="Webhook تلگرام"
+                placeholder="https://api.telegram.org/bot…/sendMessage"
+              />
             </div>
             <div v-if="form.notification_channels.includes('whatsapp')" class="mt-4">
-              <VInput v-model="form.webhook_whatsapp" type="url" label="Webhook واتساپ" placeholder="https://…" />
+              <VInput
+                v-model="form.webhook_whatsapp"
+                type="url"
+                label="Webhook واتساپ"
+                placeholder="https://…"
+              />
             </div>
           </div>
 
@@ -339,10 +480,16 @@ const statusTone = (status: string): 'success' | 'danger' | 'warning' | 'neutral
       <div class="space-y-6">
         <VCard title="توقف اضطراری">
           <p class="text-ink-muted text-sm">
-            در صورت توقف، هیچ دستوری (حتی با تأیید انسانی) به وردپرس ارسال نمی‌شود و دستورهای در صف لغو می‌شوند.
+            در صورت توقف، هیچ دستوری (حتی با تأیید انسانی) به وردپرس ارسال نمی‌شود و دستورهای در صف
+            لغو می‌شوند.
           </p>
           <div class="mt-4">
-            <VButton v-if="policy.emergencyStoppedAt" variant="secondary" :loading="stopping" @click="resume">
+            <VButton
+              v-if="policy.emergencyStoppedAt"
+              variant="secondary"
+              :loading="stopping"
+              @click="resume"
+            >
               رفع توقف و از سرگیری
             </VButton>
             <VButton v-else variant="danger" :loading="stopping" @click="emergencyStop">
@@ -353,31 +500,48 @@ const statusTone = (status: string): 'success' | 'danger' | 'warning' | 'neutral
 
         <VCard title="مسیریابی بر اساس نوع محتوا">
           <p class="text-ink-muted text-sm">
-            هر نوع محتوا می‌تواند پروفایل مخصوص خودش را داشته باشد (مثلاً مقالات L3 با آستانهٔ ۹۰٪ کنار متا L2 با ۸۰٪).
-            خالی = پروفایل پایهٔ سایت.
+            هر نوع محتوا می‌تواند پروفایل مخصوص خودش را داشته باشد (مثلاً مقالات L3 با آستانهٔ ۹۰٪
+            کنار متا L2 با ۸۰٪). خالی = پروفایل پایهٔ سایت.
           </p>
           <div class="mt-4 space-y-4">
             <div v-for="type in CONTENT_TYPES" :key="type.key">
-              <VSelect v-model="routeMap[type.key]" :label="type.label" :options="[{ value: '', label: 'پیش‌فرض سایت' }, ...profileOptions]" />
+              <VSelect
+                v-model="routeMap[type.key]"
+                :label="type.label"
+                :options="[{ value: '', label: 'پیش‌فرض سایت' }, ...profileOptions]"
+              />
             </div>
-            <VButton variant="secondary" :loading="savingRoutes" @click="saveRoutes">ذخیرهٔ مسیریابی</VButton>
+            <VButton variant="secondary" :loading="savingRoutes" @click="saveRoutes"
+              >ذخیرهٔ مسیریابی</VButton
+            >
           </div>
         </VCard>
 
         <VCard title="پروفایل‌ها">
           <ul class="space-y-3">
-            <li v-for="profile in profiles" :key="profile.id" class="rounded-ui border border-line-strong p-3">
+            <li
+              v-for="profile in profiles"
+              :key="profile.id"
+              class="rounded-ui border-line-strong border p-3"
+            >
               <div class="flex items-center justify-between gap-2">
                 <p class="text-sm font-semibold">{{ profile.name }}</p>
                 <div class="flex items-center gap-2">
-                  <VBadge :tone="profile.kind === 'system' ? 'info' : 'neutral'">L{{ profile.automationLevel }}</VBadge>
-                  <button class="text-brand-700 text-xs hover:underline" :disabled="copyingProfile === profile.id" @click="copyProfile(profile.id)">
+                  <VBadge :tone="profile.kind === 'system' ? 'info' : 'neutral'"
+                    >L{{ profile.automationLevel }}</VBadge
+                  >
+                  <button
+                    class="text-brand-700 text-xs hover:underline"
+                    :disabled="copyingProfile === profile.id"
+                    @click="copyProfile(profile.id)"
+                  >
                     {{ copyingProfile === profile.id ? '...' : 'کپی' }}
                   </button>
                 </div>
               </div>
               <p class="text-ink-muted mt-1 text-xs">
-                آستانهٔ R1: {{ profile.confidenceThreshold }}٪ · حداکثر ریسک: {{ profile.riskTierMax }} · سقف روزانه: {{ profile.dailyCommandLimit }}
+                آستانهٔ R1: {{ profile.confidenceThreshold }}٪ · حداکثر ریسک:
+                {{ profile.riskTierMax }} · سقف روزانه: {{ profile.dailyCommandLimit }}
               </p>
             </li>
           </ul>
@@ -403,7 +567,9 @@ const statusTone = (status: string): 'success' | 'danger' | 'warning' | 'neutral
           <span class="font-latin text-xs" dir="ltr">{{ row.publishedAt ?? '—' }}</span>
         </template>
       </VTable>
-      <p v-if="executions.length === 0" class="text-ink-muted mt-4 text-sm">هنوز اجرایی ثبت نشده است.</p>
+      <p v-if="executions.length === 0" class="text-ink-muted mt-4 text-sm">
+        هنوز اجرایی ثبت نشده است.
+      </p>
     </VCard>
   </AppLayout>
 </template>

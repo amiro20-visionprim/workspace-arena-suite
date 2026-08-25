@@ -59,17 +59,34 @@ const suspendReason = ref('')
 const suspendOpen = ref(false)
 
 function suspend(): void {
-  router.post(`/platform/organizations/${props.organization.id}/suspend`, { reason: suspendReason.value }, { preserveScroll: true })
+  router.post(
+    `/platform/organizations/${props.organization.id}/suspend`,
+    { reason: suspendReason.value },
+    { preserveScroll: true },
+  )
 }
 
 function activate(): void {
   if (!window.confirm(`سازمان «${props.organization.name}» دوباره فعال شود؟`)) return
-  router.post(`/platform/organizations/${props.organization.id}/activate`, {}, { preserveScroll: true })
+  router.post(
+    `/platform/organizations/${props.organization.id}/activate`,
+    {},
+    { preserveScroll: true },
+  )
 }
 
 function impersonate(memberId: number, memberName: string): void {
-  if (!window.confirm(`وارد حساب «${memberName}» شوید؟ (اکشن‌های حساس غیرفعال است و همه‌چیز ثبت می‌شود)`)) return
-  router.post(`/platform/organizations/${props.organization.id}/impersonate/${memberId}`, {}, { preserveScroll: false })
+  if (
+    !window.confirm(
+      `وارد حساب «${memberName}» شوید؟ (اکشن‌های حساس غیرفعال است و همه‌چیز ثبت می‌شود)`,
+    )
+  )
+    return
+  router.post(
+    `/platform/organizations/${props.organization.id}/impersonate/${memberId}`,
+    {},
+    { preserveScroll: false },
+  )
 }
 </script>
 
@@ -105,7 +122,15 @@ function impersonate(memberId: number, memberName: string): void {
         <template v-if="subscription">
           <div class="flex items-center gap-3">
             <p class="text-ink-strong text-lg font-bold">{{ subscription.plan_name }}</p>
-            <VBadge :tone="subscription.status === 'active' ? 'success' : subscription.status === 'trialing' ? 'info' : 'warning'">
+            <VBadge
+              :tone="
+                subscription.status === 'active'
+                  ? 'success'
+                  : subscription.status === 'trialing'
+                    ? 'info'
+                    : 'warning'
+              "
+            >
               {{ subscription.status }}
             </VBadge>
           </div>
@@ -149,7 +174,9 @@ function impersonate(memberId: number, memberName: string): void {
               <p class="text-ink-strong truncate text-sm font-semibold">{{ site.name }}</p>
               <p class="text-ink-muted truncate text-xs" dir="ltr">{{ site.url }}</p>
             </div>
-            <VBadge :tone="site.status === 'active' ? 'success' : 'warning'">{{ site.status }}</VBadge>
+            <VBadge :tone="site.status === 'active' ? 'success' : 'warning'">{{
+              site.status
+            }}</VBadge>
           </li>
         </ul>
         <p v-else class="text-ink-muted py-3 text-sm">سایتی ثبت نشده است.</p>
@@ -167,8 +194,15 @@ function impersonate(memberId: number, memberName: string): void {
               <p class="text-ink-muted truncate text-xs" dir="ltr">{{ member.email }}</p>
             </div>
             <div class="flex shrink-0 items-center gap-2">
-              <VBadge :tone="member.status === 'active' ? 'success' : 'neutral'">{{ member.status }}</VBadge>
-              <VButton v-if="member.status === 'active'" size="sm" variant="ghost" @click="impersonate(member.id, member.name)">
+              <VBadge :tone="member.status === 'active' ? 'success' : 'neutral'">{{
+                member.status
+              }}</VBadge>
+              <VButton
+                v-if="member.status === 'active'"
+                size="sm"
+                variant="ghost"
+                @click="impersonate(member.id, member.name)"
+              >
                 ورود به‌جای او
               </VButton>
             </div>
@@ -184,11 +218,9 @@ function impersonate(memberId: number, memberName: string): void {
       class="bg-ink-900/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="suspendOpen = false"
     >
-      <div class="bg-surface rounded-2xl w-full max-w-md p-6 shadow-2xl">
+      <div class="bg-surface w-full max-w-md rounded-2xl p-6 shadow-2xl">
         <h3 class="text-ink-strong font-display text-lg font-bold">تعلیق سازمان</h3>
-        <p class="text-ink-muted mt-1 text-sm">
-          دلیل تعلیق ثبت و در گزارش ممیزی ذخیره می‌شود.
-        </p>
+        <p class="text-ink-muted mt-1 text-sm">دلیل تعلیق ثبت و در گزارش ممیزی ذخیره می‌شود.</p>
         <textarea
           v-model="suspendReason"
           rows="3"

@@ -162,7 +162,9 @@ watch(open, (isOpen) => {
   <VDrawer v-model="open" title="راهنما و پشتیبانی" side="end">
     <div class="rounded-card border-line bg-brand-50/60 border p-4">
       <div class="flex items-start gap-3">
-        <span class="rounded-ui bg-brand-700 flex size-9 shrink-0 items-center justify-center text-white">
+        <span
+          class="rounded-ui bg-brand-700 flex size-9 shrink-0 items-center justify-center text-white"
+        >
           <VIcon name="sparkles" size="sm" />
         </span>
         <div>
@@ -179,7 +181,9 @@ watch(open, (isOpen) => {
       <button
         type="button"
         class="flex-1 px-4 py-2.5 text-sm font-bold transition"
-        :class="activeTab === 'chat' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'"
+        :class="
+          activeTab === 'chat' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'
+        "
         @click="activeTab = 'chat'"
       >
         مشاورهٔ هوشمند
@@ -187,7 +191,9 @@ watch(open, (isOpen) => {
       <button
         type="button"
         class="flex-1 px-4 py-2.5 text-sm font-bold transition"
-        :class="activeTab === 'support' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'"
+        :class="
+          activeTab === 'support' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'
+        "
         @click="activeTab = 'support'"
       >
         پشتیبانی انسانی
@@ -196,10 +202,7 @@ watch(open, (isOpen) => {
 
     <!-- Chat tab -->
     <div v-if="activeTab === 'chat'" class="flex min-h-0 flex-1 flex-col">
-      <div
-        id="vp-support-messages"
-        class="min-h-0 flex-1 space-y-3 overflow-y-auto py-4"
-      >
+      <div id="vp-support-messages" class="min-h-0 flex-1 space-y-3 overflow-y-auto py-4">
         <div
           v-for="(message, index) in messages"
           :key="index"
@@ -210,8 +213,8 @@ watch(open, (isOpen) => {
             class="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-6"
             :class="
               message.role === 'user'
-                ? 'bg-brand-700 text-white rounded-b-sm'
-                : 'bg-surface-muted border-line text-ink border rounded-b-sm'
+                ? 'bg-brand-700 rounded-b-sm text-white'
+                : 'bg-surface-muted border-line text-ink rounded-b-sm border'
             "
           >
             <p>{{ message.text }}</p>
@@ -225,7 +228,10 @@ watch(open, (isOpen) => {
                 ← {{ link.label }}
               </a>
             </div>
-            <div v-if="message.suggestions && message.suggestions.length" class="mt-2 flex flex-wrap gap-1.5">
+            <div
+              v-if="message.suggestions && message.suggestions.length"
+              class="mt-2 flex flex-wrap gap-1.5"
+            >
               <button
                 v-for="suggestion in message.suggestions"
                 :key="suggestion.id"
@@ -280,7 +286,7 @@ watch(open, (isOpen) => {
           <textarea
             v-model="draft"
             rows="2"
-            class="border-line bg-surface text-ink rounded-ui min-w-0 flex-1 resize-none border px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="border-line bg-surface text-ink rounded-ui focus:border-brand-500 min-w-0 flex-1 resize-none border px-3 py-2 text-sm outline-none"
             placeholder="سؤال خود را بنویسید…"
             aria-label="سؤال از دستیار"
             @keydown="onKeydown"
@@ -319,10 +325,16 @@ watch(open, (isOpen) => {
           پیام شما مستقیم به تیم پشتیبانی می‌رسد و در کمتر از ۲۴ ساعت کاری پاسخ می‌گیرید.
         </p>
 
-        <div v-if="supportStatus === 'success'" class="rounded-ui bg-success-50 text-success-700 mt-4 border border-success-200 p-3 text-xs font-semibold">
+        <div
+          v-if="supportStatus === 'success'"
+          class="rounded-ui bg-success-50 text-success-700 border-success-200 mt-4 border p-3 text-xs font-semibold"
+        >
           ✅ پیام شما به تیم پشتیبانی رسید؛ به‌زودی پاسخ می‌گیرید.
         </div>
-        <div v-else-if="supportStatus === 'error'" class="rounded-ui bg-danger-50 text-danger-700 mt-4 border border-danger-200 p-3 text-xs font-semibold">
+        <div
+          v-else-if="supportStatus === 'error'"
+          class="rounded-ui bg-danger-50 text-danger-700 border-danger-200 mt-4 border p-3 text-xs font-semibold"
+        >
           ⚠️ ارسال نشد؛ لطفاً دوباره تلاش کنید یا از کانال‌های تماس استفاده کنید.
         </div>
 
@@ -331,7 +343,7 @@ watch(open, (isOpen) => {
             v-model="supportForm.name"
             type="text"
             required
-            class="border-line bg-surface text-ink rounded-ui w-full border px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="border-line bg-surface text-ink rounded-ui focus:border-brand-500 w-full border px-3 py-2 text-sm outline-none"
             placeholder="نام شما"
             aria-label="نام"
           />
@@ -339,7 +351,7 @@ watch(open, (isOpen) => {
             v-model="supportForm.contact"
             type="text"
             required
-            class="border-line bg-surface text-ink rounded-ui w-full border px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="border-line bg-surface text-ink rounded-ui focus:border-brand-500 w-full border px-3 py-2 text-sm outline-none"
             placeholder="شماره تماس یا ایمیل"
             aria-label="شماره تماس یا ایمیل"
           />
@@ -347,7 +359,7 @@ watch(open, (isOpen) => {
             v-model="supportForm.message"
             rows="3"
             required
-            class="border-line bg-surface text-ink rounded-ui w-full resize-none border px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="border-line bg-surface text-ink rounded-ui focus:border-brand-500 w-full resize-none border px-3 py-2 text-sm outline-none"
             placeholder="توضیح کوتاه مشکل یا سؤال"
             aria-label="متن پیام"
           />

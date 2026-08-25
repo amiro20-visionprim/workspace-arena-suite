@@ -30,21 +30,20 @@ function save() {
 <template>
   <Head title="ملک‌های سرچ کنسول" /><AppLayout
     ><VAlert
-        v-if="form.gsc_account_id && googleErrors[form.gsc_account_id]"
-        tone="danger"
-        title="دریافت ملک‌ها از گوگل ناموفق بود"
-        class="mb-5"
-      >
-        {{ googleErrors[form.gsc_account_id] }}
-        <a
-          class="underline underline-offset-2"
-          href="https://console.developers.google.com/apis/api/webmasters.googleapis.com/overview?project=visionprime-suite-505019"
-          target="_blank"
-          rel="noopener"
+      v-if="form.gsc_account_id && googleErrors[form.gsc_account_id]"
+      tone="danger"
+      title="دریافت ملک‌ها از گوگل ناموفق بود"
+      class="mb-5"
+    >
+      {{ googleErrors[form.gsc_account_id] }}
+      <a
+        class="underline underline-offset-2"
+        href="https://console.developers.google.com/apis/api/webmasters.googleapis.com/overview?project=visionprime-suite-505019"
+        target="_blank"
+        rel="noopener"
         >فعال‌سازی Search Console API</a
-        >
-      </VAlert
-      ><VCard title="انتخاب Property سرچ کنسول"
+      > </VAlert
+    ><VCard title="انتخاب Property سرچ کنسول"
       ><form class="space-y-4" @submit.prevent="save">
         <VSelect
           v-model="form.site_id"

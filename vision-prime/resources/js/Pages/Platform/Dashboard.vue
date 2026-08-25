@@ -94,8 +94,14 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
     />
 
     <!-- خلاصهٔ هوشمند Triage — F-03 -->
-    <div v-if="triageSummary.source !== 'none'" class="mt-6 flex items-start gap-3 rounded-2xl border border-indigo-200/60 bg-indigo-50/60 p-5">
-      <span class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/15 text-lg">🧠</span>
+    <div
+      v-if="triageSummary.source !== 'none'"
+      class="mt-6 flex items-start gap-3 rounded-2xl border border-indigo-200/60 bg-indigo-50/60 p-5"
+    >
+      <span
+        class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/15 text-lg"
+        >🧠</span
+      >
       <div>
         <h2 class="text-ink-strong font-display text-sm font-bold">
           خلاصهٔ هوشمند تصمیم‌ها
@@ -223,7 +229,9 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
             </p>
             <p class="text-ink-muted mt-0.5 text-xs" dir="ltr">{{ event.occurred_at }}</p>
           </div>
-          <VBadge tone="info">{{ event.organization_id ? `سازمان #${event.organization_id}` : 'سراسری' }}</VBadge>
+          <VBadge tone="info">{{
+            event.organization_id ? `سازمان #${event.organization_id}` : 'سراسری'
+          }}</VBadge>
         </li>
       </ul>
       <p v-else class="text-ink-muted py-4 text-sm">هنوز رویدادی ثبت نشده است.</p>

@@ -257,7 +257,8 @@ export const catalog: CatalogItem[] = [
     icon: 'activity',
     title: 'اتصال سایت به وردپرس',
     summary: 'پلاگین اختصاصی ویژن پرایم را روی وردپرس نصب و سایت را متصل کنید.',
-    benefit: 'پس از اتصال، همگام‌سازی محتوا خودکار انجام می‌شود و تغییرات مستقیماً روی سایت اعمال می‌شود.',
+    benefit:
+      'پس از اتصال، همگام‌سازی محتوا خودکار انجام می‌شود و تغییرات مستقیماً روی سایت اعمال می‌شود.',
     steps: [
       'از «سایت‌ها» وارد سایت مورد نظر شوید.',
       'دکمهٔ «صدور کد اتصال» را بزنید و توکن را کپی کنید.',
@@ -305,9 +306,7 @@ export const catalog: CatalogItem[] = [
 ]
 
 export function catalogFor(audience: CatalogAudience): CatalogItem[] {
-  return catalog.filter(
-    (item) => item.audience === audience || item.audience === 'both',
-  )
+  return catalog.filter((item) => item.audience === audience || item.audience === 'both')
 }
 
 export function catalogCategories(items: CatalogItem[]): string[] {

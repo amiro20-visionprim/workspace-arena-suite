@@ -39,12 +39,13 @@ function percent(value: number): string {
 </script>
 <template>
   <Head title="جزئیات صفحهٔ درآمدزا" /><AppLayout
-    ><VPageHeader
-      title="جزئیات صفحهٔ درآمدزا"
-      :description="audit.siteName"
-    >
+    ><VPageHeader title="جزئیات صفحهٔ درآمدزا" :description="audit.siteName">
       <template #actions>
-        <VButton v-if="audit.reviewItemId" variant="secondary" :href="`/app/reviews/${audit.reviewItemId}`">
+        <VButton
+          v-if="audit.reviewItemId"
+          variant="secondary"
+          :href="`/app/reviews/${audit.reviewItemId}`"
+        >
           باز کردن بازبینی
         </VButton>
       </template>
@@ -91,7 +92,7 @@ function percent(value: number): string {
           <div
             v-for="issue in audit.issues"
             :key="issue.key"
-            class="border-line flex items-start gap-3 rounded-ui border p-3"
+            class="border-line rounded-ui flex items-start gap-3 border p-3"
           >
             <VBadge :tone="severityTone[issue.severity] ?? 'info'">
               {{ severityLabels[issue.severity] ?? issue.severity }}
@@ -108,7 +109,7 @@ function percent(value: number): string {
             v-for="opportunity in audit.opportunities"
             :key="opportunity.id"
             :href="`/app/opportunities/${opportunity.id}`"
-            class="border-line flex items-center justify-between gap-3 rounded-ui border p-3 transition-colors hover:border-brand-300"
+            class="border-line rounded-ui hover:border-brand-300 flex items-center justify-between gap-3 border p-3 transition-colors"
           >
             <div class="min-w-0">
               <p class="text-ink-strong text-sm font-semibold">

@@ -34,7 +34,9 @@ function copyToken(): void {
 }
 
 const syncing = ref(false)
-const syncResult = ref<null | {synced: number, errors: string[], url_profiles_count: number}>(null)
+const syncResult = ref<null | { synced: number; errors: string[]; url_profiles_count: number }>(
+  null,
+)
 
 async function syncWordPress() {
   syncing.value = true
@@ -42,12 +44,20 @@ async function syncWordPress() {
   try {
     const res = await fetch('/api/content/sync-wordpress', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-      body: JSON.stringify({ site_id: props.site.id })
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ site_id: props.site.id }),
     })
     syncResult.value = await res.json()
   } catch (e) {
-    syncResult.value = { synced: 0, errors: [e instanceof Error ? e.message : String(e)], url_profiles_count: 0 }
+    syncResult.value = {
+      synced: 0,
+      errors: [e instanceof Error ? e.message : String(e)],
+      url_profiles_count: 0,
+    }
   }
   syncing.value = false
 }
@@ -68,17 +78,30 @@ async function saveWpCredentials() {
   try {
     const res = await fetch(`/app/sites/${props.site.id}/connector/wp-credentials`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-      body: JSON.stringify({ wp_url: wpUrl.value, wp_username: wpUser.value, wp_app_password: wpPass.value })
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({
+        wp_url: wpUrl.value,
+        wp_username: wpUser.value,
+        wp_app_password: wpPass.value,
+      }),
     })
     const data = await res.json()
     if (data.success) {
-      wpMessage.value = { type: 'success', text: `✅ ذخیره شد — کاربر: ${data.user_name || wpUser.value}` }
+      wpMessage.value = {
+        type: 'success',
+        text: `✅ ذخیره شد — کاربر: ${data.user_name || wpUser.value}`,
+      }
       wpPass.value = ''
     } else {
       wpMessage.value = { type: 'error', text: `❌ ${data.error || 'خطا در ذخیره'}` }
     }
-  } catch (e) { wpMessage.value = { type: 'error', text: `❌ ${(e instanceof Error ? e.message : String(e))}` } }
+  } catch (e) {
+    wpMessage.value = { type: 'error', text: `❌ ${e instanceof Error ? e.message : String(e)}` }
+  }
   wpSaving.value = false
 }
 
@@ -88,7 +111,7 @@ async function removeWpCredentials() {
   try {
     const res = await fetch(`/app/sites/${props.site.id}/connector/wp-credentials`, {
       method: 'DELETE',
-      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+      headers: { 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' },
     })
     const data = await res.json()
     if (data.success) {
@@ -96,7 +119,9 @@ async function removeWpCredentials() {
       wpUser.value = ''
       wpPass.value = ''
     }
-  } catch (e) { wpMessage.value = { type: 'error', text: `❌ ${(e instanceof Error ? e.message : String(e))}` } }
+  } catch (e) {
+    wpMessage.value = { type: 'error', text: `❌ ${e instanceof Error ? e.message : String(e)}` }
+  }
   wpSaving.value = false
 }
 </script>
@@ -133,66 +158,121 @@ async function removeWpCredentials() {
         </div>
       </dl>
       <p v-else class="text-ink-muted">
-        برای اتصال، ابتدا افزونه وردپرس را نصب کنید، سپس توکن اتصال ایجاد کرده و در تنظیمات افزونه وارد کنید.
+        برای اتصال، ابتدا افزونه وردپرس را نصب کنید، سپس توکن اتصال ایجاد کرده و در تنظیمات افزونه
+        وارد کنید.
       </p>
-      <div v-if="!connection || connection.status !== 'connected'" class="border-line mt-6 border-t pt-5">
+      <div
+        v-if="!connection || connection.status !== 'connected'"
+        class="border-line mt-6 border-t pt-5"
+      >
         <h3 class="text-ink-strong mb-3 text-sm font-bold">مرحله ۱ — دانلود و نصب افزونه</h3>
         <p class="text-ink-muted mb-3 text-sm leading-6">
-          افزونه وردپرس را دانلود کرده و از مسیر <strong dir="ltr">افزونه‌ها → افزودن → بارگذاری افزونه</strong> نصب کنید.
+          افزونه وردپرس را دانلود کرده و از مسیر
+          <strong dir="ltr">افزونه‌ها → افزودن → بارگذاری افزونه</strong> نصب کنید.
         </p>
         <a
           href="/vision-prime-connector.zip"
           download
-          class="transition-ui rounded-ui bg-brand-50 text-brand-700 hover:bg-brand-100 inline-flex items-center gap-2 border border-brand-200 px-4 py-2.5 text-sm font-bold"
+          class="transition-ui rounded-ui bg-brand-50 text-brand-700 hover:bg-brand-100 border-brand-200 inline-flex items-center gap-2 border px-4 py-2.5 text-sm font-bold"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="size-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
           </svg>
           دانلود افزونه وردپرس
         </a>
-        <p class="text-ink-muted mt-2 text-xs">نسخه ۱.۲.۰ · پشتیبانی از مقاله، صفحه و محصولات ووکامرس</p>
+        <p class="text-ink-muted mt-2 text-xs">
+          نسخه ۱.۲.۰ · پشتیبانی از مقاله، صفحه و محصولات ووکامرس
+        </p>
       </div>
 
-      
       <div v-if="connection?.status === 'connected'" class="border-line mt-6 border-t pt-5">
         <h3 class="text-ink-strong mb-3 text-sm font-bold">همگام‌سازی محتوا از وردپرس</h3>
-        <p class="text-ink-muted mb-3 text-sm">صفحات، مقالات و محصولات وردپرس را برای لینک‌سازی داخلی هوشمند دریافت کنید.</p>
-        <VButton :loading="syncing" variant="secondary" @click="syncWordPress">🔄 سینک محتوا از وردپرس</VButton>
+        <p class="text-ink-muted mb-3 text-sm">
+          صفحات، مقالات و محصولات وردپرس را برای لینک‌سازی داخلی هوشمند دریافت کنید.
+        </p>
+        <VButton :loading="syncing" variant="secondary" @click="syncWordPress"
+          >🔄 سینک محتوا از وردپرس</VButton
+        >
         <div v-if="syncResult" class="rounded-card bg-surface mt-4 p-4">
-          <p v-if="syncResult.errors?.length === 0" class="text-green-600 text-sm font-semibold">{{ syncResult.synced }} محتوا سینک شد — {{ syncResult.url_profiles_count }} صفحه در پایگاه داده</p>
+          <p v-if="syncResult.errors?.length === 0" class="text-sm font-semibold text-green-600">
+            {{ syncResult.synced }} محتوا سینک شد — {{ syncResult.url_profiles_count }} صفحه در
+            پایگاه داده
+          </p>
           <div v-else>
-            <p class="text-red-600 text-sm">خطا: {{ syncResult.errors?.join(', ') }}</p>
+            <p class="text-sm text-red-600">خطا: {{ syncResult.errors?.join(', ') }}</p>
           </div>
         </div>
       </div>
       <div class="border-line mt-6 border-t pt-5">
         <h3 class="text-ink-strong mb-3 text-sm font-bold">تنظیمات انتشار در وردپرس</h3>
-        <p class="text-ink-muted mb-3 text-sm">برای انتشار مستقیم مقالات و محصولات، اطلاعات WordPress REST API را وارد کنید.</p>
-        <div v-if="wpCredentials" class="rounded-card bg-surface p-4 mb-4">
+        <p class="text-ink-muted mb-3 text-sm">
+          برای انتشار مستقیم مقالات و محصولات، اطلاعات WordPress REST API را وارد کنید.
+        </p>
+        <div v-if="wpCredentials" class="rounded-card bg-surface mb-4 p-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-green-600 text-sm font-semibold">✅ متصل به وردپرس</p>
-              <p class="text-ink-muted text-xs mt-1">کاربر: {{ wpCredentials.wp_username }} · URL: {{ wpCredentials.wp_url }}</p>
+              <p class="text-sm font-semibold text-green-600">✅ متصل به وردپرس</p>
+              <p class="text-ink-muted mt-1 text-xs">
+                کاربر: {{ wpCredentials.wp_username }} · URL: {{ wpCredentials.wp_url }}
+              </p>
             </div>
-            <VButton size="sm" variant="danger" :loading="wpSaving" @click="removeWpCredentials">حذف</VButton>
+            <VButton size="sm" variant="danger" :loading="wpSaving" @click="removeWpCredentials"
+              >حذف</VButton
+            >
           </div>
         </div>
         <div class="space-y-3">
           <div>
             <label class="text-ink-muted text-xs font-medium">آدرس سایت وردپرس</label>
-            <input v-model="wpUrl" type="url" placeholder="https://example.com" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+            <input
+              v-model="wpUrl"
+              type="url"
+              placeholder="https://example.com"
+              class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+            />
           </div>
           <div>
             <label class="text-ink-muted text-xs font-medium">نام کاربری وردپرس</label>
-            <input v-model="wpUser" type="text" placeholder="admin" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
+            <input
+              v-model="wpUser"
+              type="text"
+              placeholder="admin"
+              class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+            />
           </div>
           <div>
             <label class="text-ink-muted text-xs font-medium">Application Password</label>
-            <input v-model="wpPass" type="password" :placeholder="wpCredentials?.has_password ? '(قابل تغییر)' : 'xxxx xxxx xxxx xxxx'" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
-            <p class="text-ink-muted mt-1 text-xs">از wp-admin → کاربران → ویرایش → Application Passwords بسازید</p>
+            <input
+              v-model="wpPass"
+              type="password"
+              :placeholder="wpCredentials?.has_password ? '(قابل تغییر)' : 'xxxx xxxx xxxx xxxx'"
+              class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm"
+            />
+            <p class="text-ink-muted mt-1 text-xs">
+              از wp-admin → کاربران → ویرایش → Application Passwords بسازید
+            </p>
           </div>
-          <VButton :loading="wpSaving" variant="primary" size="sm" @click="saveWpCredentials">💾 ذخیره و تست اتصال</VButton>
-          <p v-if="wpMessage" :class="wpMessage.type === 'success' ? 'text-green-600' : 'text-red-600'" class="text-xs">{{ wpMessage.text }}</p>
+          <VButton :loading="wpSaving" variant="primary" size="sm" @click="saveWpCredentials"
+            >💾 ذخیره و تست اتصال</VButton
+          >
+          <p
+            v-if="wpMessage"
+            :class="wpMessage.type === 'success' ? 'text-green-600' : 'text-red-600'"
+            class="text-xs"
+          >
+            {{ wpMessage.text }}
+          </p>
         </div>
       </div>
 

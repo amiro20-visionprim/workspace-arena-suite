@@ -34,11 +34,15 @@ function logout(): void {
     >
       <div class="border-line border-b p-5">
         <div class="flex items-center gap-2.5">
-          <span class="bg-gradient-brand rounded-ui flex size-10 items-center justify-center text-white">
+          <span
+            class="bg-gradient-brand rounded-ui flex size-10 items-center justify-center text-white"
+          >
             <VIcon name="sparkles" size="lg" />
           </span>
           <div class="min-w-0">
-            <p class="font-display text-ink-strong text-base leading-tight font-bold">پرتال رشد شما</p>
+            <p class="font-display text-ink-strong text-base leading-tight font-bold">
+              پرتال رشد شما
+            </p>
             <p class="text-ink-muted mt-0.5 text-[11px]">قدرت‌گرفته از سوئیت</p>
           </div>
         </div>

@@ -89,14 +89,39 @@ const providerLabels: Record<string, string> = {
 }
 
 const freeModels = [
-  { id: 'meta-llama/llama-3.3-70b-versatile:free', name: 'Llama 3.3 70B Versatile', quality: 'بالا', ctx: '128K' },
+  {
+    id: 'meta-llama/llama-3.3-70b-versatile:free',
+    name: 'Llama 3.3 70B Versatile',
+    quality: 'بالا',
+    ctx: '128K',
+  },
   { id: 'qwen/qwen3-235b-a22b:free', name: 'Qwen3 235B', quality: 'بالا', ctx: '128K' },
   { id: 'deepseek/deepseek-r1-0528:free', name: 'DeepSeek R1', quality: 'بالا', ctx: '128K' },
   { id: 'google/gemma-4-31b-it:free', name: 'Gemma 4 31B', quality: 'متوسط', ctx: '262K' },
-  { id: 'mistralai/mistral-small-3.2-24b-instruct:free', name: 'Mistral Small 3.2', quality: 'بالا', ctx: '128K' },
-  { id: 'nvidia/nemotron-3-ultra-550b-a55b:free', name: 'Nemotron 3 Ultra 550B', quality: 'بالا', ctx: '1M' },
-  { id: 'meta-llama/llama-3.3-8b-instruct:free', name: 'Llama 3.3 8B (سریع)', quality: 'سریع', ctx: '128K' },
-  { id: 'nvidia/nemotron-3.5-lightning:free', name: 'Nemotron 3.5 Lightning (سریع)', quality: 'سریع', ctx: '1M' },
+  {
+    id: 'mistralai/mistral-small-3.2-24b-instruct:free',
+    name: 'Mistral Small 3.2',
+    quality: 'بالا',
+    ctx: '128K',
+  },
+  {
+    id: 'nvidia/nemotron-3-ultra-550b-a55b:free',
+    name: 'Nemotron 3 Ultra 550B',
+    quality: 'بالا',
+    ctx: '1M',
+  },
+  {
+    id: 'meta-llama/llama-3.3-8b-instruct:free',
+    name: 'Llama 3.3 8B (سریع)',
+    quality: 'سریع',
+    ctx: '128K',
+  },
+  {
+    id: 'nvidia/nemotron-3.5-lightning:free',
+    name: 'Nemotron 3.5 Lightning (سریع)',
+    quality: 'سریع',
+    ctx: '1M',
+  },
 ]
 
 const aiForm = useForm({
@@ -108,8 +133,20 @@ const aiForm = useForm({
 const testing = ref(false)
 const testResult = ref<{ success: boolean; message: string } | null>(null)
 const detectingModels = ref(false)
-const detectedModels = ref<Array<{id: string; name: string; status: string; context_window: number | null; max_output: number | null}>>([])
-const providerUsage = ref<{total_tokens: number | null; limit: number | null; reset_at: string | null} | null>(null)
+const detectedModels = ref<
+  Array<{
+    id: string
+    name: string
+    status: string
+    context_window: number | null
+    max_output: number | null
+  }>
+>([])
+const providerUsage = ref<{
+  total_tokens: number | null
+  limit: number | null
+  reset_at: string | null
+} | null>(null)
 const showModelDetails = ref(false)
 
 async function detectModels(): Promise<void> {
@@ -152,7 +189,9 @@ function selectDetectedModel(modelId: string): void {
 function saveAiProvider(): void {
   aiForm.post('/app/settings/ai-provider', {
     preserveScroll: true,
-    onSuccess: () => { aiForm.reset('api_key') },
+    onSuccess: () => {
+      aiForm.reset('api_key')
+    },
   })
 }
 
@@ -169,10 +208,17 @@ async function testConnection(): Promise<void> {
     const res = await fetch('/api/content/test-provider', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ provider: aiForm.provider, api_key: aiForm.api_key, model: aiForm.model || undefined }),
+      body: JSON.stringify({
+        provider: aiForm.provider,
+        api_key: aiForm.api_key,
+        model: aiForm.model || undefined,
+      }),
     })
     const data = await res.json()
-    testResult.value = { success: data.success, message: data.success ? `اتصال موفق — مدل: ${data.model}` : `خطا: ${data.error}` }
+    testResult.value = {
+      success: data.success,
+      message: data.success ? `اتصال موفق — مدل: ${data.model}` : `خطا: ${data.error}`,
+    }
   } catch {
     testResult.value = { success: false, message: 'خطا در تست اتصال' }
   }
@@ -266,7 +312,10 @@ async function testConnection(): Promise<void> {
         </p>
 
         <div class="border-line mt-5 flex gap-3 border-t pt-5">
-          <VButton :href="wordpress.totalSites ? '/app/sites' : '/app/sites/create'" variant="secondary">
+          <VButton
+            :href="wordpress.totalSites ? '/app/sites' : '/app/sites/create'"
+            variant="secondary"
+          >
             {{ wordpress.totalSites ? 'مدیریت سایت‌ها' : 'افزودن سایت' }}
           </VButton>
         </div>
@@ -274,156 +323,238 @@ async function testConnection(): Promise<void> {
 
       <!-- AI Gateway — فقط سوپر ادمین -->
       <template v-if="isSuperAdmin">
-      <VCard
-        class="lg:col-span-2"
-        title=" هوش مصنوعی — Gateway"
-        description="تولید محتوا، پیشنهادات هوشمند و تحلیل‌ها. با سیستم Failover خودکار بین ۱۰+ مدل."
-      >
-        <div class="flex flex-wrap items-center gap-3">
-          <VBadge :tone="ai.isConfigured ? 'success' : 'warning'">
-            {{ ai.isConfigured ? 'پیکربندی شده' : 'فقط RuleBased فعال' }}
-          </VBadge>
-        </div>
-
-        <!-- Current providers -->
-        <div v-if="ai.providers.length" class="mt-4 space-y-2">
-          <div
-            v-for="provider in ai.providers"
-            :key="provider.provider"
-            class="border-line flex items-center justify-between gap-3 rounded-ui border px-4 py-3"
-          >
-            <div>
-              <p class="text-ink-strong text-sm font-semibold" dir="ltr">{{ provider.provider }}</p>
-              <p class="text-ink-muted text-xs" dir="ltr">{{ provider.model || 'مدل پیش‌فرض' }}</p>
-            </div>
-            <VButton size="sm" variant="danger" @click="removeAiProvider(provider.provider)">حذف</VButton>
-          </div>
-        </div>
-
-        <p class="text-ink-muted mt-4 max-w-2xl text-sm leading-6">
-          {{ ai.isConfigured
-            ? 'سرویس هوش مصنوعی فعال است. اگر کلید شما به لیمیت بخورد، سیستم خودکار به مدل‌های رایگان سوئیچ می‌کند.'
-            : 'بدون کلید API، فقط از موتور داخلی (RuleBased) استفاده می‌شود. برای تولید واقعی، کلید وارد کنید.'
-          }}
-        </p>
-
-        <!-- Config form -->
-        <form class="border-line mt-5 grid gap-4 border-t pt-5 sm:grid-cols-3" @submit.prevent="saveAiProvider">
-          <VSelect
-            v-model="aiForm.provider"
-            label="سرویس"
-            :options="providerOptions"
-            :error="aiForm.errors.provider"
-          />
-          <VInput
-            v-model="aiForm.api_key"
-            label="کلید API"
-            type="password"
-            dir="ltr"
-            :placeholder="aiForm.provider === 'openrouter' ? 'sk-or-...' : aiForm.provider === 'deepseek' ? 'sk-...' : ''"
-            hint="رمزنگاری‌شده ذخیره می‌شود."
-            :error="aiForm.errors.api_key"
-          />
-          <VInput
-            v-model="aiForm.model"
-            label="مدل (اختیاری)"
-            type="text"
-            dir="ltr"
-            :placeholder="aiForm.provider === 'deepseek' ? 'deepseek-chat' : aiForm.provider === 'openrouter' ? 'auto' : 'gpt-4o-mini'"
-            :error="aiForm.errors.model"
-          />
-          <div class="flex items-center gap-3 sm:col-span-3">
-            <VButton type="submit" :loading="aiForm.processing">ذخیره پیکربندی</VButton>
-            <VButton type="button" variant="secondary" :loading="testing" @click="testConnection">تست اتصال</VButton>
-            <VButton type="button" variant="secondary" :loading="detectingModels" @click="detectModels">
-              🔍 تشخیص خودکار مدل‌ها
-            </VButton>
-          </div>
-        </form>
-
-        <!-- Test result -->
-        <div v-if="testResult" class="mt-3 rounded-xl p-3 text-sm" :class="testResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'">
-          {{ testResult.message }}
-        </div>
-
-        <!-- Detected models -->
-        <div v-if="showModelDetails && detectedModels.length" class="border-line mt-5 border-t pt-5">
-          <div class="flex items-center justify-between">
-            <h3 class="text-ink-strong text-sm font-bold">مدل‌های تشخیص‌داده‌شده ({{ detectedModels.length }})</h3>
-            <button type="button" class="text-ink-muted text-xs" @click="showModelDetails = false">بستن</button>
+        <VCard
+          class="lg:col-span-2"
+          title=" هوش مصنوعی — Gateway"
+          description="تولید محتوا، پیشنهادات هوشمند و تحلیل‌ها. با سیستم Failover خودکار بین ۱۰+ مدل."
+        >
+          <div class="flex flex-wrap items-center gap-3">
+            <VBadge :tone="ai.isConfigured ? 'success' : 'warning'">
+              {{ ai.isConfigured ? 'پیکربندی شده' : 'فقط RuleBased فعال' }}
+            </VBadge>
           </div>
 
-          <!-- Usage info -->
-          <div v-if="providerUsage" class="bg-surface-muted mt-3 rounded-lg p-3">
-            <p class="text-ink-strong text-xs font-bold">مصرف و محدودیت</p>
-            <div class="mt-2 flex flex-wrap gap-4 text-xs">
-              <span v-if="providerUsage.total_tokens !== null">
-                <span class="text-ink-muted">مصرف توکن:</span> <span class="font-bold">{{ new Intl.NumberFormat('fa-IR').format(providerUsage.total_tokens) }}</span>
-              </span>
-              <span v-if="providerUsage.limit !== null">
-                <span class="text-ink-muted">محدودیت:</span> <span class="font-bold">{{ new Intl.NumberFormat('fa-IR').format(providerUsage.limit) }}</span>
-              </span>
-              <span v-if="providerUsage.reset_at">
-                <span class="text-ink-muted">بازنشانی:</span> <span class="font-bold">{{ providerUsage.reset_at }}</span>
-              </span>
-            </div>
-          </div>
-
-          <!-- Models list -->
-          <div class="mt-3 space-y-1">
+          <!-- Current providers -->
+          <div v-if="ai.providers.length" class="mt-4 space-y-2">
             <div
-              v-for="model in detectedModels"
-              :key="model.id"
-              class="flex items-center justify-between gap-3 rounded-lg px-3 py-2 hover:bg-surface-muted cursor-pointer"
-              @click="selectDetectedModel(model.id)"
+              v-for="provider in ai.providers"
+              :key="provider.provider"
+              class="border-line rounded-ui flex items-center justify-between gap-3 border px-4 py-3"
             >
-              <div class="min-w-0 flex-1">
-                <p class="text-ink-strong text-sm font-semibold" dir="ltr">{{ model.id }}</p>
-                <div class="flex items-center gap-2 text-xs">
-                  <span v-if="model.context_window" class="text-ink-muted">{{ Math.round(model.context_window / 1000) }}K context</span>
-                  <span v-if="model.max_output" class="text-ink-muted">{{ model.max_output }} output</span>
+              <div>
+                <p class="text-ink-strong text-sm font-semibold" dir="ltr">
+                  {{ provider.provider }}
+                </p>
+                <p class="text-ink-muted text-xs" dir="ltr">
+                  {{ provider.model || 'مدل پیش‌فرض' }}
+                </p>
+              </div>
+              <VButton size="sm" variant="danger" @click="removeAiProvider(provider.provider)"
+                >حذف</VButton
+              >
+            </div>
+          </div>
+
+          <p class="text-ink-muted mt-4 max-w-2xl text-sm leading-6">
+            {{
+              ai.isConfigured
+                ? 'سرویس هوش مصنوعی فعال است. اگر کلید شما به لیمیت بخورد، سیستم خودکار به مدل‌های رایگان سوئیچ می‌کند.'
+                : 'بدون کلید API، فقط از موتور داخلی (RuleBased) استفاده می‌شود. برای تولید واقعی، کلید وارد کنید.'
+            }}
+          </p>
+
+          <!-- Config form -->
+          <form
+            class="border-line mt-5 grid gap-4 border-t pt-5 sm:grid-cols-3"
+            @submit.prevent="saveAiProvider"
+          >
+            <VSelect
+              v-model="aiForm.provider"
+              label="سرویس"
+              :options="providerOptions"
+              :error="aiForm.errors.provider"
+            />
+            <VInput
+              v-model="aiForm.api_key"
+              label="کلید API"
+              type="password"
+              dir="ltr"
+              :placeholder="
+                aiForm.provider === 'openrouter'
+                  ? 'sk-or-...'
+                  : aiForm.provider === 'deepseek'
+                    ? 'sk-...'
+                    : ''
+              "
+              hint="رمزنگاری‌شده ذخیره می‌شود."
+              :error="aiForm.errors.api_key"
+            />
+            <VInput
+              v-model="aiForm.model"
+              label="مدل (اختیاری)"
+              type="text"
+              dir="ltr"
+              :placeholder="
+                aiForm.provider === 'deepseek'
+                  ? 'deepseek-chat'
+                  : aiForm.provider === 'openrouter'
+                    ? 'auto'
+                    : 'gpt-4o-mini'
+              "
+              :error="aiForm.errors.model"
+            />
+            <div class="flex items-center gap-3 sm:col-span-3">
+              <VButton type="submit" :loading="aiForm.processing">ذخیره پیکربندی</VButton>
+              <VButton type="button" variant="secondary" :loading="testing" @click="testConnection"
+                >تست اتصال</VButton
+              >
+              <VButton
+                type="button"
+                variant="secondary"
+                :loading="detectingModels"
+                @click="detectModels"
+              >
+                🔍 تشخیص خودکار مدل‌ها
+              </VButton>
+            </div>
+          </form>
+
+          <!-- Test result -->
+          <div
+            v-if="testResult"
+            class="mt-3 rounded-xl p-3 text-sm"
+            :class="testResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'"
+          >
+            {{ testResult.message }}
+          </div>
+
+          <!-- Detected models -->
+          <div
+            v-if="showModelDetails && detectedModels.length"
+            class="border-line mt-5 border-t pt-5"
+          >
+            <div class="flex items-center justify-between">
+              <h3 class="text-ink-strong text-sm font-bold">
+                مدل‌های تشخیص‌داده‌شده ({{ detectedModels.length }})
+              </h3>
+              <button
+                type="button"
+                class="text-ink-muted text-xs"
+                @click="showModelDetails = false"
+              >
+                بستن
+              </button>
+            </div>
+
+            <!-- Usage info -->
+            <div v-if="providerUsage" class="bg-surface-muted mt-3 rounded-lg p-3">
+              <p class="text-ink-strong text-xs font-bold">مصرف و محدودیت</p>
+              <div class="mt-2 flex flex-wrap gap-4 text-xs">
+                <span v-if="providerUsage.total_tokens !== null">
+                  <span class="text-ink-muted">مصرف توکن:</span>
+                  <span class="font-bold">{{
+                    new Intl.NumberFormat('fa-IR').format(providerUsage.total_tokens)
+                  }}</span>
+                </span>
+                <span v-if="providerUsage.limit !== null">
+                  <span class="text-ink-muted">محدودیت:</span>
+                  <span class="font-bold">{{
+                    new Intl.NumberFormat('fa-IR').format(providerUsage.limit)
+                  }}</span>
+                </span>
+                <span v-if="providerUsage.reset_at">
+                  <span class="text-ink-muted">بازنشانی:</span>
+                  <span class="font-bold">{{ providerUsage.reset_at }}</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Models list -->
+            <div class="mt-3 space-y-1">
+              <div
+                v-for="model in detectedModels"
+                :key="model.id"
+                class="hover:bg-surface-muted flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2"
+                @click="selectDetectedModel(model.id)"
+              >
+                <div class="min-w-0 flex-1">
+                  <p class="text-ink-strong text-sm font-semibold" dir="ltr">{{ model.id }}</p>
+                  <div class="flex items-center gap-2 text-xs">
+                    <span v-if="model.context_window" class="text-ink-muted"
+                      >{{ Math.round(model.context_window / 1000) }}K context</span
+                    >
+                    <span v-if="model.max_output" class="text-ink-muted"
+                      >{{ model.max_output }} output</span
+                    >
+                  </div>
+                </div>
+                <VBadge :tone="model.status === 'active' ? 'success' : 'danger'">
+                  {{ model.status === 'active' ? 'فعال' : 'غیرفعال' }}
+                </VBadge>
+              </div>
+            </div>
+            <p class="text-ink-muted mt-2 text-xs">
+              روی هر مدل کلیک کنید تا در فیلد مدل انتخاب شود.
+            </p>
+          </div>
+
+          <!-- Free models section -->
+          <div class="border-line mt-6 border-t pt-5">
+            <h3 class="text-ink-strong mb-3 text-sm font-semibold">
+              مدل‌های رایگان OpenRouter (بدون نیاز به کلید)
+            </h3>
+            <p class="text-ink-muted mb-3 text-xs">
+              سیستم به صورت خودکار از این مدل‌ها استفاده می‌کند — حتی اگر کلید API نداشته باشید. اگر
+              کلید شما به لیمیت بخورد، بلافاصله به مدل بعدی سوئیچ می‌شود.
+            </p>
+            <div class="grid gap-2 sm:grid-cols-2">
+              <div
+                v-for="model in freeModels"
+                :key="model.id"
+                class="border-line flex items-center justify-between rounded-lg border px-3 py-2"
+              >
+                <div>
+                  <p class="text-ink-strong text-xs font-medium">{{ model.name }}</p>
+                  <p class="text-ink-muted text-xs" dir="ltr">{{ model.id }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <VBadge
+                    :tone="
+                      model.quality === 'بالا'
+                        ? 'success'
+                        : model.quality === 'سریع'
+                          ? 'info'
+                          : 'neutral'
+                    "
+                    size="sm"
+                    >{{ model.quality }}</VBadge
+                  >
+                  <VBadge tone="neutral" size="sm">{{ model.ctx }}</VBadge>
                 </div>
               </div>
-              <VBadge :tone="model.status === 'active' ? 'success' : 'danger'">
-                {{ model.status === 'active' ? 'فعال' : 'غیرفعال' }}
-              </VBadge>
             </div>
           </div>
-          <p class="text-ink-muted mt-2 text-xs">روی هر مدل کلیک کنید تا در فیلد مدل انتخاب شود.</p>
-        </div>
 
-        <!-- Free models section -->
-        <div class="border-line mt-6 border-t pt-5">
-          <h3 class="text-ink-strong mb-3 text-sm font-semibold">مدل‌های رایگان OpenRouter (بدون نیاز به کلید)</h3>
-          <p class="text-ink-muted mb-3 text-xs">
-            سیستم به صورت خودکار از این مدل‌ها استفاده می‌کند — حتی اگر کلید API نداشته باشید. اگر کلید شما به لیمیت بخورد، بلافاصله به مدل بعدی سوئیچ می‌شود.
-          </p>
-          <div class="grid gap-2 sm:grid-cols-2">
-            <div v-for="model in freeModels" :key="model.id" class="border-line flex items-center justify-between rounded-lg border px-3 py-2">
-              <div>
-                <p class="text-ink-strong text-xs font-medium">{{ model.name }}</p>
-                <p class="text-ink-muted text-xs" dir="ltr">{{ model.id }}</p>
-              </div>
-              <div class="flex items-center gap-2">
-                <VBadge :tone="model.quality === 'بالا' ? 'success' : model.quality === 'سریع' ? 'info' : 'neutral'" size="sm">{{ model.quality }}</VBadge>
-                <VBadge tone="neutral" size="sm">{{ model.ctx }}</VBadge>
-              </div>
-            </div>
+          <!-- How it works -->
+          <div class="border-line mt-6 border-t pt-5">
+            <h3 class="text-ink-strong mb-3 text-sm font-semibold">چطور کار می‌کند؟</h3>
+            <ol class="text-ink-muted space-y-2 text-xs leading-6">
+              <li>
+                <strong>۱.</strong> اول کلید شما بررسی می‌شود (DeepSeek/OpenAI/Anthropic/Groq/...)
+              </li>
+              <li><strong>۲.</strong> اگر لیمیت خورد → خودکار به مدل‌های رایگان (۱۴+ مدل) سوئیچ</li>
+              <li><strong>۳.</strong> اگر همه مدل‌ها لیمیت باشن → موتور داخلی (RuleBased)</li>
+              <li>
+                <strong>۴.</strong> اگر در حین تولید محتوا لیمیت بخورد → تولید مجدد با کلید جدید
+                (حداکثر ۳ بار)
+              </li>
+            </ol>
+            <p class="text-ink-muted mt-3 text-xs">
+              💡 <strong>۱۶+ سرویس AI</strong> داخلی و خارجی پشتیبانی می‌شود — از DeepSeek و سمانی
+              تا OpenAI و Anthropic.
+            </p>
           </div>
-        </div>
-
-        <!-- How it works -->
-        <div class="border-line mt-6 border-t pt-5">
-          <h3 class="text-ink-strong mb-3 text-sm font-semibold">چطور کار می‌کند؟</h3>
-          <ol class="text-ink-muted space-y-2 text-xs leading-6">
-            <li><strong>۱.</strong> اول کلید شما بررسی می‌شود (DeepSeek/OpenAI/Anthropic/Groq/...)</li>
-            <li><strong>۲.</strong> اگر لیمیت خورد → خودکار به مدل‌های رایگان (۱۴+ مدل) سوئیچ</li>
-            <li><strong>۳.</strong> اگر همه مدل‌ها لیمیت باشن → موتور داخلی (RuleBased)</li>
-            <li><strong>۴.</strong> اگر در حین تولید محتوا لیمیت بخورد → تولید مجدد با کلید جدید (حداکثر ۳ بار)</li>
-          </ol>
-          <p class="text-ink-muted mt-3 text-xs">💡 <strong>۱۶+ سرویس AI</strong> داخلی و خارجی پشتیبانی می‌شود — از DeepSeek و سمانی تا OpenAI و Anthropic.</p>
-        </div>
-      </VCard>
+        </VCard>
       </template>
     </div>
   </AppLayout>

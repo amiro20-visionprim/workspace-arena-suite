@@ -57,12 +57,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
 
 <template>
   <div dir="ltr" class="w-full overflow-x-auto" @mouseleave="hovered = null">
-    <svg
-      :viewBox="`0 0 ${W} ${H}`"
-      class="min-w-[480px] w-full"
-      role="img"
-      :aria-label="ariaLabel"
-    >
+    <svg :viewBox="`0 0 ${W} ${H}`" class="w-full min-w-[480px]" role="img" :aria-label="ariaLabel">
       <defs>
         <linearGradient id="vp-area-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.28" />

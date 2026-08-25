@@ -188,7 +188,9 @@ function submitConvert(): void {
             >
               تبدیل به تغییر اجرایی
             </VButton>
-            <VButton size="sm" variant="secondary" @click="openEdit(recommendation)">ویرایش</VButton>
+            <VButton size="sm" variant="secondary" @click="openEdit(recommendation)"
+              >ویرایش</VButton
+            >
           </div>
         </div>
         <h3 class="text-ink-strong mt-3 font-semibold">{{ recommendation.title }}</h3>
@@ -255,7 +257,12 @@ function submitConvert(): void {
           hint="در صورت انتخاب نشدن، بدون مالک ذخیره می‌شود."
           :error="editForm.errors.owner_id"
         />
-        <VInput v-model="editForm.due_at" label="مهلت انجام" type="date" :error="editForm.errors.due_at" />
+        <VInput
+          v-model="editForm.due_at"
+          label="مهلت انجام"
+          type="date"
+          :error="editForm.errors.due_at"
+        />
         <div class="grid gap-4 sm:grid-cols-2">
           <VSelect
             v-model="editForm.priority"

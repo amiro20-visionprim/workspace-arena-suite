@@ -26,7 +26,7 @@ function scoreTone(score: number): 'success' | 'warning' | 'danger' | 'info' {
         v-for="audit in audits.data"
         :key="audit.id"
         :href="`/app/money-pages/${audit.id}`"
-        class="rounded-card border-line bg-surface block border p-5 transition-colors hover:border-brand-300"
+        class="rounded-card border-line bg-surface hover:border-brand-300 block border p-5 transition-colors"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">

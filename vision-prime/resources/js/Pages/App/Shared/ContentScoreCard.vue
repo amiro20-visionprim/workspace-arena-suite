@@ -24,8 +24,8 @@ defineProps<{
   headingMin: number
 }>()
 
-const scoreColor = (s: number) => s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger'
-const scoreLabel = (s: number) => s >= 80 ? 'عالی' : s >= 60 ? 'قابل قبول' : 'نیاز به بهبود'
+const scoreColor = (s: number) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger')
+const scoreLabel = (s: number) => (s >= 80 ? 'عالی' : s >= 60 ? 'قابل قبول' : 'نیاز به بهبود')
 </script>
 
 <template>
@@ -34,43 +34,90 @@ const scoreLabel = (s: number) => s >= 80 ? 'عالی' : s >= 60 ? 'قابل ق�
     <div class="flex items-center gap-5">
       <div class="relative flex h-20 w-20 shrink-0 items-center justify-center">
         <svg class="h-20 w-20 -rotate-90" viewBox="0 0 36 36">
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2" class="text-surface-muted" />
           <circle
-cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2.5"
-            :stroke-dasharray="`${score * 1} ${100 - score}`" stroke-linecap="round"
-            :class="scoreColor(score) === 'success' ? 'text-green-500' : scoreColor(score) === 'warning' ? 'text-amber-500' : 'text-red-500'" />
+            cx="18"
+            cy="18"
+            r="15.9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="text-surface-muted"
+          />
+          <circle
+            cx="18"
+            cy="18"
+            r="15.9"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            :stroke-dasharray="`${score * 1} ${100 - score}`"
+            stroke-linecap="round"
+            :class="
+              scoreColor(score) === 'success'
+                ? 'text-green-500'
+                : scoreColor(score) === 'warning'
+                  ? 'text-amber-500'
+                  : 'text-red-500'
+            "
+          />
         </svg>
         <span class="absolute text-xl font-bold">{{ score }}</span>
       </div>
       <div>
         <p class="text-ink-strong text-lg font-bold">{{ scoreLabel(score) }}</p>
-        <p class="text-ink-muted text-xs leading-5">{{ checks.filter(c => c.passed).length }}/{{ checks.length }} آیتم پاس شده</p>
+        <p class="text-ink-muted text-xs leading-5">
+          {{ checks.filter((c) => c.passed).length }}/{{ checks.length }} آیتم پاس شده
+        </p>
       </div>
     </div>
 
     <!-- متریک‌های اصلی -->
     <div class="mt-5 grid grid-cols-2 gap-3 text-xs">
-      <div class="rounded-lg bg-surface-muted p-3">
+      <div class="bg-surface-muted rounded-lg p-3">
         <p class="text-ink-muted">عنوان متا</p>
-        <p class="text-ink-strong font-semibold" :class="metaTitleLength >= metaTitleRange[0] && metaTitleLength <= metaTitleRange[1] ? 'text-green-500' : 'text-red-500'">
+        <p
+          class="text-ink-strong font-semibold"
+          :class="
+            metaTitleLength >= metaTitleRange[0] && metaTitleLength <= metaTitleRange[1]
+              ? 'text-green-500'
+              : 'text-red-500'
+          "
+        >
           {{ metaTitleLength }}/{{ metaTitleRange[1] }}
         </p>
       </div>
-      <div class="rounded-lg bg-surface-muted p-3">
+      <div class="bg-surface-muted rounded-lg p-3">
         <p class="text-ink-muted">توضیح متا</p>
-        <p class="text-ink-strong font-semibold" :class="metaDescLength >= metaDescRange[0] && metaDescLength <= metaDescRange[1] ? 'text-green-500' : 'text-red-500'">
+        <p
+          class="text-ink-strong font-semibold"
+          :class="
+            metaDescLength >= metaDescRange[0] && metaDescLength <= metaDescRange[1]
+              ? 'text-green-500'
+              : 'text-red-500'
+          "
+        >
           {{ metaDescLength }}/{{ metaDescRange[1] }}
         </p>
       </div>
-      <div class="rounded-lg bg-surface-muted p-3">
+      <div class="bg-surface-muted rounded-lg p-3">
         <p class="text-ink-muted">تراکم کلیدواژه</p>
-        <p class="text-ink-strong font-semibold" :class="keywordDensity >= keywordRange[0] && keywordDensity <= keywordRange[1] ? 'text-green-500' : 'text-red-500'">
+        <p
+          class="text-ink-strong font-semibold"
+          :class="
+            keywordDensity >= keywordRange[0] && keywordDensity <= keywordRange[1]
+              ? 'text-green-500'
+              : 'text-red-500'
+          "
+        >
           {{ keywordDensity.toFixed(1) }}%
         </p>
       </div>
-      <div class="rounded-lg bg-surface-muted p-3">
+      <div class="bg-surface-muted rounded-lg p-3">
         <p class="text-ink-muted">تعداد کلمات</p>
-        <p class="text-ink-strong font-semibold" :class="wordCount >= wordRange[0] ? 'text-green-500' : 'text-red-500'">
+        <p
+          class="text-ink-strong font-semibold"
+          :class="wordCount >= wordRange[0] ? 'text-green-500' : 'text-red-500'"
+        >
           {{ wordCount }}/{{ wordRange[0] }}
         </p>
       </div>

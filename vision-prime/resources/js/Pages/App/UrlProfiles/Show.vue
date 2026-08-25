@@ -110,7 +110,9 @@ function percent(value: number): string {
           <p class="font-latin text-ink-muted mt-1 text-xs" dir="ltr">{{ s.hash }}</p>
           <p class="text-ink-muted mt-1 text-sm">{{ s.wordCount }} کلمه</p>
         </div>
-        <p v-if="!profile.snapshots.length" class="text-ink-muted">عکسی از محتوا ثبت نشده است.</p></VCard
+        <p v-if="!profile.snapshots.length" class="text-ink-muted">
+          عکسی از محتوا ثبت نشده است.
+        </p></VCard
       >
     </div></AppLayout
   >

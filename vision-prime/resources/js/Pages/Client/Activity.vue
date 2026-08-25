@@ -28,7 +28,7 @@ defineProps<{
     />
 
     <div v-if="activities.length" class="mt-8">
-      <ol class="relative space-y-6 border-s border-line ms-2 ps-6">
+      <ol class="border-line relative ms-2 space-y-6 border-s ps-6">
         <li v-for="activity in activities" :key="activity.id" class="relative">
           <span
             class="bg-brand-700 absolute -start-[31px] top-1.5 size-3 rounded-full ring-4 ring-white"

@@ -98,7 +98,7 @@ const registry: Record<IconName, Component> = {
   activity: Activity,
   'arrow-down': ArrowDownRight,
   'cursor-click': MousePointerClick,
-  'document': FileText,
+  document: FileText,
   'trending-up': TrendingUp,
   'arrow-up': ArrowUpRight,
   ban: Ban,

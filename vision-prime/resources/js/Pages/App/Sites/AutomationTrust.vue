@@ -62,17 +62,29 @@ const sampleColumns: TableColumn[] = [
   { key: 'approvedAt', label: 'زمان تأیید خودکار', align: 'end' },
 ]
 
-function stat(label: string, value: string | number, hint: string): { label: string; value: string | number; hint: string } {
+function stat(
+  label: string,
+  value: string | number,
+  hint: string,
+): { label: string; value: string | number; hint: string } {
   return { label, value, hint }
 }
 
 const stats = (): Array<{ label: string; value: string | number; hint: string }> => [
-  stat('نرخ موفقیت انتشار خودکار', props.kpis.successRate === null ? '—' : `${props.kpis.successRate}٪`, 'executed ÷ انتشار خودکار'),
+  stat(
+    'نرخ موفقیت انتشار خودکار',
+    props.kpis.successRate === null ? '—' : `${props.kpis.successRate}٪`,
+    'executed ÷ انتشار خودکار',
+  ),
   stat('انتشار خودکار', `${props.kpis.autoExecuted}`, 'موفق: ' + props.kpis.autoExecuted),
   stat('بازگشت خودکار (rollback)', props.kpis.rollbacks, 'بازگشت دادهشده به حالت قبل'),
   stat('تأیید سیستم', props.kpis.systemApprovals, 'reviewer=system'),
   stat('تأیید انسانی', props.kpis.humanApproved, 'ردشده: ' + props.kpis.humanRejected),
-  stat('زمان صرفهجوییشده (تخمینی)', `${props.kpis.estimatedHoursSaved} ساعت`, '≈ ۱۵ دقیقه بهازای هر انتشار خودکار'),
+  stat(
+    'زمان صرفهجوییشده (تخمینی)',
+    `${props.kpis.estimatedHoursSaved} ساعت`,
+    '≈ ۱۵ دقیقه بهازای هر انتشار خودکار',
+  ),
 ]
 </script>
 
@@ -91,7 +103,11 @@ const stats = (): Array<{ label: string; value: string | number; hint: string }>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-2">
       <VCard title="نرخ موفقیت هر نوع تغییر (حلقهٔ یادگیری)">
-        <VTable :columns="learningColumns" :rows="learning as unknown as TableRow[]" row-key="commandType" />
+        <VTable
+          :columns="learningColumns"
+          :rows="learning as unknown as TableRow[]"
+          row-key="commandType"
+        />
         <p v-if="learning.length === 0" class="text-ink-muted mt-4 text-sm">
           هنوز داده‌ای از حلقهٔ یادگیری ثبت نشده — بعد از اولین اجرای خودکار ظاهر می‌شود.
         </p>
@@ -104,7 +120,17 @@ const stats = (): Array<{ label: string; value: string | number; hint: string }>
             <span v-else class="text-ink-muted">—</span>
           </template>
           <template #cell-status="{ row }">
-            <VBadge :tone="row.status === 'executed' ? 'success' : row.status === 'rolled_back' ? 'warning' : row.status === 'failed' ? 'danger' : 'neutral'">
+            <VBadge
+              :tone="
+                row.status === 'executed'
+                  ? 'success'
+                  : row.status === 'rolled_back'
+                    ? 'warning'
+                    : row.status === 'failed'
+                      ? 'danger'
+                      : 'neutral'
+              "
+            >
               {{ row.status }}
             </VBadge>
           </template>
@@ -112,7 +138,9 @@ const stats = (): Array<{ label: string; value: string | number; hint: string }>
             <span class="font-latin text-xs" dir="ltr">{{ row.url ?? '—' }}</span>
           </template>
         </VTable>
-        <p v-if="reviewSample.length === 0" class="text-ink-muted mt-4 text-sm">هنوز انتشار خودکاری ثبت نشده است.</p>
+        <p v-if="reviewSample.length === 0" class="text-ink-muted mt-4 text-sm">
+          هنوز انتشار خودکاری ثبت نشده است.
+        </p>
       </VCard>
     </div>
   </AppLayout>

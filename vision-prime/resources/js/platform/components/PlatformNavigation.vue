@@ -12,9 +12,19 @@ interface NavigationItem {
 }
 
 const items: NavigationItem[] = [
-  { label: 'داشبورد فرماندهی', href: '/platform/dashboard', icon: 'chart-line', hint: 'KPI و تصمیمها' },
+  {
+    label: 'داشبورد فرماندهی',
+    href: '/platform/dashboard',
+    icon: 'chart-line',
+    hint: 'KPI و تصمیمها',
+  },
   { label: 'سازمانها', href: '/platform/organizations', icon: 'building', hint: 'رصد و مدیریت' },
-  { label: 'اشتراکها', href: '/platform/subscriptions', icon: 'calendar-clock', hint: 'پلن و پرداخت' },
+  {
+    label: 'اشتراکها',
+    href: '/platform/subscriptions',
+    icon: 'calendar-clock',
+    hint: 'پلن و پرداخت',
+  },
   { label: 'پلن‌ها', href: '/platform/plans', icon: 'shopping-bag', hint: 'قیمت و ظرفیت' },
   { label: 'پرداختها', href: '/platform/payments', icon: 'chart-bar', hint: 'درآمد و معوق' },
   { label: 'فاکتورها', href: '/platform/invoices', icon: 'file', hint: 'صدور و پیگیری' },
@@ -38,7 +48,9 @@ function isActive(item: NavigationItem): boolean {
       :key="item.href"
       :href="item.href"
       class="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
-      :class="isActive(item) ? 'bg-brand-600/10 text-brand-600' : 'text-ink-strong hover:bg-surface-muted'"
+      :class="
+        isActive(item) ? 'bg-brand-600/10 text-brand-600' : 'text-ink-strong hover:bg-surface-muted'
+      "
     >
       <span
         class="flex size-9 shrink-0 items-center justify-center rounded-lg"

@@ -31,37 +31,43 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
     <!-- ambient glow behind the window -->
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-brand-500/25 via-indigo-500/20 to-violet-500/25 blur-2xl"
+      class="from-brand-500/25 pointer-events-none absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br via-indigo-500/20 to-violet-500/25 blur-2xl"
     />
 
     <!-- browser window -->
     <div
-      class="shadow-panel relative overflow-hidden rounded-2xl border border-line-strong/70 bg-surface"
+      class="shadow-panel border-line-strong/70 bg-surface relative overflow-hidden rounded-2xl border"
     >
       <!-- window chrome -->
-      <div class="flex items-center gap-3 border-b border-line bg-surface-muted/70 px-4 py-2.5">
+      <div class="border-line bg-surface-muted/70 flex items-center gap-3 border-b px-4 py-2.5">
         <div class="flex gap-1.5" aria-hidden="true">
           <span class="size-2.5 rounded-full bg-[#ff5f57]" />
           <span class="size-2.5 rounded-full bg-[#febc2e]" />
           <span class="size-2.5 rounded-full bg-[#28c840]" />
         </div>
         <div
-          class="bg-surface flex flex-1 items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-xs"
+          class="bg-surface border-line flex flex-1 items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs"
         >
           <Lock class="text-ink-muted size-3" aria-hidden="true" />
-          <span class="text-ink-muted font-latin" dir="ltr">app.visionprime.ir/app/opportunities</span>
+          <span class="text-ink-muted font-latin" dir="ltr"
+            >app.visionprime.ir/app/opportunities</span
+          >
         </div>
       </div>
 
       <!-- window body: sidebar + main -->
       <div class="grid grid-cols-[120px_1fr] sm:grid-cols-[140px_1fr]">
         <!-- sidebar -->
-        <aside class="bg-canvas/60 border-e border-line p-3">
+        <aside class="bg-canvas/60 border-line border-e p-3">
           <div class="flex items-center gap-1.5 px-1">
-            <span class="bg-gradient-brand flex size-5 items-center justify-center rounded-md text-[9px] font-bold text-white">
+            <span
+              class="bg-gradient-brand flex size-5 items-center justify-center rounded-md text-[9px] font-bold text-white"
+            >
               VP
             </span>
-            <span class="font-display text-ink-strong text-[10px] font-bold">Vision Prime SUITE</span>
+            <span class="font-display text-ink-strong text-[10px] font-bold"
+              >Vision Prime SUITE</span
+            >
           </div>
           <nav class="mt-4 space-y-1" aria-hidden="true">
             <div
@@ -100,28 +106,28 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
 
           <!-- KPI row with animated counters -->
           <div class="mt-3 grid grid-cols-3 gap-2">
-            <div class="rounded-lg border border-line bg-surface-muted/50 p-2.5">
+            <div class="border-line bg-surface-muted/50 rounded-lg border p-2.5">
               <p class="text-ink-muted text-[9px]">فرصت‌های اولویت‌دار</p>
-              <p class="text-gradient-brand mt-1 text-lg font-bold leading-none sm:text-xl">
+              <p class="text-gradient-brand mt-1 text-lg leading-none font-bold sm:text-xl">
                 <AnimatedNumber :to="12" />
               </p>
             </div>
-            <div class="rounded-lg border border-line bg-surface-muted/50 p-2.5">
+            <div class="border-line bg-surface-muted/50 rounded-lg border p-2.5">
               <p class="text-ink-muted text-[9px]">صفحات درآمدزا</p>
-              <p class="text-ink-strong mt-1 text-lg font-bold leading-none sm:text-xl">
+              <p class="text-ink-strong mt-1 text-lg leading-none font-bold sm:text-xl">
                 <AnimatedNumber :to="8" />
               </p>
             </div>
-            <div class="rounded-lg border border-line bg-surface-muted/50 p-2.5">
+            <div class="border-line bg-surface-muted/50 rounded-lg border p-2.5">
               <p class="text-ink-muted text-[9px]">اقدام تکمیل‌شده</p>
-              <p class="mt-1 text-lg font-bold leading-none text-emerald-600 sm:text-xl">
+              <p class="mt-1 text-lg leading-none font-bold text-emerald-600 sm:text-xl">
                 <AnimatedNumber :to="24" />
               </p>
             </div>
           </div>
 
           <!-- mini bar chart -->
-          <div class="mt-3 rounded-lg border border-line p-2.5">
+          <div class="border-line mt-3 rounded-lg border p-2.5">
             <div class="flex items-center justify-between">
               <p class="text-ink-strong text-[10px] font-bold">روند نمایش هفتگی</p>
               <span class="text-ink-muted text-[9px]">+۱۸٪</span>
@@ -143,9 +149,11 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
 
           <!-- opportunities row -->
           <div class="mt-3 space-y-1.5">
-            <div class="flex items-center justify-between rounded-lg border border-line p-2">
+            <div class="border-line flex items-center justify-between rounded-lg border p-2">
               <div class="flex items-center gap-1.5">
-                <span class="bg-brand-50 text-brand-700 flex size-5 items-center justify-center rounded-md">
+                <span
+                  class="bg-brand-50 text-brand-700 flex size-5 items-center justify-center rounded-md"
+                >
                   <Target class="size-3" aria-hidden="true" />
                 </span>
                 <div>
@@ -155,9 +163,11 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
               </div>
               <VBadge tone="warning">امتیاز ۸۷</VBadge>
             </div>
-            <div class="flex items-center justify-between rounded-lg border border-line p-2">
+            <div class="border-line flex items-center justify-between rounded-lg border p-2">
               <div class="flex items-center gap-1.5">
-                <span class="bg-success-50 text-success-700 flex size-5 items-center justify-center rounded-md">
+                <span
+                  class="bg-success-50 text-success-700 flex size-5 items-center justify-center rounded-md"
+                >
                   <CheckCircle2 class="size-3" aria-hidden="true" />
                 </span>
                 <div>
@@ -176,11 +186,13 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
 
     <!-- floating card: command approved -->
     <div
-      class="animate-float-slow absolute -start-4 top-16 hidden w-52 rounded-xl border border-line bg-surface/95 p-3 shadow-float backdrop-blur sm:block lg:-start-8"
+      class="animate-float-slow border-line bg-surface/95 shadow-float absolute -start-4 top-16 hidden w-52 rounded-xl border p-3 backdrop-blur sm:block lg:-start-8"
       aria-hidden="true"
     >
       <div class="flex items-center gap-2">
-        <span class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+        <span
+          class="flex size-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600"
+        >
           <CheckCircle2 class="size-4" />
         </span>
         <div>
@@ -189,7 +201,7 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
         </div>
       </div>
       <div class="mt-2.5 flex items-center gap-1.5">
-        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-muted">
+        <div class="bg-surface-muted h-1.5 flex-1 overflow-hidden rounded-full">
           <div class="bg-gradient-brand h-full w-[85%] rounded-full" />
         </div>
         <span class="text-brand-700 text-[9px] font-bold">۸۵٪</span>
@@ -198,12 +210,14 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
 
     <!-- floating card: new opportunity -->
     <div
-      class="animate-float absolute -end-4 bottom-14 hidden w-52 rounded-xl border border-line bg-surface/95 p-3 shadow-float backdrop-blur sm:block lg:-end-8"
+      class="animate-float border-line bg-surface/95 shadow-float absolute -end-4 bottom-14 hidden w-52 rounded-xl border p-3 backdrop-blur sm:block lg:-end-8"
       style="animation-delay: 1.4s"
       aria-hidden="true"
     >
       <div class="flex items-center gap-2">
-        <span class="bg-gradient-brand flex size-7 items-center justify-center rounded-lg text-white">
+        <span
+          class="bg-gradient-brand flex size-7 items-center justify-center rounded-lg text-white"
+        >
           <TrendingUp class="size-4" />
         </span>
         <div>
@@ -213,7 +227,7 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
       </div>
       <div class="mt-2.5 flex items-center justify-between">
         <span class="text-ink-muted text-[10px]">پتانسیل کلیک</span>
-        <span class="text-emerald-600 flex items-center gap-0.5 text-[11px] font-bold">
+        <span class="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600">
           <BarChart3 class="size-3" aria-hidden="true" /> +۱۸٪
         </span>
       </div>
@@ -221,11 +235,11 @@ const chartBars = [34, 52, 41, 68, 58, 82, 74, 92]
 
     <!-- floating chip: connector -->
     <div
-      class="animate-float absolute -top-3 end-10 hidden items-center gap-1.5 rounded-full border border-line bg-surface/95 px-3 py-1.5 shadow-card backdrop-blur md:flex"
+      class="animate-float border-line bg-surface/95 shadow-card absolute end-10 -top-3 hidden items-center gap-1.5 rounded-full border px-3 py-1.5 backdrop-blur md:flex"
       style="animation-delay: 0.8s"
       aria-hidden="true"
     >
-      <span class="flex size-5 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+      <span class="bg-brand-50 text-brand-700 flex size-5 items-center justify-center rounded-full">
         <Plug class="size-3" />
       </span>
       <span class="text-ink-strong text-[10px] font-bold">وردپرس متصل است</span>

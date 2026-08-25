@@ -47,7 +47,7 @@ function reset(): void {
       سایت
       <select
         v-model="siteId"
-        class="border-line rounded-ui mt-1 min-h-10 w-48 border bg-surface px-3 text-sm"
+        class="border-line rounded-ui bg-surface mt-1 min-h-10 w-48 border px-3 text-sm"
       >
         <option value="">همهٔ سایت‌ها</option>
         <option v-for="site in sites" :key="site.id" :value="String(site.id)">
@@ -60,7 +60,7 @@ function reset(): void {
       <input
         v-model="dateFrom"
         type="date"
-        class="border-line rounded-ui mt-1 min-h-10 w-40 border bg-surface px-3 text-sm"
+        class="border-line rounded-ui bg-surface mt-1 min-h-10 w-40 border px-3 text-sm"
       />
     </label>
     <label class="text-ink-strong block text-sm font-semibold">
@@ -68,7 +68,7 @@ function reset(): void {
       <input
         v-model="dateTo"
         type="date"
-        class="border-line rounded-ui mt-1 min-h-10 w-40 border bg-surface px-3 text-sm"
+        class="border-line rounded-ui bg-surface mt-1 min-h-10 w-40 border px-3 text-sm"
       />
     </label>
     <VButton size="sm" @click="apply">اعمال فیلتر</VButton>

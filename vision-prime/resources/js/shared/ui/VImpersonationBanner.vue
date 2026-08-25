@@ -15,7 +15,9 @@ function stop(): void {
 
 <template>
   <div v-if="page.props.impersonating" class="relative z-50">
-    <div class="bg-danger-600 flex items-center justify-between gap-3 px-4 py-2 text-sm font-semibold text-white">
+    <div
+      class="bg-danger-600 flex items-center justify-between gap-3 px-4 py-2 text-sm font-semibold text-white"
+    >
       <p class="flex items-center gap-2">
         <span>🕵️</span>
         در حال مشاهده بهجای

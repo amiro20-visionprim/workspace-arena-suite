@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
-import {
-  AlertTriangle,
-  Brain,
-  FileText,
-  Gauge,
-  ShieldCheck,
-  Sparkles,
-  Target,
-} from '@lucide/vue'
+import { AlertTriangle, Brain, FileText, Gauge, ShieldCheck, Sparkles, Target } from '@lucide/vue'
 
 import MarketingPageHero from '@/marketing/components/MarketingPageHero.vue'
 import SectionHeading from '@/marketing/components/SectionHeading.vue'
@@ -73,7 +65,7 @@ const features = [
           v-for="(feature, index) in features"
           :key="feature.title"
           v-reveal="{ delay: (index % 3) * 100 }"
-          class="group rounded-2xl border border-line bg-surface p-6 shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-200 hover:shadow-panel"
+          class="group border-line bg-surface shadow-card hover:border-brand-200 hover:shadow-panel rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1.5"
         >
           <span
             class="bg-gradient-brand inline-flex size-11 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110"

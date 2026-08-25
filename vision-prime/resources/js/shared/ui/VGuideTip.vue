@@ -40,7 +40,7 @@ const open = ref(false)
       :class="[
         'rounded-ui bg-ink-strong pointer-events-none absolute z-40 w-max max-w-60 rounded-lg px-3 py-2 text-xs leading-6 text-white shadow-lg transition-all duration-150',
         open ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-1 opacity-0',
-        bare ? 'top-full end-0 mt-1.5' : 'top-full end-0 mt-1',
+        bare ? 'end-0 top-full mt-1.5' : 'end-0 top-full mt-1',
       ]"
     >
       {{ text }}

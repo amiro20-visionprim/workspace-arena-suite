@@ -26,7 +26,7 @@ function logout(): void {
       <div class="border-line border-b p-5">
         <Link href="/platform/dashboard" class="text-ink-strong inline-flex items-center gap-2.5"
           ><span
-            class="rounded-ui flex size-9 items-center justify-center bg-gradient-to-br from-brand-600 to-brand-900 text-sm font-bold text-white"
+            class="rounded-ui from-brand-600 to-brand-900 flex size-9 items-center justify-center bg-gradient-to-br text-sm font-bold text-white"
             >PI</span
           ><span class="font-display text-lg font-bold">فرماندهی پلتفرم</span></Link
         >

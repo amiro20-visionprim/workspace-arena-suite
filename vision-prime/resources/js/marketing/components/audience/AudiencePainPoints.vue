@@ -28,10 +28,10 @@ withDefaults(
         v-for="(pain, index) in pains"
         :key="pain.title"
         v-reveal="{ delay: index * 120 }"
-        class="group rounded-2xl border border-line bg-surface p-6 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-panel"
+        class="group border-line bg-surface shadow-card hover:shadow-panel rounded-2xl border p-6 transition-all duration-300 hover:-translate-y-1"
       >
         <span
-          class="inline-flex size-11 items-center justify-center rounded-xl bg-danger-50 text-danger-600"
+          class="bg-danger-50 text-danger-600 inline-flex size-11 items-center justify-center rounded-xl"
         >
           <AlertTriangle class="size-5" aria-hidden="true" />
         </span>
@@ -42,8 +42,8 @@ withDefaults(
           <ArrowDown class="size-3.5" aria-hidden="true" />
           راه‌حل سوئیت
         </div>
-        <div class="mt-3 flex items-start gap-2.5 rounded-xl bg-success-50 p-3.5">
-          <CheckCircle2 class="mt-0.5 size-4 shrink-0 text-success-600" aria-hidden="true" />
+        <div class="bg-success-50 mt-3 flex items-start gap-2.5 rounded-xl p-3.5">
+          <CheckCircle2 class="text-success-600 mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <p class="text-success-700 text-sm leading-6 font-semibold">{{ pain.solution }}</p>
         </div>
       </div>

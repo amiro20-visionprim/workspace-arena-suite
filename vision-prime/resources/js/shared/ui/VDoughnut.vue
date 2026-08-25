@@ -55,7 +55,12 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
 <template>
   <div class="flex flex-wrap items-center gap-6">
     <div class="relative shrink-0" :style="{ width: `${size}px`, height: `${size}px` }">
-      <svg :viewBox="`0 0 ${size} ${size}`" class="size-full -rotate-90" role="img" aria-label="نمودار دونات">
+      <svg
+        :viewBox="`0 0 ${size} ${size}`"
+        class="size-full -rotate-90"
+        role="img"
+        aria-label="نمودار دونات"
+      >
         <circle
           :cx="size / 2"
           :cy="size / 2"
@@ -79,7 +84,9 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
         />
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span v-if="centerValue" class="text-ink-strong text-xl font-extrabold">{{ centerValue }}</span>
+        <span v-if="centerValue" class="text-ink-strong text-xl font-extrabold">{{
+          centerValue
+        }}</span>
         <span v-if="centerLabel" class="text-ink-muted text-xs">{{ centerLabel }}</span>
       </div>
     </div>

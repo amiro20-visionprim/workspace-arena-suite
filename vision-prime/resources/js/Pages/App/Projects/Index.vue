@@ -46,7 +46,6 @@ const columns: TableColumn[] = [
         title="هنوز پروژه‌ای ندارید"
         description="پس از ایجاد مشتری، برای هر هدف یا وب‌سایت یک پروژه بسازید."
         action-label="افزودن پروژه"
-        @action="$inertia.visit('/app/projects/create')"
-      /></div
+        @action="$inertia.visit('/app/projects/create')" /></div
   ></AppLayout>
 </template>

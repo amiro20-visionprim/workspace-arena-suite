@@ -87,20 +87,20 @@ const nextSteps = [
         </h2>
         <ul class="text-ink mt-6 space-y-4 leading-7">
           <li>
-            <span class="text-brand-700 font-bold">۱.</span> اتصال دادهٔ جستجوی سایت شما (سرچ
-            کنسول یا ممیزی فنی دامنه)
+            <span class="text-brand-700 font-bold">۱.</span> اتصال دادهٔ جستجوی سایت شما (سرچ کنسول
+            یا ممیزی فنی دامنه)
           </li>
           <li>
-            <span class="text-brand-700 font-bold">۲.</span> مشاهدهٔ فرصت‌های واقعی رتبه‌بندی‌شده
-            با دادهٔ خودتان
+            <span class="text-brand-700 font-bold">۲.</span> مشاهدهٔ فرصت‌های واقعی رتبه‌بندی‌شده با
+            دادهٔ خودتان
           </li>
           <li>
-            <span class="text-brand-700 font-bold">۳.</span> گردش‌کار تأیید تغییرات و پرتال مشتری
-            — همان‌طور که مشتری‌های شما می‌بینند
+            <span class="text-brand-700 font-bold">۳.</span> گردش‌کار تأیید تغییرات و پرتال مشتری —
+            همان‌طور که مشتری‌های شما می‌بینند
           </li>
           <li>
-            <span class="text-brand-700 font-bold">۴.</span> پاسخ به سؤالات شما دربارهٔ قیمت،
-            امنیت و زمان پیاده‌سازی
+            <span class="text-brand-700 font-bold">۴.</span> پاسخ به سؤالات شما دربارهٔ قیمت، امنیت
+            و زمان پیاده‌سازی
           </li>
         </ul>
         <div class="rounded-panel border-line bg-success-50 mt-8 border p-5">
@@ -119,7 +119,12 @@ const nextSteps = [
           page.props.flash.status
         }}</VAlert>
         <form class="grid gap-5 sm:grid-cols-2" @submit.prevent="submit">
-          <VInput v-model="form.name" label="نام و نام خانوادگی" required :error="form.errors.name" />
+          <VInput
+            v-model="form.name"
+            label="نام و نام خانوادگی"
+            required
+            :error="form.errors.name"
+          />
           <VInput v-model="form.company" label="نام شرکت یا آژانس" :error="form.errors.company" />
           <VInput
             v-model="form.email"
@@ -155,11 +160,13 @@ const nextSteps = [
         </form>
       </VCard>
       <VCard v-else title="درخواست شما ثبت شد ✅" class="sm:col-span-2"
-        ><VAlert class="mb-5" tone="success">{{
-          page.props.flash?.status
-        }}</VAlert>
+        ><VAlert class="mb-5" tone="success">{{ page.props.flash?.status }}</VAlert>
         <div class="grid gap-5 sm:grid-cols-3">
-          <div v-for="(step, index) in nextSteps" :key="step.title" class="rounded-card border-line bg-surface-muted p-4">
+          <div
+            v-for="(step, index) in nextSteps"
+            :key="step.title"
+            class="rounded-card border-line bg-surface-muted p-4"
+          >
             <p class="text-brand-700 text-sm font-bold">قدم {{ index + 1 }}</p>
             <p class="text-ink-strong mt-2 text-sm font-bold">{{ step.title }}</p>
             <p class="text-ink-muted mt-1 text-sm leading-6">{{ step.text }}</p>

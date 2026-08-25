@@ -25,7 +25,13 @@ const statusTone = (status: string): 'success' | 'warning' | 'danger' | 'neutral
   status === 'active' ? 'success' : status === 'suspended' ? 'danger' : 'warning'
 
 const subTone = (status: string | null): 'success' | 'warning' | 'danger' | 'neutral' | 'info' =>
-  status === 'active' ? 'success' : status === 'trialing' ? 'info' : status === 'past_due' ? 'danger' : 'neutral'
+  status === 'active'
+    ? 'success'
+    : status === 'trialing'
+      ? 'info'
+      : status === 'past_due'
+        ? 'danger'
+        : 'neutral'
 </script>
 
 <template>
@@ -51,17 +57,30 @@ const subTone = (status: string | null): 'success' | 'warning' | 'danger' | 'neu
             </tr>
           </thead>
           <tbody class="divide-line divide-y">
-            <tr v-for="org in organizations" :key="org.id" class="hover:bg-surface-muted/50 transition-colors">
+            <tr
+              v-for="org in organizations"
+              :key="org.id"
+              class="hover:bg-surface-muted/50 transition-colors"
+            >
               <td class="px-4 py-3">
-                <Link :href="`/platform/organizations/${org.id}`" class="text-brand-600 font-semibold hover:underline">
+                <Link
+                  :href="`/platform/organizations/${org.id}`"
+                  class="text-brand-600 font-semibold hover:underline"
+                >
                   {{ org.name }}
                 </Link>
                 <p class="text-ink-muted text-xs" dir="ltr">{{ org.slug }}</p>
               </td>
-              <td class="px-4 py-3"><VBadge :tone="statusTone(org.status)">{{ org.status }}</VBadge></td>
+              <td class="px-4 py-3">
+                <VBadge :tone="statusTone(org.status)">{{ org.status }}</VBadge>
+              </td>
               <td class="px-4 py-3">
                 <p class="text-ink-strong font-medium">{{ org.plan_name }}</p>
-                <VBadge v-if="org.subscription_status" :tone="subTone(org.subscription_status)" size="sm">
+                <VBadge
+                  v-if="org.subscription_status"
+                  :tone="subTone(org.subscription_status)"
+                  size="sm"
+                >
                   {{ org.subscription_status }}
                 </VBadge>
               </td>

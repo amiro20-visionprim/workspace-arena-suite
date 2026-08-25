@@ -41,7 +41,7 @@ const f = useForm({
 
 const wordCount = computed(() => {
   const plain = f.content.replace(/<[^>]+>/g, ' ').trim()
-  return plain ? plain.split(/\s+/).filter(w => w.length > 0).length : 0
+  return plain ? plain.split(/\s+/).filter((w) => w.length > 0).length : 0
 })
 
 function save() {
@@ -52,9 +52,14 @@ function save() {
 <template>
   <Head :title="`ویرایش: ${draft.title}`" />
   <AppLayout>
-    <VPageHeader :title="`ویرایش مقاله`" :description="`سایت: ${draft.site?.name} | مدل: ${draft.model_used}`" />
+    <VPageHeader
+      :title="`ویرایش مقاله`"
+      :description="`سایت: ${draft.site?.name} | مدل: ${draft.model_used}`"
+    />
 
-    <VAlert v-if="page.props.flash?.status" tone="success" class="mt-6">{{ page.props.flash.status }}</VAlert>
+    <VAlert v-if="page.props.flash?.status" tone="success" class="mt-6">{{
+      page.props.flash.status
+    }}</VAlert>
 
     <div class="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
       <div class="space-y-6">
@@ -62,11 +67,20 @@ function save() {
           <div class="space-y-4">
             <div>
               <label class="text-ink-strong text-sm font-semibold">عنوان</label>
-              <input v-model="f.title" type="text" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
+              <input
+                v-model="f.title"
+                type="text"
+                class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm"
+              />
             </div>
             <div>
               <label class="text-ink-strong text-sm font-semibold">محتوای HTML</label>
-              <textarea v-model="f.content" rows="20" dir="auto" class="border-line mt-1 w-full rounded-xl border p-4 text-sm leading-7 font-mono" />
+              <textarea
+                v-model="f.content"
+                rows="20"
+                dir="auto"
+                class="border-line mt-1 w-full rounded-xl border p-4 font-mono text-sm leading-7"
+              />
             </div>
           </div>
         </VCard>
@@ -75,12 +89,23 @@ function save() {
           <div class="space-y-4">
             <div>
               <label class="text-ink-strong text-sm font-semibold">Meta Title</label>
-              <input v-model="f.meta_title" dir="auto" maxlength="70" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
+              <input
+                v-model="f.meta_title"
+                dir="auto"
+                maxlength="70"
+                class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm"
+              />
               <span class="text-ink-muted text-xs">{{ f.meta_title.length }}/60</span>
             </div>
             <div>
               <label class="text-ink-strong text-sm font-semibold">Meta Description</label>
-              <textarea v-model="f.meta_description" dir="auto" rows="3" maxlength="200" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
+              <textarea
+                v-model="f.meta_description"
+                dir="auto"
+                rows="3"
+                maxlength="200"
+                class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm"
+              />
               <span class="text-ink-muted text-xs">{{ f.meta_description.length }}/160</span>
             </div>
           </div>
@@ -89,20 +114,47 @@ function save() {
 
       <div class="space-y-6">
         <VCard title="وضعیت">
-          <VSelect v-model="f.status" label="وضعیت" :options="[{label:'پیش‌نویس',value:'draft'},{label:'در حال بررسی',value:'review'},{label:'منتشر شده',value:'published'},{label:'بایگانی',value:'archived'}]" />
+          <VSelect
+            v-model="f.status"
+            label="وضعیت"
+            :options="[
+              { label: 'پیش‌نویس', value: 'draft' },
+              { label: 'در حال بررسی', value: 'review' },
+              { label: 'منتشر شده', value: 'published' },
+              { label: 'بایگانی', value: 'archived' },
+            ]"
+          />
         </VCard>
 
         <VCard title="خلاصه">
           <div class="space-y-2 text-sm">
-            <div class="flex justify-between"><span class="text-ink-muted">کلمات:</span><span class="font-medium">{{ wordCount }}</span></div>
-            <div class="flex justify-between"><span class="text-ink-muted">امتیاز:</span><span class="font-medium">{{ draft.quality_score }}/100</span></div>
-            <div class="flex justify-between"><span class="text-ink-muted">زیرنوع:</span><span class="font-medium">{{ subtypes[draft.subtype] || draft.subtype }}</span></div>
-            <div class="flex justify-between"><span class="text-ink-muted">تاریخ:</span><span class="font-medium">{{ new Date(draft.created_at).toLocaleDateString('fa-IR') }}</span></div>
+            <div class="flex justify-between">
+              <span class="text-ink-muted">کلمات:</span
+              ><span class="font-medium">{{ wordCount }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-ink-muted">امتیاز:</span
+              ><span class="font-medium">{{ draft.quality_score }}/100</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-ink-muted">زیرنوع:</span
+              ><span class="font-medium">{{ subtypes[draft.subtype] || draft.subtype }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-ink-muted">تاریخ:</span
+              ><span class="font-medium">{{
+                new Date(draft.created_at).toLocaleDateString('fa-IR')
+              }}</span>
+            </div>
           </div>
         </VCard>
 
-        <VButton :loading="f.processing" variant="primary" size="lg" class="w-full" @click="save">ذخیره تغییرات</VButton>
-        <VButton variant="secondary" class="w-full" @click="$inertia.get('/app/ai-drafts')">بازگشت به لیست</VButton>
+        <VButton :loading="f.processing" variant="primary" size="lg" class="w-full" @click="save"
+          >ذخیره تغییرات</VButton
+        >
+        <VButton variant="secondary" class="w-full" @click="$inertia.get('/app/ai-drafts')"
+          >بازگشت به لیست</VButton
+        >
       </div>
     </div>
   </AppLayout>

@@ -34,7 +34,8 @@ const positionMax = computed(() => {
   return vals.length ? Math.max(...vals) : 10
 })
 
-const x = (i: number) => PAD.left + (i / Math.max(1, props.points.length - 1)) * (W - PAD.left - PAD.right)
+const x = (i: number) =>
+  PAD.left + (i / Math.max(1, props.points.length - 1)) * (W - PAD.left - PAD.right)
 
 const yFor = (v: number, min: number, max: number) =>
   PAD.top + (1 - (v - min) / Math.max(0.0001, max - min)) * (H - PAD.top - PAD.bottom)
@@ -70,9 +71,7 @@ const positionDots = computed(() =>
 const labelEvery = computed(() => Math.max(1, Math.ceil(props.points.length / 8)))
 
 const xLabels = computed(() =>
-  props.points
-    .map((p, i) => ({ i, date: p.date }))
-    .filter((_, i) => i % labelEvery.value === 0),
+  props.points.map((p, i) => ({ i, date: p.date })).filter((_, i) => i % labelEvery.value === 0),
 )
 
 const fmtDate = (d: string) => {
@@ -83,7 +82,12 @@ const fmtDate = (d: string) => {
 
 <template>
   <div dir="ltr" class="w-full overflow-x-auto">
-    <svg :viewBox="`0 0 ${W} ${H}`" class="min-w-[560px]" role="img" aria-label="روند جایگاه و کلیک">
+    <svg
+      :viewBox="`0 0 ${W} ${H}`"
+      class="min-w-[560px]"
+      role="img"
+      aria-label="روند جایگاه و کلیک"
+    >
       <line
         v-if="publishIndex !== null"
         :x1="x(publishIndex)"

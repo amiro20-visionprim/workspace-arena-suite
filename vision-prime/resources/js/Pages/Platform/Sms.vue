@@ -74,7 +74,7 @@ const statusTone = (status: string): 'success' | 'danger' | 'info' | 'neutral' |
                 type="tel"
                 dir="ltr"
                 placeholder="0912xxxxxxx"
-                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:ring-indigo-900"
+                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:ring-indigo-900"
               />
             </div>
 
@@ -86,7 +86,7 @@ const statusTone = (status: string): 'success' | 'danger' | 'info' | 'neutral' |
                 v-model="message"
                 rows="4"
                 placeholder="متن پیام..."
-                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:ring-indigo-900"
+                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:focus:ring-indigo-900"
               ></textarea>
             </div>
 
@@ -96,7 +96,7 @@ const statusTone = (status: string): 'success' | 'danger' | 'info' | 'neutral' |
               </label>
               <select
                 v-model="driver"
-                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                class="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 transition outline-none focus:border-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
               >
                 <option v-for="p in providers" :key="p.key" :value="p.key">{{ p.label }}</option>
               </select>
@@ -123,7 +123,9 @@ const statusTone = (status: string): 'success' | 'danger' | 'info' | 'neutral' |
             >
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
-                  <span dir="ltr" class="text-sm font-medium text-gray-900 dark:text-white">{{ log.to }}</span>
+                  <span dir="ltr" class="text-sm font-medium text-gray-900 dark:text-white">{{
+                    log.to
+                  }}</span>
                   <VBadge :tone="statusTone(log.status)">
                     {{ log.status === 'sent' ? 'ارسال شد' : 'ناموفق' }}
                   </VBadge>

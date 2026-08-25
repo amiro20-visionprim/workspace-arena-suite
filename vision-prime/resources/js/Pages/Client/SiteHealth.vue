@@ -86,7 +86,9 @@ function healthOf(score: number | null): HealthLevel {
 const summaryHealth = computed(() => {
   const scored = props.sites.filter((site) => site.audit_score !== null)
   if (scored.length === 0) return null
-  const avg = Math.round(scored.reduce((sum, site) => sum + (site.audit_score ?? 0), 0) / scored.length)
+  const avg = Math.round(
+    scored.reduce((sum, site) => sum + (site.audit_score ?? 0), 0) / scored.length,
+  )
   return { avg, level: healthOf(avg) }
 })
 </script>
@@ -123,7 +125,9 @@ const summaryHealth = computed(() => {
           </div>
         </div>
         <div class="text-center">
-          <p class="font-display text-ink-strong text-3xl font-extrabold">{{ summaryHealth.avg }}</p>
+          <p class="font-display text-ink-strong text-3xl font-extrabold">
+            {{ summaryHealth.avg }}
+          </p>
           <p class="text-ink-muted text-xs">امتیاز سلامت از ۱۰۰</p>
         </div>
       </div>
@@ -165,7 +169,9 @@ const summaryHealth = computed(() => {
                   :style="{ width: `${site.audit_score ?? 0}%` }"
                 />
               </div>
-              <p class="text-ink-muted mt-2 text-xs leading-5">{{ healthOf(site.audit_score).message }}</p>
+              <p class="text-ink-muted mt-2 text-xs leading-5">
+                {{ healthOf(site.audit_score).message }}
+              </p>
             </div>
 
             <div class="mt-4 grid grid-cols-3 gap-4 text-sm">

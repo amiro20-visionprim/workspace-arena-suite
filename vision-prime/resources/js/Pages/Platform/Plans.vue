@@ -112,7 +112,9 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
       class="bg-ink-900/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="createOpen = false"
     >
-      <div class="bg-surface rounded-2xl max-h-[90vh] w-full max-w-lg overflow-y-auto p-6 shadow-2xl">
+      <div
+        class="bg-surface max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl p-6 shadow-2xl"
+      >
         <h3 class="text-ink-strong font-display text-lg font-bold">پلن جدید</h3>
         <form class="mt-4 grid gap-3 sm:grid-cols-2" @submit.prevent="submit">
           <VInput v-model="form.key" label="کلید (انگلیسی)" dir="ltr" :error="form.errors.key" />
@@ -120,15 +122,27 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
           <div class="sm:col-span-2">
             <VInput v-model="form.description" label="توضیح" :error="form.errors.description" />
           </div>
-          <VInput v-model="form.price_monthly" label="قیمت ماهانه (تومان)" type="number" :error="form.errors.price_monthly" />
-          <VInput v-model="form.price_yearly" label="قیمت سالانه (تومان)" type="number" :error="form.errors.price_yearly" />
+          <VInput
+            v-model="form.price_monthly"
+            label="قیمت ماهانه (تومان)"
+            type="number"
+            :error="form.errors.price_monthly"
+          />
+          <VInput
+            v-model="form.price_yearly"
+            label="قیمت سالانه (تومان)"
+            type="number"
+            :error="form.errors.price_yearly"
+          />
           <VInput v-model="form.max_sites" label="حداکثر سایت" type="number" />
           <VInput v-model="form.max_clients" label="حداکثر مشتری" type="number" />
           <VInput v-model="form.max_ai_tokens_monthly" label="توکن AI ماهانه" type="number" />
           <VInput v-model="form.max_profiles" label="حداکثر پروفایل" type="number" />
           <VInput v-model="form.trial_days" label="دورهٔ آزمایشی (روز)" type="number" />
-          <div class="sm:col-span-2 flex justify-end gap-3">
-            <VButton type="button" variant="ghost" size="sm" @click="createOpen = false">انصراف</VButton>
+          <div class="flex justify-end gap-3 sm:col-span-2">
+            <VButton type="button" variant="ghost" size="sm" @click="createOpen = false"
+              >انصراف</VButton
+            >
             <VButton type="submit" size="sm" :loading="form.processing">ساخت پلن</VButton>
           </div>
         </form>

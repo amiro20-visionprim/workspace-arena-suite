@@ -80,7 +80,12 @@ const roleMeta: Record<string, RoleMeta> = {
       { label: 'مشتریان', hint: 'حساب‌ها و دسترسی‌ها', href: '/app/clients', icon: 'building' },
       { label: 'سایت‌های متصل', hint: 'وضعیت اتصال‌ها', href: '/app/sites', icon: 'activity' },
       { label: 'بررسی و تأییدها', hint: 'صف تصمیم‌ها', href: '/app/reviews', icon: 'user-check' },
-      { label: 'تنظیمات سازمان', hint: 'اعضا و نقش‌ها', href: '/app/settings/organization', icon: 'users' },
+      {
+        label: 'تنظیمات سازمان',
+        hint: 'اعضا و نقش‌ها',
+        href: '/app/settings/organization',
+        icon: 'users',
+      },
     ],
   },
   'seo-manager': {
@@ -88,9 +93,24 @@ const roleMeta: Record<string, RoleMeta> = {
     message: 'فرصت‌ها، ریسک‌ها و دادهٔ واقعی رشد در کانون کار شماست.',
     icon: 'trend-up',
     priorities: [
-      { label: 'فرصت‌های رشد', hint: 'اولویت‌های پیشنهادی', href: '/app/opportunities', icon: 'lightbulb' },
-      { label: 'صفحات درآمدزا', hint: 'صفحات کلیدی', href: '/app/money-pages', icon: 'shopping-bag' },
-      { label: 'ریسک‌های تبدیل', hint: 'نقاط خطر', href: '/app/conversion-risks', icon: 'trend-down' },
+      {
+        label: 'فرصت‌های رشد',
+        hint: 'اولویت‌های پیشنهادی',
+        href: '/app/opportunities',
+        icon: 'lightbulb',
+      },
+      {
+        label: 'صفحات درآمدزا',
+        hint: 'صفحات کلیدی',
+        href: '/app/money-pages',
+        icon: 'shopping-bag',
+      },
+      {
+        label: 'ریسک‌های تبدیل',
+        hint: 'نقاط خطر',
+        href: '/app/conversion-risks',
+        icon: 'trend-down',
+      },
       { label: 'سرچ کنسول', hint: 'دادهٔ واقعی', href: '/app/gsc', icon: 'search' },
     ],
   },
@@ -99,9 +119,24 @@ const roleMeta: Record<string, RoleMeta> = {
     message: 'تولید و بازبینی مقاله و محصول، و برنامه‌ریزی انتشار.',
     icon: 'file',
     priorities: [
-      { label: 'تقویم محتوایی', hint: 'برنامهٔ انتشار', href: '/app/content-calendar', icon: 'calendar' },
-      { label: 'تولید مقاله', hint: 'پیش‌نویس جدید', href: '/app/ai-drafts/article/create', icon: 'file' },
-      { label: 'تولید محصول', hint: 'پیش‌نویس محصول', href: '/app/ai-drafts/product/create', icon: 'shopping-bag' },
+      {
+        label: 'تقویم محتوایی',
+        hint: 'برنامهٔ انتشار',
+        href: '/app/content-calendar',
+        icon: 'calendar',
+      },
+      {
+        label: 'تولید مقاله',
+        hint: 'پیش‌نویس جدید',
+        href: '/app/ai-drafts/article/create',
+        icon: 'file',
+      },
+      {
+        label: 'تولید محصول',
+        hint: 'پیش‌نویس محصول',
+        href: '/app/ai-drafts/product/create',
+        icon: 'shopping-bag',
+      },
       { label: 'بررسی و تأییدها', hint: 'صف بازبینی', href: '/app/reviews', icon: 'user-check' },
     ],
   },
@@ -110,9 +145,19 @@ const roleMeta: Record<string, RoleMeta> = {
     message: 'صف تأیید سریع و دقیق، بدون شلوغی.',
     icon: 'user-check',
     priorities: [
-      { label: 'بررسی و تأییدها', hint: 'موارد در انتظار', href: '/app/reviews', icon: 'user-check' },
+      {
+        label: 'بررسی و تأییدها',
+        hint: 'موارد در انتظار',
+        href: '/app/reviews',
+        icon: 'user-check',
+      },
       { label: 'تغییرات اجرایی', hint: 'اجراها و بازگشت‌ها', href: '/app/commands', icon: 'zap' },
-      { label: 'پیشنهادها', hint: 'پیشنهادهای تیم', href: '/app/recommendations', icon: 'lightbulb' },
+      {
+        label: 'پیشنهادها',
+        hint: 'پیشنهادهای تیم',
+        href: '/app/recommendations',
+        icon: 'lightbulb',
+      },
     ],
   },
   developer: {
@@ -121,9 +166,19 @@ const roleMeta: Record<string, RoleMeta> = {
     icon: 'zap',
     priorities: [
       { label: 'سایت‌ها', hint: 'وضعیت اتصال‌ها', href: '/app/sites', icon: 'activity' },
-      { label: 'یکپارچه‌سازی‌ها', hint: 'سرچ کنسول و وردپرس', href: '/app/settings/integrations', icon: 'zap' },
+      {
+        label: 'یکپارچه‌سازی‌ها',
+        hint: 'سرچ کنسول و وردپرس',
+        href: '/app/settings/integrations',
+        icon: 'zap',
+      },
       { label: 'تغییرات اجرایی', hint: 'لاگ اجرا', href: '/app/commands', icon: 'zap' },
-      { label: 'گزارش ممیزی', hint: 'ردپیگری کامل', href: '/app/settings/audit-log', icon: 'shield' },
+      {
+        label: 'گزارش ممیزی',
+        hint: 'ردپیگری کامل',
+        href: '/app/settings/audit-log',
+        icon: 'shield',
+      },
     ],
   },
   'marketing-manager': {
@@ -143,7 +198,12 @@ const roleMeta: Record<string, RoleMeta> = {
     priorities: [
       { label: 'مشتریان', hint: 'همهٔ حساب‌ها', href: '/app/clients', icon: 'building' },
       { label: 'سایت‌ها', hint: 'وضعیت اتصال‌ها', href: '/app/sites', icon: 'activity' },
-      { label: 'تنظیمات سازمان', hint: 'اعضا و نقش‌ها', href: '/app/settings/organization', icon: 'users' },
+      {
+        label: 'تنظیمات سازمان',
+        hint: 'اعضا و نقش‌ها',
+        href: '/app/settings/organization',
+        icon: 'users',
+      },
     ],
   },
 }
@@ -174,7 +234,8 @@ const kpiCards = computed(() => [
     iconTone: 'brand' as IconTone,
     hint: 'حساب‌هایی که آژانس برای آن‌ها پروژه و پرتال مدیریت می‌کند.',
     trend: 'flat' as StatTrend,
-    trendLabel: props.counts.projects > 0 ? `${props.counts.projects} پروژه فعال` : 'هنوز پروژه‌ای نیست',
+    trendLabel:
+      props.counts.projects > 0 ? `${props.counts.projects} پروژه فعال` : 'هنوز پروژه‌ای نیست',
   },
   {
     label: 'سایت‌های متصل',
@@ -192,7 +253,8 @@ const kpiCards = computed(() => [
     iconTone: 'success' as IconTone,
     hint: 'فرصت‌های رشد شناسایی‌شده که هنوز اقدام نشده‌اند.',
     trend: 'flat' as StatTrend,
-    trendLabel: pendingTotal.value > 0 ? `${pendingTotal.value} مورد در صف تأیید` : 'صف تأیید خالی است',
+    trendLabel:
+      pendingTotal.value > 0 ? `${pendingTotal.value} مورد در صف تأیید` : 'صف تأیید خالی است',
   },
   {
     label: 'در انتظار تأیید',
@@ -201,9 +263,10 @@ const kpiCards = computed(() => [
     iconTone: 'warning' as IconTone,
     hint: 'تغییرات اجرایی و بازبینی‌هایی که منتظر تصمیم تیم هستند.',
     trend: 'flat' as StatTrend,
-    trendLabel: props.counts.scheduledPublishes > 0
-      ? `${props.counts.scheduledPublishes} انتشار زمان‌بندی‌شده`
-      : 'نیاز به بررسی دارد',
+    trendLabel:
+      props.counts.scheduledPublishes > 0
+        ? `${props.counts.scheduledPublishes} انتشار زمان‌بندی‌شده`
+        : 'نیاز به بررسی دارد',
   },
 ])
 
@@ -220,15 +283,19 @@ const growthBars = computed(() =>
 
 // —— صف تأیید ——
 const approvalLabel = (item: { type: 'command' | 'review'; label: string }): string =>
-  item.type === 'command' ? labelOf(commandTypeLabels, item.label) : labelOf(reviewSubjectLabels, item.label)
+  item.type === 'command'
+    ? labelOf(commandTypeLabels, item.label)
+    : labelOf(reviewSubjectLabels, item.label)
 
 // —— فعالیت‌ها و بقیهٔ بخش‌ها (از قبل) ——
 const declinedEntries = computed(() => props.contentImpact.declines ?? [])
 
 const declineSummary = (entry: ImpactSummaryEntry) => {
   const parts: string[] = []
-  if (entry.delta.clicks !== 0) parts.push(`کلیک ${entry.delta.clicks > 0 ? '+' : ''}${entry.delta.clicks}`)
-  if (entry.delta.position !== 0) parts.push(`جایگاه ${entry.delta.position > 0 ? '+' : ''}${entry.delta.position}`)
+  if (entry.delta.clicks !== 0)
+    parts.push(`کلیک ${entry.delta.clicks > 0 ? '+' : ''}${entry.delta.clicks}`)
+  if (entry.delta.position !== 0)
+    parts.push(`جایگاه ${entry.delta.position > 0 ? '+' : ''}${entry.delta.position}`)
   return parts.length ? parts.join(' · ') : 'بدون تغییر محسوس'
 }
 
@@ -389,9 +456,11 @@ const nextStep = computed(() => {
           v-for="priority in meta.priorities"
           :key="priority.href"
           :href="priority.href"
-          class="transition-ui rounded-panel border-line bg-surface group flex items-start gap-3 border p-4 hover:-translate-y-0.5 hover:shadow-card"
+          class="transition-ui rounded-panel border-line bg-surface group hover:shadow-card flex items-start gap-3 border p-4 hover:-translate-y-0.5"
         >
-          <span class="rounded-ui bg-surface-muted text-ink-muted group-hover:bg-brand-50 group-hover:text-brand-700 flex size-10 shrink-0 items-center justify-center transition-colors">
+          <span
+            class="rounded-ui bg-surface-muted text-ink-muted group-hover:bg-brand-50 group-hover:text-brand-700 flex size-10 shrink-0 items-center justify-center transition-colors"
+          >
             <VIcon :name="priority.icon" size="lg" />
           </span>
           <span class="min-w-0">
@@ -403,33 +472,47 @@ const nextStep = computed(() => {
     </section>
 
     <!-- صف تأیید -->
-    <VCard class="mt-8" title="صف تأیید" description="تغییرات و بازبینی‌هایی که منتظر تصمیم تیم هستند.">
+    <VCard
+      class="mt-8"
+      title="صف تأیید"
+      description="تغییرات و بازبینی‌هایی که منتظر تصمیم تیم هستند."
+    >
       <div v-if="approvalQueue.length" class="space-y-1">
         <div
           v-for="item in approvalQueue"
           :key="`${item.type}-${item.id}`"
-          class="flex items-center justify-between gap-3 rounded-ui px-2 py-2 hover:bg-surface-muted"
+          class="rounded-ui hover:bg-surface-muted flex items-center justify-between gap-3 px-2 py-2"
         >
           <div class="flex min-w-0 items-center gap-3">
             <span
               :class="[
                 'rounded-ui flex size-8 shrink-0 items-center justify-center',
-                item.type === 'command' ? 'bg-warning-50 text-warning-600' : 'bg-violet-50 text-violet-600',
+                item.type === 'command'
+                  ? 'bg-warning-50 text-warning-600'
+                  : 'bg-violet-50 text-violet-600',
               ]"
             >
               <VIcon :name="item.type === 'command' ? 'zap' : 'eye'" size="sm" />
             </span>
             <div class="min-w-0">
-              <p class="text-ink-strong truncate text-sm font-semibold">{{ approvalLabel(item) }}</p>
-              <p class="text-ink-muted text-xs">{{ item.site_name }} · از {{ formatJalaliDate(item.created_at) }}</p>
+              <p class="text-ink-strong truncate text-sm font-semibold">
+                {{ approvalLabel(item) }}
+              </p>
+              <p class="text-ink-muted text-xs">
+                {{ item.site_name }} · از {{ formatJalaliDate(item.created_at) }}
+              </p>
             </div>
           </div>
         </div>
         <div class="pt-2">
-          <VButton href="/app/reviews" size="sm" variant="secondary">مشاهدهٔ همه در بررسی و تأییدها</VButton>
+          <VButton href="/app/reviews" size="sm" variant="secondary"
+            >مشاهدهٔ همه در بررسی و تأییدها</VButton
+          >
         </div>
       </div>
-      <p v-else class="text-ink-muted text-sm leading-7">صف تأیید خالی است — همه‌چیز به‌روز است. ✅</p>
+      <p v-else class="text-ink-muted text-sm leading-7">
+        صف تأیید خالی است — همه‌چیز به‌روز است. ✅
+      </p>
     </VCard>
 
     <!-- چارت رشد -->
@@ -467,13 +550,22 @@ const nextStep = computed(() => {
             <p class="text-ink-muted text-sm">محتوا با دادهٔ GSC کافی</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <span v-if="contentImpact.verdicts.improved > 0" class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            <span
+              v-if="contentImpact.verdicts.improved > 0"
+              class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
+            >
               {{ contentImpact.verdicts.improved }} بهبود
             </span>
-            <span v-if="contentImpact.verdicts.stable > 0" class="rounded-full bg-surface-muted text-ink-muted px-3 py-1 text-xs font-semibold">
+            <span
+              v-if="contentImpact.verdicts.stable > 0"
+              class="bg-surface-muted text-ink-muted rounded-full px-3 py-1 text-xs font-semibold"
+            >
               {{ contentImpact.verdicts.stable }} پایدار
             </span>
-            <span v-if="contentImpact.verdicts.declined > 0" class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+            <span
+              v-if="contentImpact.verdicts.declined > 0"
+              class="rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700"
+            >
               {{ contentImpact.verdicts.declined }} افت
             </span>
           </div>
@@ -481,25 +573,39 @@ const nextStep = computed(() => {
             {{ contentImpact.insufficient_data }} مورد دیگر دادهٔ کافی GSC ندارند.
           </p>
         </div>
-        <div v-if="contentImpact.best" class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
+        <div
+          v-if="contentImpact.best"
+          class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4"
+        >
           <p class="text-xs font-semibold text-emerald-700">🏆 بهترین بهبود</p>
-          <p class="text-ink-strong mt-2 text-sm font-semibold">{{ contentImpact.best.site_name ?? '—' }}</p>
-          <p class="text-ink-muted mt-1 truncate text-xs" :title="contentImpact.best.url">{{ formatUrl(contentImpact.best.url) }}</p>
+          <p class="text-ink-strong mt-2 text-sm font-semibold">
+            {{ contentImpact.best.site_name ?? '—' }}
+          </p>
+          <p class="text-ink-muted mt-1 truncate text-xs" :title="contentImpact.best.url">
+            {{ formatUrl(contentImpact.best.url) }}
+          </p>
           <p class="text-ink-strong mt-3 text-sm">
-            جایگاه {{ sign(contentImpact.best.delta.position) }} · کلیک {{ sign(contentImpact.best.delta.clicks) }}
+            جایگاه {{ sign(contentImpact.best.delta.position) }} · کلیک
+            {{ sign(contentImpact.best.delta.clicks) }}
           </p>
         </div>
         <div v-if="contentImpact.worst" class="rounded-xl border border-red-100 bg-red-50/50 p-4">
           <p class="text-xs font-semibold text-red-700">⚠️ ضعیف‌ترین نتیجه</p>
-          <p class="text-ink-strong mt-2 text-sm font-semibold">{{ contentImpact.worst.site_name ?? '—' }}</p>
-          <p class="text-ink-muted mt-1 truncate text-xs" :title="contentImpact.worst.url">{{ formatUrl(contentImpact.worst.url) }}</p>
+          <p class="text-ink-strong mt-2 text-sm font-semibold">
+            {{ contentImpact.worst.site_name ?? '—' }}
+          </p>
+          <p class="text-ink-muted mt-1 truncate text-xs" :title="contentImpact.worst.url">
+            {{ formatUrl(contentImpact.worst.url) }}
+          </p>
           <p class="text-ink-strong mt-3 text-sm">
-            جایگاه {{ sign(contentImpact.worst.delta.position) }} · کلیک {{ sign(contentImpact.worst.delta.clicks) }}
+            جایگاه {{ sign(contentImpact.worst.delta.position) }} · کلیک
+            {{ sign(contentImpact.worst.delta.clicks) }}
           </p>
         </div>
       </div>
       <p v-else class="text-ink-muted text-sm leading-7">
-        هنوز محتوایی با دادهٔ کافی GSC منتشر نشده است — پس از اجرای چند انتشار خودکار و همگام‌سازی سرچ کنسول، تأثیر آن‌ها اینجا نمایش داده می‌شود.
+        هنوز محتوایی با دادهٔ کافی GSC منتشر نشده است — پس از اجرای چند انتشار خودکار و همگام‌سازی
+        سرچ کنسول، تأثیر آن‌ها اینجا نمایش داده می‌شود.
       </p>
     </VCard>
 
@@ -513,7 +619,7 @@ const nextStep = computed(() => {
         <div
           v-for="s in publishSuggestions"
           :key="s.site_id"
-          class="rounded-xl border border-brand-100 bg-brand-50/40 p-4"
+          class="border-brand-100 bg-brand-50/40 rounded-xl border p-4"
         >
           <p class="text-ink-strong text-sm font-semibold">{{ s.site_name }}</p>
           <p class="text-brand-800 mt-2 text-lg font-bold">

@@ -17,7 +17,7 @@ withDefaults(
 <template>
   <Head :title="title" />
   <main class="bg-canvas relative min-h-screen px-5 py-8 sm:px-8 sm:py-12" dir="rtl">
-    <div class="absolute top-5 end-5 z-10"><VThemeToggle /></div>
+    <div class="absolute end-5 top-5 z-10"><VThemeToggle /></div>
     <div
       class="rounded-panel border-line bg-surface shadow-panel mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden border lg:grid-cols-[1.1fr_0.9fr]"
     >

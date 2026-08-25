@@ -9,12 +9,42 @@ import VCard from '@/shared/ui/VCard.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
 
-interface SiteOption { id: number; name: string; canonical_url: string }
-interface OutlineItem { heading: string; level: 2 | 3; note: string }
-interface SchemaItem { '@type': string; [key: string]: unknown }
-interface QualityResult { passed: boolean; score: number; failures: string[]; warnings: string[]; readability?: ReadabilityResult | null }
-interface ReadabilityResult { score: number; label: string; sentence_avg_length: number; word_avg_length: number; long_sentences_pct: number; complex_words_pct: number; details: string }
-interface LinkSuggestion { url: string; title: string; anchor: string; relevance_score: number }
+interface SiteOption {
+  id: number
+  name: string
+  canonical_url: string
+}
+interface OutlineItem {
+  heading: string
+  level: 2 | 3
+  note: string
+}
+interface SchemaItem {
+  '@type': string
+  [key: string]: unknown
+}
+interface QualityResult {
+  passed: boolean
+  score: number
+  failures: string[]
+  warnings: string[]
+  readability?: ReadabilityResult | null
+}
+interface ReadabilityResult {
+  score: number
+  label: string
+  sentence_avg_length: number
+  word_avg_length: number
+  long_sentences_pct: number
+  complex_words_pct: number
+  details: string
+}
+interface LinkSuggestion {
+  url: string
+  title: string
+  anchor: string
+  relevance_score: number
+}
 interface GeneratedResult {
   content: string
   model: string
@@ -26,13 +56,42 @@ interface GeneratedResult {
   quality: QualityResult
   profile: { content_type: string; subtype: string; intent: string } | null
   draft_id?: number
-  expert_analysis?: { summary?: string; strengths?: string[]; weaknesses?: string[]; recommendations?: string[] } | null
+  expert_analysis?: {
+    summary?: string
+    strengths?: string[]
+    weaknesses?: string[]
+    recommendations?: string[]
+  } | null
 }
 
-
-interface PromptTemplate { id: number; title: string; content_type: string; subtype: string; tone: string; system_prompt: string; user_prompt_template: string; usage_count: number; avg_quality_score: number; is_featured: boolean; is_user_created: boolean; tags: string[] }
-interface DuplicateDraft { id: number; title: string; status: string; quality_score: number; similarity: number; created_at: string }
-interface SectionItem { heading: string; level: number; content: string; regenerating: boolean }
+interface PromptTemplate {
+  id: number
+  title: string
+  content_type: string
+  subtype: string
+  tone: string
+  system_prompt: string
+  user_prompt_template: string
+  usage_count: number
+  avg_quality_score: number
+  is_featured: boolean
+  is_user_created: boolean
+  tags: string[]
+}
+interface DuplicateDraft {
+  id: number
+  title: string
+  status: string
+  quality_score: number
+  similarity: number
+  created_at: string
+}
+interface SectionItem {
+  heading: string
+  level: number
+  content: string
+  regenerating: boolean
+}
 
 const p = defineProps<{
   sites: SiteOption[]
@@ -69,24 +128,35 @@ const duplicateLoading = ref(false)
 const templates = ref<PromptTemplate[]>([])
 const selectedTemplateId = ref<number | null>(null)
 const templatesLoading = ref(false)
-const customPrompt = ref("")
+const customPrompt = ref('')
 const showCustomPrompt = ref(false)
 const savingTemplate = ref(false)
-const newTemplateName = ref("")
+const newTemplateName = ref('')
 const showSaveDialog = ref(false)
-interface GscSummary { total_queries?: number; total_clicks?: number; total_impressions?: number; avg_ctr?: number }
-interface GscContextData { has_data?: boolean; summary?: GscSummary }
+interface GscSummary {
+  total_queries?: number
+  total_clicks?: number
+  total_impressions?: number
+  avg_ctr?: number
+}
+interface GscContextData {
+  has_data?: boolean
+  summary?: GscSummary
+}
 const gscContext = ref<GscContextData | null>(null)
 const gscLoading = ref(false)
-const autoDetectedSubtype = ref("")
-const autoDetectedTone = ref("")
+const autoDetectedSubtype = ref('')
+const autoDetectedTone = ref('')
 const applyingSuggestions = ref(false)
 const publishing = ref(false)
-interface PublishResultData { success?: boolean; error?: string; post_url?: string }
+interface PublishResultData {
+  success?: boolean
+  error?: string
+  post_url?: string
+}
 const publishResult = ref<PublishResultData | null>(null)
 const showPublishDialog = ref(false)
 const copyStatus = ref('')
-
 
 // Section editing
 const sections = ref<SectionItem[]>([])
@@ -100,17 +170,22 @@ const keywordInput = ref('')
 const wordCount = computed(() => {
   if (!result.value?.content) return 0
   const plain = result.value.content.replace(/<[^>]+>/g, ' ').trim()
-  return plain ? plain.split(/\s+/).filter(w => w.length > 0).length : 0
+  return plain ? plain.split(/\s+/).filter((w) => w.length > 0).length : 0
 })
 
 const seoScore = computed(() => result.value?.quality?.score ?? 0)
 
-const readability = computed<ReadabilityResult | null>(() => result.value?.quality?.readability ?? null)
+const readability = computed<ReadabilityResult | null>(
+  () => result.value?.quality?.readability ?? null,
+)
 
 const keywordDensity = computed(() => {
   const kw = keywordInput.value.trim()
   if (!kw || !result.value?.content) return { count: 0, density: 0 }
-  const plain = result.value.content.replace(/<[^>]+>/g, ' ').trim().toLowerCase()
+  const plain = result.value.content
+    .replace(/<[^>]+>/g, ' ')
+    .trim()
+    .toLowerCase()
   const kwLower = kw.toLowerCase()
   let count = 0
   let pos = 0
@@ -118,7 +193,7 @@ const keywordDensity = computed(() => {
     count++
     pos += kwLower.length
   }
-  const words = plain.split(/\s+/).filter(w => w.length > 0)
+  const words = plain.split(/\s+/).filter((w) => w.length > 0)
   const density = words.length > 0 ? (count / words.length) * 100 : 0
   return { count, density: Math.round(density * 100) / 100 }
 })
@@ -137,20 +212,50 @@ const seoChecks = computed(() => {
   const r = result.value
   return [
     { label: 'طول محتوا', value: wordCount.value + ' کلمه', passed: wordCount.value >= 400 },
-    { label: 'Meta Title', value: (r.meta_title?.length ?? 0) + '/60', passed: (r.meta_title?.length ?? 0) >= 30 && (r.meta_title?.length ?? 0) <= 60 },
-    { label: 'Meta Description', value: (r.meta_description?.length ?? 0) + '/160', passed: (r.meta_description?.length ?? 0) >= 120 && (r.meta_description?.length ?? 0) <= 160 },
-    { label: 'لینک‌های داخلی', value: (r.links?.length ?? 0) + ' عدد', passed: (r.links?.length ?? 0) >= 2 },
-    { label: 'اسکیما', value: (r.schemas?.length ?? 0) + ' عدد', passed: (r.schemas?.length ?? 0) >= 1 },
+    {
+      label: 'Meta Title',
+      value: (r.meta_title?.length ?? 0) + '/60',
+      passed: (r.meta_title?.length ?? 0) >= 30 && (r.meta_title?.length ?? 0) <= 60,
+    },
+    {
+      label: 'Meta Description',
+      value: (r.meta_description?.length ?? 0) + '/160',
+      passed: (r.meta_description?.length ?? 0) >= 120 && (r.meta_description?.length ?? 0) <= 160,
+    },
+    {
+      label: 'لینک‌های داخلی',
+      value: (r.links?.length ?? 0) + ' عدد',
+      passed: (r.links?.length ?? 0) >= 2,
+    },
+    {
+      label: 'اسکیما',
+      value: (r.schemas?.length ?? 0) + ' عدد',
+      passed: (r.schemas?.length ?? 0) >= 1,
+    },
     { label: 'امتیاز کیفیت', value: r.quality?.score ?? 0, passed: (r.quality?.score ?? 0) >= 70 },
-    ...(readability.value ? [{ label: 'خوانایی', value: readability.value.label + ' (' + readability.value.score + '/100)', passed: readability.value.score >= 40 }] : []),
+    ...(readability.value
+      ? [
+          {
+            label: 'خوانایی',
+            value: readability.value.label + ' (' + readability.value.score + '/100)',
+            passed: readability.value.score >= 40,
+          },
+        ]
+      : []),
   ]
 })
 
-const outlineH2Count = computed(() => outline.value.filter(i => i.level === 2).length)
-const outlineH3Count = computed(() => outline.value.filter(i => i.level === 3).length)
+const outlineH2Count = computed(() => outline.value.filter((i) => i.level === 2).length)
+const outlineH3Count = computed(() => outline.value.filter((i) => i.level === 3).length)
 
 // SERP Intelligence
-interface SerpCompetitor { title: string; url: string; headings: string[]; word_count: number; snippet: string }
+interface SerpCompetitor {
+  title: string
+  url: string
+  headings: string[]
+  word_count: number
+  snippet: string
+}
 interface SerpAnalysis {
   competitors: SerpCompetitor[]
   avg_word_count: number
@@ -166,15 +271,16 @@ const showSerpPanel = ref(false)
 
 // === API Methods ===
 
-
 async function fetchTemplates() {
   templatesLoading.value = true
   try {
     const res = await fetch('/api/content/prompt-templates?content_type=article', {
-      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     })
     if (res.ok) templates.value = await res.json()
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   templatesLoading.value = false
 }
 
@@ -195,7 +301,9 @@ async function checkDuplicate() {
       duplicates.value = []
       showDuplicates.value = false
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   duplicateLoading.value = false
 }
 
@@ -207,17 +315,39 @@ function dismissDuplicates() {
 
 async function quickGenerate() {
   if (!selectedSiteId.value || !title.value.trim()) return
-  generatingLoading.value = true; generatingStatus.value = 'تولید سریع...'
+  generatingLoading.value = true
+  generatingStatus.value = 'تولید سریع...'
   step.value = 'generating'
   try {
     const res = await fetch('/api/content/generate', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ site_id: Number(selectedSiteId.value), keyword: title.value.trim(), title: title.value.trim(), subtype: autoDetectedSubtype.value || undefined, template_id: selectedTemplateId.value || undefined, custom_prompt: customPrompt.value || undefined, tone: autoDetectedTone.value || undefined, word_count: wordCount.value || undefined })
-    });
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({
+        site_id: Number(selectedSiteId.value),
+        keyword: title.value.trim(),
+        title: title.value.trim(),
+        subtype: autoDetectedSubtype.value || undefined,
+        template_id: selectedTemplateId.value || undefined,
+        custom_prompt: customPrompt.value || undefined,
+        tone: autoDetectedTone.value || undefined,
+        word_count: wordCount.value || undefined,
+      }),
+    })
     const d = await res.json()
-    if (d.error) { errorMsg.value = d.error; step.value = 'input'; return }
-    result.value = d; currentDraftId.value = d.draft_id || null; activeResultTab.value = 'content'; step.value = 'result'; parseSections(d.content)
-  } catch (e) { errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e)); step.value = 'input' }
+    if (d.error) {
+      errorMsg.value = d.error
+      step.value = 'input'
+      return
+    }
+    result.value = d
+    currentDraftId.value = d.draft_id || null
+    activeResultTab.value = 'content'
+    step.value = 'result'
+    parseSections(d.content)
+  } catch (e) {
+    errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e))
+    step.value = 'input'
+  }
   generatingLoading.value = false
 }
 
@@ -225,40 +355,86 @@ async function fetchGscContext() {
   if (!selectedSiteId.value || !title.value.trim()) return
   gscLoading.value = true
   try {
-    const url = '/api/content/gsc-context?site_id=' + selectedSiteId.value + '&title=' + encodeURIComponent(title.value)
-    const r = await fetch(url, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+    const url =
+      '/api/content/gsc-context?site_id=' +
+      selectedSiteId.value +
+      '&title=' +
+      encodeURIComponent(title.value)
+    const r = await fetch(url, {
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
     if (r.ok) gscContext.value = await r.json()
-  } catch { /* نادیده گرفته شد */ }
+  } catch {
+    /* نادیده گرفته شد */
+  }
   gscLoading.value = false
 }
 function autoDetect(t: string) {
   const l = t.toLowerCase()
-  if (/comp|compare|comparison|مقایسه|vs|بهترین/.test(l)) { autoDetectedSubtype.value = 'comparison'; autoDetectedTone.value = 'neutral' }
-  else if (/tutorial|how.to|guide|آموزش|چگونه|راهنمای/.test(l)) { autoDetectedSubtype.value = 'tutorial'; autoDetectedTone.value = 'informative' }
-  else if (/review|نقد|بررسی/.test(l)) { autoDetectedSubtype.value = 'review'; autoDetectedTone.value = 'professional' }
-  else if (/buy|price|sale|خرید|قیمت|فروش/.test(l)) { autoDetectedSubtype.value = 'sales'; autoDetectedTone.value = 'persuasive' }
-  else { autoDetectedSubtype.value = 'tutorial'; autoDetectedTone.value = 'informative' }
+  if (/comp|compare|comparison|مقایسه|vs|بهترین/.test(l)) {
+    autoDetectedSubtype.value = 'comparison'
+    autoDetectedTone.value = 'neutral'
+  } else if (/tutorial|how.to|guide|آموزش|چگونه|راهنمای/.test(l)) {
+    autoDetectedSubtype.value = 'tutorial'
+    autoDetectedTone.value = 'informative'
+  } else if (/review|نقد|بررسی/.test(l)) {
+    autoDetectedSubtype.value = 'review'
+    autoDetectedTone.value = 'professional'
+  } else if (/buy|price|sale|خرید|قیمت|فروش/.test(l)) {
+    autoDetectedSubtype.value = 'sales'
+    autoDetectedTone.value = 'persuasive'
+  } else {
+    autoDetectedSubtype.value = 'tutorial'
+    autoDetectedTone.value = 'informative'
+  }
 }
 async function saveAsTemplate() {
-  if (!newTemplateName.value.trim()) return; savingTemplate.value = true
+  if (!newTemplateName.value.trim()) return
+  savingTemplate.value = true
   try {
     const r = await fetch('/api/content/save-user-template', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ title: newTemplateName.value.trim(), system_prompt: customPrompt.value || 'system', user_prompt_template: customPrompt.value || 'write {title}', tone: autoDetectedTone.value || 'informative', content_type: 'article' })
-    });
-    if (r.ok) { await fetchTemplates(); showSaveDialog.value = false; newTemplateName.value = '' }
-  } catch { /* نادیده گرفته شد */ }
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({
+        title: newTemplateName.value.trim(),
+        system_prompt: customPrompt.value || 'system',
+        user_prompt_template: customPrompt.value || 'write {title}',
+        tone: autoDetectedTone.value || 'informative',
+        content_type: 'article',
+      }),
+    })
+    if (r.ok) {
+      await fetchTemplates()
+      showSaveDialog.value = false
+      newTemplateName.value = ''
+    }
+  } catch {
+    /* نادیده گرفته شد */
+  }
   savingTemplate.value = false
 }
 async function applySuggestions(suggestions: string[]) {
-  if (!result.value || suggestions.length === 0) return; applyingSuggestions.value = true
+  if (!result.value || suggestions.length === 0) return
+  applyingSuggestions.value = true
   try {
     const r = await fetch('/api/content/apply-suggestions', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ content: result.value.content, suggestions, title: title.value, keyword: title.value })
-    });
-    const d = await r.json(); if (d.content) { result.value.content = d.content; parseSections(d.content) }
-  } catch { /* نادیده گرفته شد */ }
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({
+        content: result.value.content,
+        suggestions,
+        title: title.value,
+        keyword: title.value,
+      }),
+    })
+    const d = await r.json()
+    if (d.content) {
+      result.value.content = d.content
+      parseSections(d.content)
+    }
+  } catch {
+    /* نادیده گرفته شد */
+  }
   applyingSuggestions.value = false
 }
 
@@ -346,7 +522,7 @@ async function generateWithOutline() {
         keyword: title.value.trim(),
         title: title.value.trim(),
         subtype: subtype.value || undefined,
-        outline: outline.value.map(i => i.heading),
+        outline: outline.value.map((i) => i.heading),
       }),
     })
     const data = await res.json()
@@ -406,7 +582,9 @@ async function regenerateSection(index: number) {
       sections.value[index].content = data.content
       rebuildContent()
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   sections.value[index].regenerating = false
 }
 
@@ -442,7 +620,7 @@ async function analyzeSerp() {
       body: JSON.stringify({
         keyword: title.value.trim(),
         subtype: subtype.value || undefined,
-        outline: outline.value.map(i => ({ heading: i.heading, level: i.level })),
+        outline: outline.value.map((i) => ({ heading: i.heading, level: i.level })),
       }),
     })
     const data = await res.json()
@@ -459,7 +637,11 @@ async function analyzeSerp() {
 }
 
 function addSerpHeading(heading: string) {
-  outline.value.push({ heading: heading.replace(/^H[23]:\s*/, ''), level: 2, note: 'از تحلیل رقبا' })
+  outline.value.push({
+    heading: heading.replace(/^H[23]:\s*/, ''),
+    level: 2,
+    note: 'از تحلیل رقبا',
+  })
 }
 
 // === Navigation ===
@@ -491,18 +673,33 @@ function regenerate() {
 
 function autoMetaTitle() {
   if (result.value && title.value) {
-    const siteName = p.sites.find(s => String(s.id) === selectedSiteId.value)?.name ?? ''
+    const siteName = p.sites.find((s) => String(s.id) === selectedSiteId.value)?.name ?? ''
     result.value.meta_title = title.value.substring(0, 50) + ' | ' + siteName
   }
 }
 async function copyHtml() {
   if (!result.value?.content) return
-  try { await navigator.clipboard.writeText(result.value.content); copyStatus.value = 'HTML'; setTimeout(() => copyStatus.value = '', 2000) } catch { /* نادیده گرفته شد */ }
+  try {
+    await navigator.clipboard.writeText(result.value.content)
+    copyStatus.value = 'HTML'
+    setTimeout(() => (copyStatus.value = ''), 2000)
+  } catch {
+    /* نادیده گرفته شد */
+  }
 }
 async function copyPlainText() {
   if (!result.value?.content) return
-  const text = result.value.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-  try { await navigator.clipboard.writeText(text); copyStatus.value = 'TEXT'; setTimeout(() => copyStatus.value = '', 2000) } catch { /* نادیده گرفته شد */ }
+  const text = result.value.content
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  try {
+    await navigator.clipboard.writeText(text)
+    copyStatus.value = 'TEXT'
+    setTimeout(() => (copyStatus.value = ''), 2000)
+  } catch {
+    /* نادیده گرفته شد */
+  }
 }
 async function publishToWordPress(status: string) {
   publishing.value = true
@@ -512,17 +709,27 @@ async function publishToWordPress(status: string) {
     // Use current draft if available, otherwise find by title
     let draftId = currentDraftId.value
     if (!draftId) {
-      const draftsRes = await fetch('/api/content/drafts?search=' + encodeURIComponent(title.value), { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+      const draftsRes = await fetch(
+        '/api/content/drafts?search=' + encodeURIComponent(title.value),
+        { headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' } },
+      )
       const draftsData = await draftsRes.json()
       draftId = draftsData.drafts?.[0]?.id
     }
-    if (!draftId) { publishResult.value = { success: false, error: 'Draft یافت نشد. ابتدا مقاله را تولید کنید.' }; publishing.value = false; return }
+    if (!draftId) {
+      publishResult.value = { success: false, error: 'Draft یافت نشد. ابتدا مقاله را تولید کنید.' }
+      publishing.value = false
+      return
+    }
     const res = await fetch('/api/content/publish-stored', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ draft_id: draftId, status })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({ draft_id: draftId, status }),
     })
     publishResult.value = await res.json()
-  } catch (e) { publishResult.value = { success: false, error: (e instanceof Error ? e.message : String(e)) } }
+  } catch (e) {
+    publishResult.value = { success: false, error: e instanceof Error ? e.message : String(e) }
+  }
   publishing.value = false
 }
 
@@ -533,127 +740,273 @@ async function saveCurrentDraft() {
   if (!result.value || !selectedSiteId.value) return
   try {
     const r = await fetch('/api/content/drafts', {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ draft_id: currentDraftId.value || undefined, site_id: Number(selectedSiteId.value), title: title.value, content: result.value.content, meta_title: result.value.meta_title, meta_description: result.value.meta_description, subtype: autoDetectedSubtype.value || 'tutorial', quality_score: result.value.quality?.score || 0 })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify({
+        draft_id: currentDraftId.value || undefined,
+        site_id: Number(selectedSiteId.value),
+        title: title.value,
+        content: result.value.content,
+        meta_title: result.value.meta_title,
+        meta_description: result.value.meta_description,
+        subtype: autoDetectedSubtype.value || 'tutorial',
+        quality_score: result.value.quality?.score || 0,
+      }),
     })
-    if (r.ok) { const d = await r.json(); currentDraftId.value = d.id; draftSaved.value = true }
-  } catch { /* نادیده گرفته شد */ }
+    if (r.ok) {
+      const d = await r.json()
+      currentDraftId.value = d.id
+      draftSaved.value = true
+    }
+  } catch {
+    /* نادیده گرفته شد */
+  }
 }
 
-watch(title, (v) => { if (v && v.trim().length > 5) autoDetect(v) })
-
+watch(title, (v) => {
+  if (v && v.trim().length > 5) autoDetect(v)
+})
 </script>
 
 <template>
   <Head title="تولید مقاله هوشمند" />
   <AppLayout>
-    <VPageHeader title="تولید مقاله هوشمند" description="با وارد کردن عنوان، outline پیشنهادی را بررسی و سپس مقاله را تولید کنید." />
+    <VPageHeader
+      title="تولید مقاله هوشمند"
+      description="با وارد کردن عنوان، outline پیشنهادی را بررسی و سپس مقاله را تولید کنید."
+    />
 
-    <VAlert v-if="page.props.flash?.status" tone="success" class="mt-6">{{ page.props.flash.status }}</VAlert>
+    <VAlert v-if="page.props.flash?.status" tone="success" class="mt-6">{{
+      page.props.flash.status
+    }}</VAlert>
     <VAlert v-if="errorMsg" tone="danger" class="mt-6">{{ errorMsg }}</VAlert>
 
     <!-- Breadcrumb -->
-    <div class="mt-6 flex items-center gap-2 text-sm text-ink-muted">
-      <span :class="step === 'input' ? 'font-bold text-brand-700' : ''">۱. ورودی</span>
+    <div class="text-ink-muted mt-6 flex items-center gap-2 text-sm">
+      <span :class="step === 'input' ? 'text-brand-700 font-bold' : ''">۱. ورودی</span>
       <span>›</span>
-      <span :class="step === 'outline' ? 'font-bold text-brand-700' : ''">۲. Outline</span>
+      <span :class="step === 'outline' ? 'text-brand-700 font-bold' : ''">۲. Outline</span>
       <span>›</span>
-      <span :class="step === 'generating' || step === 'result' ? 'font-bold text-brand-700' : ''">۳. نتیجه</span>
+      <span :class="step === 'generating' || step === 'result' ? 'text-brand-700 font-bold' : ''"
+        >۳. نتیجه</span
+      >
     </div>
 
     <!-- STEP 1: INPUT -->
-    <div v-if="step === 'input'" class="mt-6 max-w-2xl mx-auto">
+    <div v-if="step === 'input'" class="mx-auto mt-6 max-w-2xl">
       <VCard title="عنوان مقاله را وارد کنید">
         <div class="space-y-4">
-          <VSelect v-model="selectedSiteId" label="سایت" :options="p.sites.map(s => ({ label: s.name, value: String(s.id) }))" placeholder="انتخاب سایت" />
+          <VSelect
+            v-model="selectedSiteId"
+            label="سایت"
+            :options="p.sites.map((s) => ({ label: s.name, value: String(s.id) }))"
+            placeholder="انتخاب سایت"
+          />
           <div>
             <label class="text-ink-strong text-sm font-semibold">عنوان مقاله</label>
-            <input v-model="title" type="text" dir="auto" class="border-line mt-2 w-full rounded-xl border px-4 py-3 text-lg focus:ring-2 focus:ring-brand-500" placeholder="مثال: راهنمای جامع سئو برای سایت فروشگاهی" @keyup.enter="generateOutline" />
-            <div v-if="autoDetectedSubtype" class="flex items-center gap-2 text-xs mt-2"><span class="text-ink-muted">تشخیص خودکار:</span><VBadge tone="info" size="sm">{{ autoDetectedSubtype }}</VBadge><VBadge tone="success" size="sm">{{ autoDetectedTone }}</VBadge></div>
-          <p class="text-ink-muted mt-1 text-xs">بعد از وارد کردن عنوان، سیستم ابتدا outline (ساختار) پیشنهادی را نمایش می‌دهد.</p>
+            <input
+              v-model="title"
+              type="text"
+              dir="auto"
+              class="border-line focus:ring-brand-500 mt-2 w-full rounded-xl border px-4 py-3 text-lg focus:ring-2"
+              placeholder="مثال: راهنمای جامع سئو برای سایت فروشگاهی"
+              @keyup.enter="generateOutline"
+            />
+            <div v-if="autoDetectedSubtype" class="mt-2 flex items-center gap-2 text-xs">
+              <span class="text-ink-muted">تشخیص خودکار:</span
+              ><VBadge tone="info" size="sm">{{ autoDetectedSubtype }}</VBadge
+              ><VBadge tone="success" size="sm">{{ autoDetectedTone }}</VBadge>
+            </div>
+            <p class="text-ink-muted mt-1 text-xs">
+              بعد از وارد کردن عنوان، سیستم ابتدا outline (ساختار) پیشنهادی را نمایش می‌دهد.
+            </p>
           </div>
-          
+
           <!-- Prompt Template Selector -->
           <div v-if="templates.length > 0">
             <label class="text-ink-strong text-sm font-semibold">قالب پرامپت (اختیاری)</label>
-            <p class="text-ink-muted text-xs mb-2">یک قالب حرفه‌ای انتخاب کنید یا خودتان پرامپت بنویسید.</p>
-            <div class="grid grid-cols-2 gap-2 mt-2">
+            <p class="text-ink-muted mb-2 text-xs">
+              یک قالب حرفه‌ای انتخاب کنید یا خودتان پرامپت بنویسید.
+            </p>
+            <div class="mt-2 grid grid-cols-2 gap-2">
               <button
-v-for="tpl in templates" :key="tpl.id" type="button"
+                v-for="tpl in templates"
+                :key="tpl.id"
+                type="button"
                 class="rounded-xl border px-3 py-2 text-right text-sm transition-all"
-                :class="[selectedTemplateId === tpl.id ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-300' : 'border-surface-muted bg-surface hover:border-brand-300']"
-                @click="selectedTemplateId = selectedTemplateId === tpl.id ? null : tpl.id">
+                :class="[
+                  selectedTemplateId === tpl.id
+                    ? 'border-brand-500 bg-brand-50 ring-brand-300 ring-2'
+                    : 'border-surface-muted bg-surface hover:border-brand-300',
+                ]"
+                @click="selectedTemplateId = selectedTemplateId === tpl.id ? null : tpl.id"
+              >
                 <div class="flex items-center justify-between">
                   <span class="font-medium">{{ tpl.title }}</span>
                   <VBadge v-if="tpl.is_featured" tone="success" size="sm">⭐</VBadge>
                 </div>
-                <div class="flex gap-2 mt-1 text-xs text-ink-muted">
+                <div class="text-ink-muted mt-1 flex gap-2 text-xs">
                   <span>{{ tpl.tone }}</span>
-                  <span v-if="tpl.avg_quality_score > 0">⭐ {{ tpl.avg_quality_score.toFixed(1) }}</span>
+                  <span v-if="tpl.avg_quality_score > 0"
+                    >⭐ {{ tpl.avg_quality_score.toFixed(1) }}</span
+                  >
                   <span v-if="tpl.usage_count > 0">{{ tpl.usage_count }}x</span>
                 </div>
               </button>
             </div>
           </div>
-          
+
           <!-- Custom Prompt -->
           <div>
-            <button type="button" class="text-brand-600 text-sm hover:underline" @click="showCustomPrompt = !showCustomPrompt">
+            <button
+              type="button"
+              class="text-brand-600 text-sm hover:underline"
+              @click="showCustomPrompt = !showCustomPrompt"
+            >
               {{ showCustomPrompt ? '⬆️ بستن پرامپت دستی' : '✏️ نوشتن پرامپت اختیاری' }}
             </button>
             <div v-if="showCustomPrompt" class="mt-3 space-y-3">
-              <textarea v-model="customPrompt" dir="auto" rows="4" class="border-line w-full rounded-xl border px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500" placeholder="پرامپت اختیاری خود را بنویسید..."></textarea>
+              <textarea
+                v-model="customPrompt"
+                dir="auto"
+                rows="4"
+                class="border-line focus:ring-brand-500 w-full rounded-xl border px-4 py-3 text-sm focus:ring-2"
+                placeholder="پرامپت اختیاری خود را بنویسید..."
+              ></textarea>
               <div class="flex gap-2">
-                <VButton size="sm" variant="secondary" :disabled="!customPrompt.trim()" @click="showSaveDialog = true">💾 ذخیره به عنوان قالب</VButton>
+                <VButton
+                  size="sm"
+                  variant="secondary"
+                  :disabled="!customPrompt.trim()"
+                  @click="showSaveDialog = true"
+                  >💾 ذخیره به عنوان قالب</VButton
+                >
               </div>
-              <div v-if="showSaveDialog" class="flex gap-2 items-center bg-surface-muted rounded-xl p-3">
-                <input v-model="newTemplateName" type="text" class="border-line flex-1 rounded-lg border px-3 py-1.5 text-sm" placeholder="نام قالب..." />
-                <VButton size="sm" variant="primary" :loading="savingTemplate" @click="saveAsTemplate">ذخیره</VButton>
+              <div
+                v-if="showSaveDialog"
+                class="bg-surface-muted flex items-center gap-2 rounded-xl p-3"
+              >
+                <input
+                  v-model="newTemplateName"
+                  type="text"
+                  class="border-line flex-1 rounded-lg border px-3 py-1.5 text-sm"
+                  placeholder="نام قالب..."
+                />
+                <VButton
+                  size="sm"
+                  variant="primary"
+                  :loading="savingTemplate"
+                  @click="saveAsTemplate"
+                  >ذخیره</VButton
+                >
                 <VButton size="sm" variant="secondary" @click="showSaveDialog = false">لغو</VButton>
               </div>
             </div>
           </div>
-          <VSelect v-model="subtype" label="زیرنوع" :options="Object.entries(p.subtypes).map(([v,l]) => ({label:l, value:v}))" />
+          <VSelect
+            v-model="subtype"
+            label="زیرنوع"
+            :options="Object.entries(p.subtypes).map(([v, l]) => ({ label: l, value: v }))"
+          />
 
           <!-- Duplicate Warning -->
-          
+
           <!-- GSC Context -->
-          <div v-if="selectedSiteId && title.trim().length > 5" class="bg-surface rounded-xl p-4 border border-surface-muted">
-            <div class="flex items-center justify-between mb-3">
+          <div
+            v-if="selectedSiteId && title.trim().length > 5"
+            class="bg-surface border-surface-muted rounded-xl border p-4"
+          >
+            <div class="mb-3 flex items-center justify-between">
               <span class="text-sm font-semibold">📊 Context سایت</span>
-              <button type="button" class="text-brand-600 text-xs hover:underline" :disabled="gscLoading" @click="fetchGscContext">{{ gscLoading ? '...' : 'بروزرسانی' }}</button>
+              <button
+                type="button"
+                class="text-brand-600 text-xs hover:underline"
+                :disabled="gscLoading"
+                @click="fetchGscContext"
+              >
+                {{ gscLoading ? '...' : 'بروزرسانی' }}
+              </button>
             </div>
-            <div v-if="gscContext?.has_data" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center text-xs">
-              <div><div class="font-bold text-brand-700">{{ gscContext.summary?.total_queries }}</div><div class="text-ink-muted">کوئری</div></div>
-              <div><div class="font-bold text-green-600">{{ gscContext.summary?.total_clicks }}</div><div class="text-ink-muted">کلیک</div></div>
-              <div><div class="font-bold text-blue-600">{{ gscContext.summary?.total_impressions }}</div><div class="text-ink-muted">نمایش</div></div>
-              <div><div class="font-bold text-orange-600">{{ gscContext.summary?.avg_ctr }}%</div><div class="text-ink-muted">CTR</div></div>
+            <div
+              v-if="gscContext?.has_data"
+              class="grid grid-cols-2 gap-3 text-center text-xs md:grid-cols-4"
+            >
+              <div>
+                <div class="text-brand-700 font-bold">{{ gscContext.summary?.total_queries }}</div>
+                <div class="text-ink-muted">کوئری</div>
+              </div>
+              <div>
+                <div class="font-bold text-green-600">{{ gscContext.summary?.total_clicks }}</div>
+                <div class="text-ink-muted">کلیک</div>
+              </div>
+              <div>
+                <div class="font-bold text-blue-600">
+                  {{ gscContext.summary?.total_impressions }}
+                </div>
+                <div class="text-ink-muted">نمایش</div>
+              </div>
+              <div>
+                <div class="font-bold text-orange-600">{{ gscContext.summary?.avg_ctr }}%</div>
+                <div class="text-ink-muted">CTR</div>
+              </div>
             </div>
-            <div v-else class="text-xs text-ink-muted">داده GSC یافت نشد — سایت را در GSC ثبت کنید.</div>
+            <div v-else class="text-ink-muted text-xs">
+              داده GSC یافت نشد — سایت را در GSC ثبت کنید.
+            </div>
           </div>
 
           <VAlert v-if="showDuplicates && duplicates.length > 0" tone="warning">
             <div class="space-y-2">
               <p class="font-semibold">⚠️ {{ duplicates.length }} مقاله مشابه یافت شد:</p>
-              <div v-for="d in duplicates" :key="d.id" class="flex items-center justify-between text-xs">
+              <div
+                v-for="d in duplicates"
+                :key="d.id"
+                class="flex items-center justify-between text-xs"
+              >
                 <span>{{ d.title }} ({{ d.status }})</span>
-                <VBadge :tone="d.similarity >= 80 ? 'danger' : 'warning'" size="sm">{{ d.similarity }}% مشابه</VBadge>
+                <VBadge :tone="d.similarity >= 80 ? 'danger' : 'warning'" size="sm"
+                  >{{ d.similarity }}% مشابه</VBadge
+                >
               </div>
-              <div class="flex gap-2 mt-2">
-                <VButton variant="secondary" size="sm" @click="dismissDuplicates">ادامه با تولید</VButton>
+              <div class="mt-2 flex gap-2">
+                <VButton variant="secondary" size="sm" @click="dismissDuplicates"
+                  >ادامه با تولید</VButton
+                >
               </div>
             </div>
           </VAlert>
 
           <div class="flex gap-2">
-          <VButton :loading="generatingLoading" :disabled="!selectedSiteId || !title.trim()" variant="primary" size="lg" class="flex-1" @click="quickGenerate">
-            {{ generatingLoading ? 'در حال تولید...' : '⚡ تولید سریع' }}
-          </VButton>
-          <VButton :loading="outlineLoading" :disabled="!selectedSiteId || !title.trim()" variant="secondary" size="lg" class="flex-1" @click="generateOutline">
-            {{ outlineLoading ? 'در حال تحلیل...' : '📋 با Outline' }}
-          </VButton>
-        </div>
-        <VButton style="display:none" :loading="outlineLoading" :disabled="!selectedSiteId || !title.trim()" variant="primary" size="lg" class="w-full" @click="generateOutline">
+            <VButton
+              :loading="generatingLoading"
+              :disabled="!selectedSiteId || !title.trim()"
+              variant="primary"
+              size="lg"
+              class="flex-1"
+              @click="quickGenerate"
+            >
+              {{ generatingLoading ? 'در حال تولید...' : '⚡ تولید سریع' }}
+            </VButton>
+            <VButton
+              :loading="outlineLoading"
+              :disabled="!selectedSiteId || !title.trim()"
+              variant="secondary"
+              size="lg"
+              class="flex-1"
+              @click="generateOutline"
+            >
+              {{ outlineLoading ? 'در حال تحلیل...' : '📋 با Outline' }}
+            </VButton>
+          </div>
+          <VButton
+            style="display: none"
+            :loading="outlineLoading"
+            :disabled="!selectedSiteId || !title.trim()"
+            variant="primary"
+            size="lg"
+            class="w-full"
+            @click="generateOutline"
+          >
             <span v-if="!outlineLoading">تولید Outline</span>
             <span v-else>در حال تحلیل...</span>
           </VButton>
@@ -663,9 +1016,9 @@ v-for="tpl in templates" :key="tpl.id" type="button"
     </div>
 
     <!-- STEP 2: OUTLINE EDITOR -->
-    <div v-if="step === 'outline'" class="mt-6 max-w-3xl mx-auto">
+    <div v-if="step === 'outline'" class="mx-auto mt-6 max-w-3xl">
       <VCard title="ساختار پیشنهادی مقاله">
-        <div class="mb-4 flex items-center gap-3 text-sm text-ink-muted">
+        <div class="text-ink-muted mb-4 flex items-center gap-3 text-sm">
           <span>H2: {{ outlineH2Count }}</span>
           <span>H3: {{ outlineH3Count }}</span>
           <span>کل: {{ outline.length }}</span>
@@ -673,22 +1026,61 @@ v-for="tpl in templates" :key="tpl.id" type="button"
         </div>
         <div class="space-y-2">
           <div
-v-for="(item, index) in outline" :key="index"
-            class="group flex items-center gap-2 rounded-xl border border-surface-muted bg-surface p-3 transition-all hover:border-brand-300"
+            v-for="(item, index) in outline"
+            :key="index"
+            class="group border-surface-muted bg-surface hover:border-brand-300 flex items-center gap-2 rounded-xl border p-3 transition-all"
             :class="{ 'opacity-50': dragging === index }"
             :style="{ paddingLeft: item.level === 3 ? '2.5rem' : '1rem' }"
             draggable="true"
             @dragstart="startDrag(index)"
             @dragover="(e: DragEvent) => onDragOver(e, index)"
-            @dragend="endDrag">
-            <span class="cursor-grab text-ink-muted opacity-0 transition-opacity group-hover:opacity-100" title="جابجایی">⠿</span>
+            @dragend="endDrag"
+          >
+            <span
+              class="text-ink-muted cursor-grab opacity-0 transition-opacity group-hover:opacity-100"
+              title="جابجایی"
+              >⠿</span
+            >
             <VBadge :tone="item.level === 2 ? 'brand' : 'info'" size="sm">H{{ item.level }}</VBadge>
-            <input v-model="item.heading" dir="auto" class="flex-1 bg-transparent text-sm font-medium outline-none" :placeholder="item.level === 2 ? 'عنوان بخش اصلی...' : 'عنوان زیربخش...'" />
-            <input v-model="item.note" dir="auto" class="w-48 bg-transparent text-xs text-ink-muted outline-none placeholder:text-ink-muted/50" placeholder="توضیح (اختیاری)" />
-            <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              <button type="button" class="rounded p-1 text-ink-muted hover:bg-surface-muted" title="بالا" @click="moveOutlineItem(index, -1)">↑</button>
-              <button type="button" class="rounded p-1 text-ink-muted hover:bg-surface-muted" title="پایین" @click="moveOutlineItem(index, 1)">↓</button>
-              <button type="button" class="rounded p-1 text-ink-muted hover:bg-red-100 hover:text-red-600" title="حذف" @click="removeOutlineItem(index)">✕</button>
+            <input
+              v-model="item.heading"
+              dir="auto"
+              class="flex-1 bg-transparent text-sm font-medium outline-none"
+              :placeholder="item.level === 2 ? 'عنوان بخش اصلی...' : 'عنوان زیربخش...'"
+            />
+            <input
+              v-model="item.note"
+              dir="auto"
+              class="text-ink-muted placeholder:text-ink-muted/50 w-48 bg-transparent text-xs outline-none"
+              placeholder="توضیح (اختیاری)"
+            />
+            <div
+              class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100"
+            >
+              <button
+                type="button"
+                class="text-ink-muted hover:bg-surface-muted rounded p-1"
+                title="بالا"
+                @click="moveOutlineItem(index, -1)"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                class="text-ink-muted hover:bg-surface-muted rounded p-1"
+                title="پایین"
+                @click="moveOutlineItem(index, 1)"
+              >
+                ↓
+              </button>
+              <button
+                type="button"
+                class="text-ink-muted rounded p-1 hover:bg-red-100 hover:text-red-600"
+                title="حذف"
+                @click="removeOutlineItem(index)"
+              >
+                ✕
+              </button>
             </div>
           </div>
         </div>
@@ -696,14 +1088,26 @@ v-for="(item, index) in outline" :key="index"
           <VButton variant="secondary" size="sm" @click="addOutlineItem(2)">+ افزودن H2</VButton>
           <VButton variant="secondary" size="sm" @click="addOutlineItem(3)">+ افزودن H3</VButton>
         </div>
-        <div class="mt-6 flex items-center justify-between border-t border-surface-muted pt-4">
+        <div class="border-surface-muted mt-6 flex items-center justify-between border-t pt-4">
           <div class="flex items-center gap-2">
             <VButton variant="secondary" @click="goToInput">بازگشت</VButton>
-            <VButton variant="secondary" size="sm" :loading="serpLoading" :disabled="!title.trim()" @click="analyzeSerp">
+            <VButton
+              variant="secondary"
+              size="sm"
+              :loading="serpLoading"
+              :disabled="!title.trim()"
+              @click="analyzeSerp"
+            >
               🔍 تحلیل رقبا (SERP)
             </VButton>
           </div>
-          <VButton variant="primary" size="lg" :disabled="outline.length === 0 || outline.some(i => !i.heading.trim())" :loading="generatingLoading" @click="generateWithOutline">
+          <VButton
+            variant="primary"
+            size="lg"
+            :disabled="outline.length === 0 || outline.some((i) => !i.heading.trim())"
+            :loading="generatingLoading"
+            @click="generateWithOutline"
+          >
             <span v-if="!generatingLoading">تولید مقاله بر اساس Outline</span>
             <span v-else>در حال تولید...</span>
           </VButton>
@@ -721,17 +1125,27 @@ v-for="(item, index) in outline" :key="index"
 
         <div class="space-y-3">
           <h4 class="text-ink-strong text-sm font-semibold">صفحات برتر رقبا:</h4>
-          <div v-for="(comp, i) in serpAnalysis.competitors" :key="i" class="rounded-xl border border-surface-muted bg-surface p-3">
+          <div
+            v-for="(comp, i) in serpAnalysis.competitors"
+            :key="i"
+            class="border-surface-muted bg-surface rounded-xl border p-3"
+          >
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-ink-strong text-sm font-medium">{{ comp.title }}</p>
                 <p class="text-ink-muted text-xs">{{ comp.url }} · {{ comp.word_count }} کلمه</p>
               </div>
             </div>
-            <div v-if="autoDetectedSubtype" class="flex items-center gap-2 text-xs mt-2"><span class="text-ink-muted">تشخیص خودکار:</span><VBadge tone="info" size="sm">{{ autoDetectedSubtype }}</VBadge><VBadge tone="success" size="sm">{{ autoDetectedTone }}</VBadge></div>
-          <p class="text-ink-muted mt-1 text-xs">{{ comp.snippet }}</p>
+            <div v-if="autoDetectedSubtype" class="mt-2 flex items-center gap-2 text-xs">
+              <span class="text-ink-muted">تشخیص خودکار:</span
+              ><VBadge tone="info" size="sm">{{ autoDetectedSubtype }}</VBadge
+              ><VBadge tone="success" size="sm">{{ autoDetectedTone }}</VBadge>
+            </div>
+            <p class="text-ink-muted mt-1 text-xs">{{ comp.snippet }}</p>
             <div class="mt-2 flex flex-wrap gap-1">
-              <VBadge v-for="h in comp.headings.slice(0, 6)" :key="h" tone="brand" size="sm">{{ h }}</VBadge>
+              <VBadge v-for="h in comp.headings.slice(0, 6)" :key="h" tone="brand" size="sm">{{
+                h
+              }}</VBadge>
             </div>
           </div>
         </div>
@@ -740,9 +1154,12 @@ v-for="(item, index) in outline" :key="index"
           <h4 class="text-ink-strong text-sm font-semibold">عنوان‌های مشترک رقبا:</h4>
           <div class="mt-2 flex flex-wrap gap-1">
             <button
-v-for="h in serpAnalysis.common_headings" :key="h" type="button"
-              class="rounded-full border border-brand-300 bg-brand-50 px-3 py-1 text-xs text-brand-700 hover:bg-brand-100 transition-colors"
-              @click="addSerpHeading(h)">
+              v-for="h in serpAnalysis.common_headings"
+              :key="h"
+              type="button"
+              class="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-full border px-3 py-1 text-xs transition-colors"
+              @click="addSerpHeading(h)"
+            >
               + {{ h }}
             </button>
           </div>
@@ -751,26 +1168,35 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
         <div v-if="serpAnalysis.content_gaps.length > 0" class="mt-4">
           <h4 class="text-ink-strong text-sm font-semibold">⚠️ شکاف‌های محتوایی:</h4>
           <ul class="mt-2 space-y-1">
-            <li v-for="gap in serpAnalysis.content_gaps" :key="gap" class="text-yellow-600 text-xs">• {{ gap }}</li>
+            <li v-for="gap in serpAnalysis.content_gaps" :key="gap" class="text-xs text-yellow-600">
+              • {{ gap }}
+            </li>
           </ul>
         </div>
 
         <div v-if="serpAnalysis.recommendations.length > 0" class="mt-4">
           <h4 class="text-ink-strong text-sm font-semibold">💡 پیشنهادات:</h4>
           <ul class="mt-2 space-y-1">
-            <li v-for="rec in serpAnalysis.recommendations" :key="rec" class="text-green-600 text-xs">✓ {{ rec }}</li>
+            <li
+              v-for="rec in serpAnalysis.recommendations"
+              :key="rec"
+              class="text-xs text-green-600"
+            >
+              ✓ {{ rec }}
+            </li>
           </ul>
         </div>
 
-        <div class="mt-4 text-sm text-ink-muted">
-          میانگین کلمات رقبا: <span class="font-bold text-ink-strong">{{ serpAnalysis.avg_word_count }}</span> کلمه
+        <div class="text-ink-muted mt-4 text-sm">
+          میانگین کلمات رقبا:
+          <span class="text-ink-strong font-bold">{{ serpAnalysis.avg_word_count }}</span> کلمه
         </div>
       </VCard>
 
       <VAlert v-if="serpError" tone="danger" class="mt-4">{{ serpError }}</VAlert>
 
       <VCard class="mt-4" title="نکات">
-        <ul class="space-y-1 text-xs text-ink-muted">
+        <ul class="text-ink-muted space-y-1 text-xs">
           <li>عنوان‌ها را می‌توانید ویرایش، حذف یا جابجا کنید.</li>
           <li>H2 برای بخش‌های اصلی و H3 برای زیربخش‌هاست.</li>
           <li>کشیدن و رها کردن (drag and drop) برای جابجایی سریع.</li>
@@ -780,11 +1206,11 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
     </div>
 
     <!-- STEP 3: GENERATING -->
-    <div v-if="step === 'generating'" class="mt-6 max-w-2xl mx-auto text-center py-16">
-      <div class="text-6xl mb-4 animate-pulse">🤖</div>
-      <h2 class="text-xl font-bold text-ink-strong">در حال تولید مقاله...</h2>
+    <div v-if="step === 'generating'" class="mx-auto mt-6 max-w-2xl py-16 text-center">
+      <div class="mb-4 animate-pulse text-6xl">🤖</div>
+      <h2 class="text-ink-strong text-xl font-bold">در حال تولید مقاله...</h2>
       <p class="text-ink-muted mt-2">{{ generatingStatus }}</p>
-      <div class="mt-8 space-y-2 text-sm text-ink-muted">
+      <div class="text-ink-muted mt-8 space-y-2 text-sm">
         <p>✅ تحلیل outline پیشنهادی</p>
         <p>✅ اعمال گاردرایل‌ها و استانداردها</p>
         <p>✅ تحلیل داده GSC</p>
@@ -799,12 +1225,18 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
           <div class="flex items-center gap-3">
             <span class="text-2xl">✅</span>
             <div>
-              <h3 class="font-bold text-ink-strong">مقاله تولید شد!</h3>
-              <p class="text-ink-muted text-sm">مدل: {{ result.model }} | منبع: {{ result.source }} | کلمات: {{ wordCount }}</p>
+              <h3 class="text-ink-strong font-bold">مقاله تولید شد!</h3>
+              <p class="text-ink-muted text-sm">
+                مدل: {{ result.model }} | منبع: {{ result.source }} | کلمات: {{ wordCount }}
+              </p>
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <VBadge :tone="seoScore >= 70 ? 'success' : seoScore >= 40 ? 'warning' : 'danger'" size="lg">امتیاز: {{ seoScore }}/100</VBadge>
+            <VBadge
+              :tone="seoScore >= 70 ? 'success' : seoScore >= 40 ? 'warning' : 'danger'"
+              size="lg"
+              >امتیاز: {{ seoScore }}/100</VBadge
+            >
             <VButton variant="secondary" @click="goToOutline">بازگشت به Outline</VButton>
             <VButton variant="secondary" @click="regenerate">🔄 تولید مجدد</VButton>
           </div>
@@ -813,7 +1245,26 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
       <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div class="space-y-6">
           <div class="border-line flex gap-1 border-b">
-            <button v-for="tab in [{id:'content',label:'✏️ محتوا'}, {id:'meta',label:'🏷️ Meta'}, {id:'seo',label:'📊 امتیاز'}, {id:'schema',label:'📊 اسکیما'}, {id:'sections',label:'📝 ویرایش بخش‌ها'}]" :key="tab.id" type="button" class="border-b-2 px-4 py-2.5 text-sm font-medium transition-colors" :class="activeResultTab === tab.id ? 'border-brand-600 text-brand-700' : 'border-transparent text-ink-muted hover:text-ink-strong'" @click="activeResultTab = tab.id">{{ tab.label }}</button>
+            <button
+              v-for="tab in [
+                { id: 'content', label: '✏️ محتوا' },
+                { id: 'meta', label: '🏷️ Meta' },
+                { id: 'seo', label: '📊 امتیاز' },
+                { id: 'schema', label: '📊 اسکیما' },
+                { id: 'sections', label: '📝 ویرایش بخش‌ها' },
+              ]"
+              :key="tab.id"
+              type="button"
+              class="border-b-2 px-4 py-2.5 text-sm font-medium transition-colors"
+              :class="
+                activeResultTab === tab.id
+                  ? 'border-brand-600 text-brand-700'
+                  : 'text-ink-muted hover:text-ink-strong border-transparent'
+              "
+              @click="activeResultTab = tab.id"
+            >
+              {{ tab.label }}
+            </button>
           </div>
 
           <!-- Content Tab -->
@@ -826,19 +1277,66 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
           <VCard v-if="activeResultTab === 'meta'">
             <div class="space-y-4">
               <div>
-                <div class="flex items-center justify-between"><label class="text-ink-strong text-sm font-semibold">Meta Title</label><button type="button" class="text-brand-700 text-xs" @click="autoMetaTitle">تولید خودکار</button></div>
-                <input v-model="result.meta_title" dir="auto" maxlength="70" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
+                <div class="flex items-center justify-between">
+                  <label class="text-ink-strong text-sm font-semibold">Meta Title</label
+                  ><button type="button" class="text-brand-700 text-xs" @click="autoMetaTitle">
+                    تولید خودکار
+                  </button>
+                </div>
+                <input
+                  v-model="result.meta_title"
+                  dir="auto"
+                  maxlength="70"
+                  class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm"
+                />
                 <div class="mt-1 flex items-center gap-2">
-                  <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-muted"><div class="h-full rounded-full transition-all" :class="(result.meta_title?.length ?? 0) >= 30 && (result.meta_title?.length ?? 0) <= 60 ? 'bg-green-500' : 'bg-red-500'" :style="{ width: Math.min(100, ((result.meta_title?.length ?? 0) / 60) * 100) + '%' }" /></div>
-                  <span class="text-ink-muted text-xs">{{ result.meta_title?.length ?? 0 }}/60</span>
+                  <div class="bg-surface-muted h-1.5 flex-1 overflow-hidden rounded-full">
+                    <div
+                      class="h-full rounded-full transition-all"
+                      :class="
+                        (result.meta_title?.length ?? 0) >= 30 &&
+                        (result.meta_title?.length ?? 0) <= 60
+                          ? 'bg-green-500'
+                          : 'bg-red-500'
+                      "
+                      :style="{
+                        width: Math.min(100, ((result.meta_title?.length ?? 0) / 60) * 100) + '%',
+                      }"
+                    />
+                  </div>
+                  <span class="text-ink-muted text-xs"
+                    >{{ result.meta_title?.length ?? 0 }}/60</span
+                  >
                 </div>
               </div>
               <div>
                 <label class="text-ink-strong text-sm font-semibold">Meta Description</label>
-                <textarea v-model="result.meta_description" dir="auto" rows="3" maxlength="200" class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm" />
+                <textarea
+                  v-model="result.meta_description"
+                  dir="auto"
+                  rows="3"
+                  maxlength="200"
+                  class="border-line mt-1 w-full rounded-xl border px-4 py-2.5 text-sm"
+                />
                 <div class="mt-1 flex items-center gap-2">
-                  <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-muted"><div class="h-full rounded-full transition-all" :class="(result.meta_description?.length ?? 0) >= 120 && (result.meta_description?.length ?? 0) <= 160 ? 'bg-green-500' : 'bg-red-500'" :style="{ width: Math.min(100, ((result.meta_description?.length ?? 0) / 160) * 100) + '%' }" /></div>
-                  <span class="text-ink-muted text-xs">{{ result.meta_description?.length ?? 0 }}/160</span>
+                  <div class="bg-surface-muted h-1.5 flex-1 overflow-hidden rounded-full">
+                    <div
+                      class="h-full rounded-full transition-all"
+                      :class="
+                        (result.meta_description?.length ?? 0) >= 120 &&
+                        (result.meta_description?.length ?? 0) <= 160
+                          ? 'bg-green-500'
+                          : 'bg-red-500'
+                      "
+                      :style="{
+                        width:
+                          Math.min(100, ((result.meta_description?.length ?? 0) / 160) * 100) + '%',
+                      }"
+                    />
+                  </div>
+                  <span class="text-ink-muted text-xs"
+                    >{{ result.meta_description?.length ?? 0 }}/160</span
+                  >
                 </div>
               </div>
             </div>
@@ -847,32 +1345,76 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
           <!-- SEO Tab -->
           <VCard v-if="activeResultTab === 'seo'">
             <div class="space-y-3">
-              <div v-for="check in seoChecks" :key="check.label" class="flex items-center justify-between">
+              <div
+                v-for="check in seoChecks"
+                :key="check.label"
+                class="flex items-center justify-between"
+              >
                 <span class="text-ink-strong text-sm">{{ check.label }}</span>
                 <VBadge :tone="check.passed ? 'success' : 'danger'">{{ check.value }}</VBadge>
               </div>
               <div v-if="result.quality?.failures?.length" class="mt-4">
-                <p class="text-red-600 text-sm font-semibold">مشکلات:</p>
-                <ul class="mt-1 space-y-1"><li v-for="f in result.quality.failures" :key="f" class="text-red-500 text-xs">• {{ f }}</li></ul>
+                <p class="text-sm font-semibold text-red-600">مشکلات:</p>
+                <ul class="mt-1 space-y-1">
+                  <li v-for="f in result.quality.failures" :key="f" class="text-xs text-red-500">
+                    • {{ f }}
+                  </li>
+                </ul>
               </div>
               <div v-if="result.quality?.warnings?.length" class="mt-4">
-                <p class="text-yellow-600 text-sm font-semibold">نکات:</p>
-                <ul class="mt-1 space-y-1"><li v-for="w in result.quality.warnings" :key="w" class="text-yellow-500 text-xs">• {{ w }}</li></ul>
+                <p class="text-sm font-semibold text-yellow-600">نکات:</p>
+                <ul class="mt-1 space-y-1">
+                  <li v-for="w in result.quality.warnings" :key="w" class="text-xs text-yellow-500">
+                    • {{ w }}
+                  </li>
+                </ul>
               </div>
 
               <!-- Readability Card -->
-              <div v-if="readability" class="mt-4 rounded-xl border border-surface-muted bg-surface p-4">
-                <h4 class="text-ink-strong text-sm font-semibold mb-2">📖 خوانایی</h4>
-                <div class="flex items-center gap-3 mb-3">
-                  <VBadge :tone="readability.score >= 60 ? 'success' : readability.score >= 40 ? 'warning' : 'danger'" size="lg">
+              <div
+                v-if="readability"
+                class="border-surface-muted bg-surface mt-4 rounded-xl border p-4"
+              >
+                <h4 class="text-ink-strong mb-2 text-sm font-semibold">📖 خوانایی</h4>
+                <div class="mb-3 flex items-center gap-3">
+                  <VBadge
+                    :tone="
+                      readability.score >= 60
+                        ? 'success'
+                        : readability.score >= 40
+                          ? 'warning'
+                          : 'danger'
+                    "
+                    size="lg"
+                  >
                     {{ readability.label }} ({{ readability.score }}/100)
                   </VBadge>
                 </div>
-                <div class="grid grid-cols-2 gap-2 text-xs text-ink-muted">
-                  <div>میانگین طول جمله: <span class="font-medium text-ink-strong">{{ readability.sentence_avg_length }} کلمه</span></div>
-                  <div>میانگین طول کلمه: <span class="font-medium text-ink-strong">{{ readability.word_avg_length }} کاراکتر</span></div>
-                  <div>جملات طولانی: <span class="font-medium text-ink-strong">{{ readability.long_sentences_pct }}%</span></div>
-                  <div>کلمات پیچیده: <span class="font-medium text-ink-strong">{{ readability.complex_words_pct }}%</span></div>
+                <div class="text-ink-muted grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    میانگین طول جمله:
+                    <span class="text-ink-strong font-medium"
+                      >{{ readability.sentence_avg_length }} کلمه</span
+                    >
+                  </div>
+                  <div>
+                    میانگین طول کلمه:
+                    <span class="text-ink-strong font-medium"
+                      >{{ readability.word_avg_length }} کاراکتر</span
+                    >
+                  </div>
+                  <div>
+                    جملات طولانی:
+                    <span class="text-ink-strong font-medium"
+                      >{{ readability.long_sentences_pct }}%</span
+                    >
+                  </div>
+                  <div>
+                    کلمات پیچیده:
+                    <span class="text-ink-strong font-medium"
+                      >{{ readability.complex_words_pct }}%</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
@@ -881,8 +1423,10 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
           <!-- Schema Tab -->
           <VCard v-if="activeResultTab === 'schema'">
             <div class="space-y-2">
-              <div v-for="(schema, i) in (result.schemas || [])" :key="i">
-                <pre class="bg-surface-muted rounded-xl p-4 text-xs overflow-x-auto" dir="ltr">{{ JSON.stringify(schema, null, 2) }}</pre>
+              <div v-for="(schema, i) in result.schemas || []" :key="i">
+                <pre class="bg-surface-muted overflow-x-auto rounded-xl p-4 text-xs" dir="ltr">{{
+                  JSON.stringify(schema, null, 2)
+                }}</pre>
               </div>
             </div>
           </VCard>
@@ -895,35 +1439,74 @@ v-for="h in serpAnalysis.common_headings" :key="h" type="button"
                 <span class="text-ink-muted text-xs">{{ sections.length }} بخش</span>
               </div>
               <div
-v-for="(sec, i) in sections" :key="i"
-                class="rounded-xl border border-surface-muted bg-surface p-3 transition-all hover:border-brand-300">
+                v-for="(sec, i) in sections"
+                :key="i"
+                class="border-surface-muted bg-surface hover:border-brand-300 rounded-xl border p-3 transition-all"
+              >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-2">
-                    <VBadge :tone="sec.level <= 2 ? 'brand' : 'info'" size="sm">H{{ sec.level }}</VBadge>
+                    <VBadge :tone="sec.level <= 2 ? 'brand' : 'info'" size="sm"
+                      >H{{ sec.level }}</VBadge
+                    >
                     <span class="text-ink-strong text-sm font-medium">{{ sec.heading }}</span>
                   </div>
                   <div class="flex items-center gap-1">
-                    <button type="button" class="rounded p-1.5 text-ink-muted hover:bg-surface-muted text-xs" title="ویرایش متن" @click="editSection(i)">✏️</button>
-                    <button type="button" class="rounded p-1.5 text-ink-muted hover:bg-blue-100 hover:text-blue-600 text-xs" :disabled="sec.regenerating" title="تولید مجدد" @click="regenerateSection(i)">
+                    <button
+                      type="button"
+                      class="text-ink-muted hover:bg-surface-muted rounded p-1.5 text-xs"
+                      title="ویرایش متن"
+                      @click="editSection(i)"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      class="text-ink-muted rounded p-1.5 text-xs hover:bg-blue-100 hover:text-blue-600"
+                      :disabled="sec.regenerating"
+                      title="تولید مجدد"
+                      @click="regenerateSection(i)"
+                    >
                       <span v-if="sec.regenerating" class="animate-pulse">⏳</span>
                       <span v-else>🔄</span>
                     </button>
                   </div>
                 </div>
-                <div class="mt-2 text-xs text-ink-muted max-h-20 overflow-hidden" dir="auto">{{ sec.content.replace(/<[^>]+>/g, ' ').substring(0, 200) }}...</div>
+                <div class="text-ink-muted mt-2 max-h-20 overflow-hidden text-xs" dir="auto">
+                  {{ sec.content.replace(/<[^>]+>/g, ' ').substring(0, 200) }}...
+                </div>
               </div>
             </div>
           </VCard>
 
           <!-- Section Edit Modal -->
-          <VCard v-if="showSectionEdit" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" style="position: fixed;">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-auto p-6">
-              <div class="flex items-center justify-between mb-4">
-                <h4 class="font-bold text-ink-strong">ویرایش بخش: {{ editSectionIndex !== null ? sections[editSectionIndex]?.heading : '' }}</h4>
-                <button type="button" class="text-ink-muted hover:text-ink-strong" @click="showSectionEdit = false">✕</button>
+          <VCard
+            v-if="showSectionEdit"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+            style="position: fixed"
+          >
+            <div
+              class="max-h-[80vh] w-full max-w-2xl overflow-auto rounded-2xl bg-white p-6 shadow-2xl"
+            >
+              <div class="mb-4 flex items-center justify-between">
+                <h4 class="text-ink-strong font-bold">
+                  ویرایش بخش:
+                  {{ editSectionIndex !== null ? sections[editSectionIndex]?.heading : '' }}
+                </h4>
+                <button
+                  type="button"
+                  class="text-ink-muted hover:text-ink-strong"
+                  @click="showSectionEdit = false"
+                >
+                  ✕
+                </button>
               </div>
-              <textarea v-model="editSectionText" dir="auto" rows="12" class="border-line w-full rounded-xl border px-4 py-3 text-sm" />
-              <div class="flex gap-2 mt-4 justify-end">
+              <textarea
+                v-model="editSectionText"
+                dir="auto"
+                rows="12"
+                class="border-line w-full rounded-xl border px-4 py-3 text-sm"
+              />
+              <div class="mt-4 flex justify-end gap-2">
                 <VButton variant="secondary" @click="showSectionEdit = false">لغو</VButton>
                 <VButton variant="primary" @click="saveSectionEdit">ذخیره</VButton>
               </div>
@@ -935,33 +1518,78 @@ v-for="(sec, i) in sections" :key="i"
         <div class="space-y-6">
           <VCard title="📊 خلاصه">
             <div class="space-y-2 text-sm">
-              <div class="flex justify-between"><span class="text-ink-muted">کلمات:</span><span class="font-medium">{{ wordCount }}</span></div>
-              <div class="flex justify-between"><span class="text-ink-muted">امتیاز:</span><span class="font-medium">{{ seoScore }}/100</span></div>
-              <div class="flex justify-between"><span class="text-ink-muted">لینک‌ها:</span><span class="font-medium">{{ result.links?.length ?? 0 }}</span></div>
-              <div class="flex justify-between"><span class="text-ink-muted">اسکیما:</span><span class="font-medium">{{ result.schemas?.length ?? 0 }}</span></div>
-              <div v-if="readability" class="flex justify-between"><span class="text-ink-muted">خوانایی:</span><span class="font-medium" :class="readability.score >= 60 ? 'text-green-600' : 'text-yellow-600'">{{ readability.label }}</span></div>
+              <div class="flex justify-between">
+                <span class="text-ink-muted">کلمات:</span
+                ><span class="font-medium">{{ wordCount }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-ink-muted">امتیاز:</span
+                ><span class="font-medium">{{ seoScore }}/100</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-ink-muted">لینک‌ها:</span
+                ><span class="font-medium">{{ result.links?.length ?? 0 }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-ink-muted">اسکیما:</span
+                ><span class="font-medium">{{ result.schemas?.length ?? 0 }}</span>
+              </div>
+              <div v-if="readability" class="flex justify-between">
+                <span class="text-ink-muted">خوانایی:</span
+                ><span
+                  class="font-medium"
+                  :class="readability.score >= 60 ? 'text-green-600' : 'text-yellow-600'"
+                  >{{ readability.label }}</span
+                >
+              </div>
             </div>
           </VCard>
 
           <!-- Keyword Density -->
           <VCard title="🎯 تراکم کلیدواژه">
             <div class="space-y-3">
-              <input v-model="keywordInput" dir="auto" class="border-line w-full rounded-xl border px-3 py-2 text-sm" placeholder="کلیدواژه را وارد کنید..." />
+              <input
+                v-model="keywordInput"
+                dir="auto"
+                class="border-line w-full rounded-xl border px-3 py-2 text-sm"
+                placeholder="کلیدواژه را وارد کنید..."
+              />
               <div v-if="keywordInput.trim() && result?.content" class="space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-ink-muted text-xs">تعداد تکرار:</span>
-                  <span class="font-bold text-ink-strong">{{ keywordDensity.count }}</span>
+                  <span class="text-ink-strong font-bold">{{ keywordDensity.count }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-ink-muted text-xs">تراکم:</span>
-                  <VBadge :tone="keywordDensity.density >= 1 && keywordDensity.density <= 3 ? 'success' : keywordDensity.density > 3 ? 'danger' : 'warning'" size="sm">
+                  <VBadge
+                    :tone="
+                      keywordDensity.density >= 1 && keywordDensity.density <= 3
+                        ? 'success'
+                        : keywordDensity.density > 3
+                          ? 'danger'
+                          : 'warning'
+                    "
+                    size="sm"
+                  >
                     {{ keywordDensity.density }}%
                   </VBadge>
                 </div>
-                <div class="h-2 rounded-full bg-surface-muted overflow-hidden">
-                  <div class="h-full rounded-full transition-all duration-500" :class="keywordDensityStatus.color === 'text-green-600' ? 'bg-green-500' : keywordDensity.density > 3 ? 'bg-red-500' : 'bg-yellow-500'" :style="{ width: Math.min(100, keywordDensity.density * 20) + '%' }" />
+                <div class="bg-surface-muted h-2 overflow-hidden rounded-full">
+                  <div
+                    class="h-full rounded-full transition-all duration-500"
+                    :class="
+                      keywordDensityStatus.color === 'text-green-600'
+                        ? 'bg-green-500'
+                        : keywordDensity.density > 3
+                          ? 'bg-red-500'
+                          : 'bg-yellow-500'
+                    "
+                    :style="{ width: Math.min(100, keywordDensity.density * 20) + '%' }"
+                  />
                 </div>
-                <p class="text-xs" :class="keywordDensityStatus.color">{{ keywordDensityStatus.label }} — بهترین: ۱ تا ۳٪</p>
+                <p class="text-xs" :class="keywordDensityStatus.color">
+                  {{ keywordDensityStatus.label }} — بهترین: ۱ تا ۳٪
+                </p>
               </div>
             </div>
           </VCard>
@@ -969,7 +1597,8 @@ v-for="(sec, i) in sections" :key="i"
           <VCard v-if="result.links?.length" title="🔗 لینک‌های داخلی">
             <div class="space-y-2">
               <div v-for="link in result.links.slice(0, 5)" :key="link.url" class="text-xs">
-                <span class="text-brand-700">{{ link.anchor }}</span> → <span class="text-ink-muted">{{ link.url }}</span>
+                <span class="text-brand-700">{{ link.anchor }}</span> →
+                <span class="text-ink-muted">{{ link.url }}</span>
               </div>
             </div>
           </VCard>
@@ -984,22 +1613,50 @@ v-for="(sec, i) in sections" :key="i"
           <!-- Expert Analysis Card -->
           <VCard v-if="result.expert_analysis" title="🧠 تحلیل متخصص SEO">
             <div class="space-y-3">
-              <p class="text-ink-strong text-sm font-medium">{{ result.expert_analysis.summary }}</p>
+              <p class="text-ink-strong text-sm font-medium">
+                {{ result.expert_analysis.summary }}
+              </p>
               <div v-if="result.expert_analysis.strengths?.length" class="space-y-1">
-                <p class="text-green-600 text-xs font-semibold">✅ نقاط قوت:</p>
-                <p v-for="s in result.expert_analysis.strengths" :key="s" class="text-green-500 text-xs">• {{ s }}</p>
+                <p class="text-xs font-semibold text-green-600">✅ نقاط قوت:</p>
+                <p
+                  v-for="s in result.expert_analysis.strengths"
+                  :key="s"
+                  class="text-xs text-green-500"
+                >
+                  • {{ s }}
+                </p>
               </div>
               <div v-if="result.expert_analysis.weaknesses?.length" class="space-y-1">
-                <p class="text-red-600 text-xs font-semibold">⚠️ نقاط ضعف:</p>
-                <p v-for="w in result.expert_analysis.weaknesses" :key="w" class="text-red-500 text-xs">• {{ w }}</p>
+                <p class="text-xs font-semibold text-red-600">⚠️ نقاط ضعف:</p>
+                <p
+                  v-for="w in result.expert_analysis.weaknesses"
+                  :key="w"
+                  class="text-xs text-red-500"
+                >
+                  • {{ w }}
+                </p>
               </div>
               <div v-if="result.expert_analysis.recommendations?.length" class="space-y-1">
-                <p class="text-blue-600 text-xs font-semibold">💡 توصیه‌ها:</p>
-                <p v-for="r in result.expert_analysis.recommendations" :key="r" class="text-blue-500 text-xs">• {{ r }}</p>
+                <p class="text-xs font-semibold text-blue-600">💡 توصیه‌ها:</p>
+                <p
+                  v-for="r in result.expert_analysis.recommendations"
+                  :key="r"
+                  class="text-xs text-blue-500"
+                >
+                  • {{ r }}
+                </p>
               </div>
-              <div class="flex gap-2 mt-3">
-                <VButton size="sm" variant="primary" :loading="applyingSuggestions" @click="applySuggestions(result.expert_analysis.recommendations || [])">اعمال همه پیشنهادات</VButton>
-                <VButton size="sm" variant="secondary" @click="result.expert_analysis = null">فقط ذخیره</VButton>
+              <div class="mt-3 flex gap-2">
+                <VButton
+                  size="sm"
+                  variant="primary"
+                  :loading="applyingSuggestions"
+                  @click="applySuggestions(result.expert_analysis.recommendations || [])"
+                  >اعمال همه پیشنهادات</VButton
+                >
+                <VButton size="sm" variant="secondary" @click="result.expert_analysis = null"
+                  >فقط ذخیره</VButton
+                >
               </div>
             </div>
           </VCard>
@@ -1011,13 +1668,20 @@ v-for="(sec, i) in sections" :key="i"
                 <VButton variant="primary" size="sm" @click="saveCurrentDraft">💾 ذخیره</VButton>
                 <VButton variant="secondary" size="sm" @click="copyHtml">📋 کپی HTML</VButton>
                 <VButton variant="secondary" size="sm" @click="copyPlainText">📝 کپی متن</VButton>
-                <VButton variant="secondary" size="sm" @click="showPublishDialog = true">🚀 انتشار در وردپرس</VButton>
+                <VButton variant="secondary" size="sm" @click="showPublishDialog = true"
+                  >🚀 انتشار در وردپرس</VButton
+                >
               </div>
-              <p v-if="draftSaved" class="text-green-600 text-xs">✅ Draft ذخیره شد</p>
-              <p v-if="copyStatus === 'HTML'" class="text-blue-600 text-xs">📋 HTML کپی شد!</p>
-              <p v-if="copyStatus === 'TEXT'" class="text-blue-600 text-xs">📝 متن کپی شد!</p>
-              <p v-if="publishResult?.success" class="text-green-600 text-xs">✅ منتشر شد! <a :href="publishResult.post_url" target="_blank" class="underline">مشاهده</a></p>
-              <p v-if="publishResult?.error" class="text-red-600 text-xs">❌ {{ publishResult.error }}</p>
+              <p v-if="draftSaved" class="text-xs text-green-600">✅ Draft ذخیره شد</p>
+              <p v-if="copyStatus === 'HTML'" class="text-xs text-blue-600">📋 HTML کپی شد!</p>
+              <p v-if="copyStatus === 'TEXT'" class="text-xs text-blue-600">📝 متن کپی شد!</p>
+              <p v-if="publishResult?.success" class="text-xs text-green-600">
+                ✅ منتشر شد!
+                <a :href="publishResult.post_url" target="_blank" class="underline">مشاهده</a>
+              </p>
+              <p v-if="publishResult?.error" class="text-xs text-red-600">
+                ❌ {{ publishResult.error }}
+              </p>
             </div>
           </VCard>
         </div>
@@ -1025,17 +1689,28 @@ v-for="(sec, i) in sections" :key="i"
     </div>
 
     <!-- WP Publish Dialog -->
-    <div v-if="showPublishDialog" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h4 class="font-bold text-ink-strong">🚀 انتشار در وردپرس</h4>
-          <button class="text-ink-muted hover:text-ink-strong" @click="showPublishDialog = false">✕</button>
+    <div
+      v-if="showPublishDialog"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+    >
+      <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h4 class="text-ink-strong font-bold">🚀 انتشار در وردپرس</h4>
+          <button class="text-ink-muted hover:text-ink-strong" @click="showPublishDialog = false">
+            ✕
+          </button>
         </div>
-        <p class="text-ink-muted text-sm mb-4">مقاله با اتصال خودکار به سایت وردپرس منتشر می‌شود.</p>
-        <div class="flex gap-2 justify-end">
+        <p class="text-ink-muted mb-4 text-sm">
+          مقاله با اتصال خودکار به سایت وردپرس منتشر می‌شود.
+        </p>
+        <div class="flex justify-end gap-2">
           <VButton variant="secondary" @click="showPublishDialog = false">لغو</VButton>
-          <VButton variant="secondary" :loading="publishing" @click='publishToWordPress("draft")'>ذخیره پیش‌نویس</VButton>
-          <VButton variant="primary" :loading="publishing" @click='publishToWordPress("publish")'>انتشار</VButton>
+          <VButton variant="secondary" :loading="publishing" @click="publishToWordPress('draft')"
+            >ذخیره پیش‌نویس</VButton
+          >
+          <VButton variant="primary" :loading="publishing" @click="publishToWordPress('publish')"
+            >انتشار</VButton
+          >
         </div>
       </div>
     </div>

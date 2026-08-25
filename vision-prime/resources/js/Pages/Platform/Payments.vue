@@ -49,7 +49,13 @@ function action(payment: PaymentRow): void {
 }
 
 const statusTone = (status: string): 'success' | 'warning' | 'danger' | 'neutral' | 'info' =>
-  status === 'paid' ? 'success' : status === 'pending' ? 'info' : status === 'failed' ? 'danger' : 'neutral'
+  status === 'paid'
+    ? 'success'
+    : status === 'pending'
+      ? 'info'
+      : status === 'failed'
+        ? 'danger'
+        : 'neutral'
 
 const methodLabels: Record<string, string> = {
   zarinpal: 'زرین‌پال',
@@ -64,10 +70,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
 <template>
   <Head title="پرداخت‌ها" />
   <PlatformLayout>
-    <VPageHeader
-      title="پرداخت‌ها"
-      description="درآمد و وضعیت پرداخت‌های همهٔ سازمان‌ها."
-    >
+    <VPageHeader title="پرداخت‌ها" description="درآمد و وضعیت پرداخت‌های همهٔ سازمان‌ها.">
       <template #actions>
         <VButton size="sm" @click="createOpen = true">+ ثبت پرداخت</VButton>
       </template>
@@ -88,16 +91,36 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
             </tr>
           </thead>
           <tbody class="divide-line divide-y">
-            <tr v-for="payment in payments" :key="payment.id" class="hover:bg-surface-muted/50 transition-colors">
+            <tr
+              v-for="payment in payments"
+              :key="payment.id"
+              class="hover:bg-surface-muted/50 transition-colors"
+            >
               <td class="px-4 py-3 font-semibold">{{ payment.organization_name }}</td>
               <td class="px-4 py-3 font-semibold">{{ faNum(payment.amount) }} تومان</td>
               <td class="px-4 py-3">{{ methodLabels[payment.method] ?? payment.method }}</td>
-              <td class="px-4 py-3"><VBadge :tone="statusTone(payment.status)">{{ payment.status_label }}</VBadge></td>
-              <td class="font-latin text-ink-muted px-4 py-3 text-xs" dir="ltr">{{ payment.reference }}</td>
+              <td class="px-4 py-3">
+                <VBadge :tone="statusTone(payment.status)">{{ payment.status_label }}</VBadge>
+              </td>
+              <td class="font-latin text-ink-muted px-4 py-3 text-xs" dir="ltr">
+                {{ payment.reference }}
+              </td>
               <td class="text-ink-muted px-4 py-3 text-xs" dir="ltr">{{ payment.paid_at }}</td>
               <td class="px-4 py-3">
-                <VButton v-if="payment.status === 'pending'" size="sm" variant="ghost" @click="action(payment)">تأیید</VButton>
-                <VButton v-else-if="payment.status === 'paid'" size="sm" variant="danger" @click="action(payment)">بازگشت</VButton>
+                <VButton
+                  v-if="payment.status === 'pending'"
+                  size="sm"
+                  variant="ghost"
+                  @click="action(payment)"
+                  >تأیید</VButton
+                >
+                <VButton
+                  v-else-if="payment.status === 'paid'"
+                  size="sm"
+                  variant="danger"
+                  @click="action(payment)"
+                  >بازگشت</VButton
+                >
               </td>
             </tr>
           </tbody>
@@ -110,7 +133,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
       class="bg-ink-900/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="createOpen = false"
     >
-      <div class="bg-surface rounded-2xl w-full max-w-md p-6 shadow-2xl">
+      <div class="bg-surface w-full max-w-md rounded-2xl p-6 shadow-2xl">
         <h3 class="text-ink-strong font-display text-lg font-bold">ثبت پرداخت</h3>
         <form class="mt-4 grid gap-3" @submit.prevent="submit">
           <VSelect
@@ -119,7 +142,12 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
             :options="organizations.map((o) => ({ label: o.name, value: String(o.id) }))"
             :error="form.errors.organization_id"
           />
-          <VInput v-model="form.amount" label="مبلغ (تومان)" type="number" :error="form.errors.amount" />
+          <VInput
+            v-model="form.amount"
+            label="مبلغ (تومان)"
+            type="number"
+            :error="form.errors.amount"
+          />
           <VSelect
             v-model="form.method"
             label="روش"
@@ -131,7 +159,9 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
             ]"
           />
           <div class="flex justify-end gap-3">
-            <VButton type="button" variant="ghost" size="sm" @click="createOpen = false">انصراف</VButton>
+            <VButton type="button" variant="ghost" size="sm" @click="createOpen = false"
+              >انصراف</VButton
+            >
             <VButton type="submit" size="sm" :loading="form.processing">ثبت پرداخت</VButton>
           </div>
         </form>

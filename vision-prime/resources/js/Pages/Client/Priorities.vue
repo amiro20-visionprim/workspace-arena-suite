@@ -97,7 +97,7 @@ function scoreTone(score: number): string {
           <div class="flex items-start gap-4">
             <div class="flex shrink-0 flex-col items-center gap-1.5">
               <span
-                class="font-display text-ink-strong flex size-10 items-center justify-center rounded-full border border-brand-200 bg-brand-50 text-lg font-extrabold"
+                class="font-display text-ink-strong border-brand-200 bg-brand-50 flex size-10 items-center justify-center rounded-full border text-lg font-extrabold"
                 >{{ index + 1 }}</span
               >
               <span
@@ -131,9 +131,7 @@ function scoreTone(score: number): string {
               <div class="mt-3">
                 <div class="flex items-center justify-between text-xs">
                   <span class="text-ink-muted">میزان اهمیت</span>
-                  <span class="text-ink-strong font-bold"
-                    >{{ opportunity.score }} از ۱۰۰</span
-                  >
+                  <span class="text-ink-strong font-bold">{{ opportunity.score }} از ۱۰۰</span>
                 </div>
                 <div class="bg-surface-muted mt-1.5 h-2 w-full overflow-hidden rounded-full">
                   <div
@@ -146,8 +144,8 @@ function scoreTone(score: number): string {
 
               <p class="text-ink-muted mt-3 text-sm leading-6">{{ opportunity.explanation }}</p>
               <p class="text-ink-muted mt-2 text-xs">
-                اطمینان تیم: {{ Math.round(opportunity.confidence * 100) }}٪ — بر اساس دادهٔ واقعی سرچ
-                کنسول
+                اطمینان تیم: {{ Math.round(opportunity.confidence * 100) }}٪ — بر اساس دادهٔ واقعی
+                سرچ کنسول
               </p>
             </div>
           </div>
@@ -190,7 +188,9 @@ function scoreTone(score: number): string {
               <p class="text-ink-muted mt-3 text-xs">
                 <VIcon name="building" size="sm" class="ms-0.5 inline" />
                 {{ recommendation.site_name }}
-                <template v-if="recommendation.owner_name"> · {{ recommendation.owner_name }}</template>
+                <template v-if="recommendation.owner_name">
+                  · {{ recommendation.owner_name }}</template
+                >
                 <template v-if="recommendation.due_at">
                   · مهلت: {{ formatJalaliDate(recommendation.due_at) }}
                 </template>

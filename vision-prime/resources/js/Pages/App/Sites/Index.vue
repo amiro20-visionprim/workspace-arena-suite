@@ -8,7 +8,9 @@ import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VEmptyState from '@/shared/ui/VEmptyState.vue'
 
 defineProps<{
-  sites: { data: { id: number; name: string; canonicalUrl: string; projectName: string; status?: string }[] }
+  sites: {
+    data: { id: number; name: string; canonicalUrl: string; projectName: string; status?: string }[]
+  }
 }>()
 </script>
 <template>
@@ -30,12 +32,16 @@ defineProps<{
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span class="bg-brand-50 text-brand-700 flex size-9 shrink-0 items-center justify-center rounded-lg">
+              <span
+                class="bg-brand-50 text-brand-700 flex size-9 shrink-0 items-center justify-center rounded-lg"
+              >
                 <VIcon name="activity" size="sm" />
               </span>
               <div>
                 <p class="text-ink-strong font-bold">{{ site.name }}</p>
-                <p class="font-latin text-ink-muted mt-0.5 text-xs" dir="ltr">{{ site.canonicalUrl }}</p>
+                <p class="font-latin text-ink-muted mt-0.5 text-xs" dir="ltr">
+                  {{ site.canonicalUrl }}
+                </p>
               </div>
             </div>
             <p class="text-ink-muted mt-2 text-sm">{{ site.projectName }}</p>

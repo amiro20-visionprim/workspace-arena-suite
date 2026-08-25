@@ -16,9 +16,7 @@ interface AppNotification {
   createdAt: string | null
 }
 
-const page = usePage<
-  AppPageProps & { notificationCount?: number; permissions?: string[] }
->()
+const page = usePage<AppPageProps & { notificationCount?: number; permissions?: string[] }>()
 
 const open = ref(false)
 const loading = ref(false)
@@ -106,7 +104,7 @@ onMounted(() => {
   <div v-if="canViewMarketing" class="relative">
     <button
       type="button"
-      class="border-line text-ink-strong relative flex size-10 items-center justify-center rounded-ui border transition hover:bg-surface-muted"
+      class="border-line text-ink-strong rounded-ui hover:bg-surface-muted relative flex size-10 items-center justify-center border transition"
       aria-label="اعلان‌ها"
       :aria-expanded="open"
       @click="toggle"
@@ -114,7 +112,7 @@ onMounted(() => {
       <span aria-hidden="true" class="text-lg leading-none">🔔</span>
       <span
         v-if="unreadCount > 0"
-        class="bg-danger-600 absolute -top-1.5 -end-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
+        class="bg-danger-600 absolute -end-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white"
         >{{ unreadCount }}</span
       >
     </button>
@@ -138,7 +136,9 @@ onMounted(() => {
       </div>
 
       <div class="max-h-80 overflow-y-auto">
-        <div v-if="loading" class="text-ink-muted px-4 py-6 text-center text-sm">در حال بارگیری…</div>
+        <div v-if="loading" class="text-ink-muted px-4 py-6 text-center text-sm">
+          در حال بارگیری…
+        </div>
         <template v-else-if="notifications.length">
           <button
             v-for="notification in notifications"
@@ -156,7 +156,9 @@ onMounted(() => {
               <span class="text-ink-muted mt-1 block text-xs leading-5">
                 {{ notification.source === 'support' ? 'پیام پشتیبانی' : 'درخواست دمو' }}
                 <template v-if="notification.campaign"> · {{ notification.campaign }}</template>
-                <template v-if="notification.score !== null"> · امتیاز {{ notification.score }}</template>
+                <template v-if="notification.score !== null">
+                  · امتیاز {{ notification.score }}</template
+                >
               </span>
               <span class="text-ink-muted mt-1 block text-xs">
                 {{ formatJalaliDateTime(notification.createdAt) }}
@@ -169,14 +171,12 @@ onMounted(() => {
             />
           </button>
         </template>
-        <p v-else class="text-ink-muted px-4 py-6 text-center text-sm">
-          اعلان جدیدی نیست.
-        </p>
+        <p v-else class="text-ink-muted px-4 py-6 text-center text-sm">اعلان جدیدی نیست.</p>
       </div>
 
       <Link
         href="/app/marketing"
-        class="border-line text-brand-700 border-t px-4 py-3 text-center text-xs font-bold hover:bg-surface-muted"
+        class="border-line text-brand-700 hover:bg-surface-muted border-t px-4 py-3 text-center text-xs font-bold"
         @click="open = false"
       >
         مشاهدهٔ داشبورد بازاریابی

@@ -13,7 +13,7 @@ withDefaults(
 </script>
 
 <template>
-  <section class="border-y border-line bg-surface">
+  <section class="border-line bg-surface border-y">
     <div class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
       <div v-reveal>
         <SectionHeading
@@ -27,7 +27,7 @@ withDefaults(
           v-for="(step, index) in steps"
           :key="step.title"
           v-reveal="{ delay: index * 110 }"
-          class="relative rounded-2xl border border-line bg-canvas p-6"
+          class="border-line bg-canvas relative rounded-2xl border p-6"
         >
           <span
             class="bg-gradient-brand inline-flex size-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-md"

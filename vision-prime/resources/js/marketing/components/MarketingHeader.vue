@@ -42,7 +42,7 @@ function closeMenu(): void {
         aria-label="Vision Prime SUITE، صفحه اصلی"
       >
         <span
-          class="bg-gradient-brand shadow-md shadow-indigo-500/25 flex size-9 items-center justify-center rounded-xl text-sm font-bold text-white"
+          class="bg-gradient-brand flex size-9 items-center justify-center rounded-xl text-sm font-bold text-white shadow-md shadow-indigo-500/25"
           >VP</span
         >
         <span class="font-display text-lg font-bold tracking-tight">Vision Prime SUITE</span>

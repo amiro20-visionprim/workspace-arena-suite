@@ -86,12 +86,10 @@ const contactLinks = [
             >
           </li>
         </ul>
-        <p class="text-ink-muted mt-4 text-xs leading-5">
-          پاسخ‌گویی در کمتر از ۲۴ ساعت کاری
-        </p>
+        <p class="text-ink-muted mt-4 text-xs leading-5">پاسخ‌گویی در کمتر از ۲۴ ساعت کاری</p>
       </div>
     </div>
-    <div class="border-line border-t bg-surface-soft/50">
+    <div class="border-line bg-surface-soft/50 border-t">
       <div
         class="text-ink-muted mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10"
       >
@@ -118,7 +116,7 @@ const contactLinks = [
                 height="60"
                 loading="lazy"
                 decoding="async"
-                class="h-14 w-auto rounded-ui bg-white object-contain px-2 py-1.5 shadow-sm"
+                class="rounded-ui h-14 w-auto bg-white object-contain px-2 py-1.5 shadow-sm"
               />
             </a>
           </div>

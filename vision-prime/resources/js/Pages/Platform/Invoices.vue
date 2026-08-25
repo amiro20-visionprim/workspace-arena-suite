@@ -49,7 +49,15 @@ function overdueCheck(): void {
 }
 
 const statusTone = (status: string): 'success' | 'warning' | 'danger' | 'neutral' | 'info' =>
-  status === 'paid' ? 'success' : status === 'overdue' ? 'danger' : status === 'issued' ? 'info' : status === 'canceled' ? 'neutral' : 'warning'
+  status === 'paid'
+    ? 'success'
+    : status === 'overdue'
+      ? 'danger'
+      : status === 'issued'
+        ? 'info'
+        : status === 'canceled'
+          ? 'neutral'
+          : 'warning'
 
 const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(value)
 </script>
@@ -57,10 +65,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
 <template>
   <Head title="فاکتورها" />
   <PlatformLayout>
-    <VPageHeader
-      title="فاکتورها"
-      description="صدور، پیگیری و تشخیص فاکتورهای معوق."
-    >
+    <VPageHeader title="فاکتورها" description="صدور، پیگیری و تشخیص فاکتورهای معوق.">
       <template #actions>
         <VButton size="sm" variant="ghost" @click="overdueCheck">اسکن فاکتورهای معوق</VButton>
         <VButton size="sm" @click="createOpen = true">+ صدور فاکتور</VButton>
@@ -83,14 +88,20 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
             </tr>
           </thead>
           <tbody class="divide-line divide-y">
-            <tr v-for="invoice in invoices" :key="invoice.id" class="hover:bg-surface-muted/50 transition-colors">
+            <tr
+              v-for="invoice in invoices"
+              :key="invoice.id"
+              class="hover:bg-surface-muted/50 transition-colors"
+            >
               <td class="font-latin px-4 py-3 text-xs" dir="ltr">{{ invoice.number }}</td>
               <td class="px-4 py-3 font-semibold">{{ invoice.organization_name }}</td>
               <td class="px-4 py-3">{{ invoice.plan_name || '—' }}</td>
               <td class="px-4 py-3">{{ faNum(invoice.amount) }}</td>
               <td class="px-4 py-3">{{ faNum(invoice.tax) }}</td>
               <td class="px-4 py-3 font-bold">{{ faNum(invoice.total) }}</td>
-              <td class="px-4 py-3"><VBadge :tone="statusTone(invoice.status)">{{ invoice.status_label }}</VBadge></td>
+              <td class="px-4 py-3">
+                <VBadge :tone="statusTone(invoice.status)">{{ invoice.status_label }}</VBadge>
+              </td>
               <td class="text-ink-muted px-4 py-3 text-xs" dir="ltr">{{ invoice.due_at }}</td>
             </tr>
           </tbody>
@@ -103,7 +114,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
       class="bg-ink-900/40 fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="createOpen = false"
     >
-      <div class="bg-surface rounded-2xl w-full max-w-md p-6 shadow-2xl">
+      <div class="bg-surface w-full max-w-md rounded-2xl p-6 shadow-2xl">
         <h3 class="text-ink-strong font-display text-lg font-bold">صدور فاکتور</h3>
         <form class="mt-4 grid gap-3" @submit.prevent="submit">
           <VSelect
@@ -113,7 +124,9 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
             :error="form.errors.subscription_id"
           />
           <div class="flex justify-end gap-3">
-            <VButton type="button" variant="ghost" size="sm" @click="createOpen = false">انصراف</VButton>
+            <VButton type="button" variant="ghost" size="sm" @click="createOpen = false"
+              >انصراف</VButton
+            >
             <VButton type="submit" size="sm" :loading="form.processing">صدور فاکتور</VButton>
           </div>
         </form>

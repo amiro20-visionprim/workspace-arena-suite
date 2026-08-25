@@ -110,7 +110,9 @@ const hasActiveFilters = computed(() => {
   )
 })
 
-const funnelToShow = computed(() => (hasActiveFilters.value ? props.stats.filteredFunnel : props.stats.funnel))
+const funnelToShow = computed(() =>
+  hasActiveFilters.value ? props.stats.filteredFunnel : props.stats.funnel,
+)
 
 function funnelBarWidth(prev: number, current: number): number {
   if (prev <= 0) return 0
@@ -189,32 +191,48 @@ function funnelWidth(count: number): string {
             </div>
             <div class="bg-brand-600 mt-1.5 h-9 rounded-lg opacity-90" :style="{ width: '100%' }" />
           </div>
-          <div class="text-brand-700 text-xs font-bold">↓ {{ pct(funnelToShow.leadToContactedRate) }} تماس گرفته شد</div>
+          <div class="text-brand-700 text-xs font-bold">
+            ↓ {{ pct(funnelToShow.leadToContactedRate) }} تماس گرفته شد
+          </div>
           <div>
             <div class="flex items-center justify-between text-sm">
               <span class="text-ink font-semibold">تماس گرفته‌شده</span>
               <span class="text-ink-muted text-xs">{{ funnelToShow.contacted }} لید</span>
             </div>
-            <div class="bg-brand-500 mt-1.5 h-9 rounded-lg" :style="{ width: `${funnelBarWidth(funnelToShow.total, funnelToShow.contacted)}%` }" />
+            <div
+              class="bg-brand-500 mt-1.5 h-9 rounded-lg"
+              :style="{ width: `${funnelBarWidth(funnelToShow.total, funnelToShow.contacted)}%` }"
+            />
           </div>
-          <div class="text-brand-700 text-xs font-bold">↓ {{ pct(funnelToShow.contactedToQualifiedRate) }} واجد شرایط شد</div>
+          <div class="text-brand-700 text-xs font-bold">
+            ↓ {{ pct(funnelToShow.contactedToQualifiedRate) }} واجد شرایط شد
+          </div>
           <div>
             <div class="flex items-center justify-between text-sm">
               <span class="text-ink font-semibold">واجد شرایط</span>
               <span class="text-ink-muted text-xs">{{ funnelToShow.qualified }} لید</span>
             </div>
-            <div class="bg-success-500 mt-1.5 h-9 rounded-lg" :style="{ width: `${funnelBarWidth(funnelToShow.contacted, funnelToShow.qualified)}%` }" />
+            <div
+              class="bg-success-500 mt-1.5 h-9 rounded-lg"
+              :style="{
+                width: `${funnelBarWidth(funnelToShow.contacted, funnelToShow.qualified)}%`,
+              }"
+            />
           </div>
         </div>
         <p class="text-ink-muted mt-4 border-t border-dashed pt-3 text-xs">
-          نرخ تبدیل نهایی: <span class="text-success-700 font-bold">{{ pct(funnelToShow.qualifiedRate) }}</span> از کل لیدها به مشتریِ واجد شرایط رسیدند.
+          نرخ تبدیل نهایی:
+          <span class="text-success-700 font-bold">{{ pct(funnelToShow.qualifiedRate) }}</span> از
+          کل لیدها به مشتریِ واجد شرایط رسیدند.
         </p>
       </div>
 
       <!-- Per-campaign funnel -->
       <div class="rounded-panel border-line bg-surface border p-5">
         <h2 class="text-ink-strong text-sm font-bold">قیف تبدیل هر کمپین</h2>
-        <p class="text-ink-muted mt-1 text-xs">لید → تماس → واجد شرایط — کدام کمپین واقعاً مشتری می‌سازد؟</p>
+        <p class="text-ink-muted mt-1 text-xs">
+          لید → تماس → واجد شرایط — کدام کمپین واقعاً مشتری می‌سازد؟
+        </p>
         <div v-if="stats.campaignFunnel.length" class="mt-4 space-y-4">
           <div v-for="f in stats.campaignFunnel" :key="f.campaign">
             <div class="flex items-center justify-between text-sm">
@@ -223,16 +241,27 @@ function funnelWidth(count: number): string {
             </div>
             <div class="mt-1.5 space-y-1">
               <div class="bg-surface-muted h-2.5 overflow-hidden rounded-full">
-                <div class="bg-brand-600 h-full rounded-full" :style="{ width: funnelWidth(f.total) }" />
+                <div
+                  class="bg-brand-600 h-full rounded-full"
+                  :style="{ width: funnelWidth(f.total) }"
+                />
               </div>
               <div class="bg-surface-muted h-2.5 overflow-hidden rounded-full">
-                <div class="bg-brand-400 h-full rounded-full" :style="{ width: funnelWidth(f.contacted) }" />
+                <div
+                  class="bg-brand-400 h-full rounded-full"
+                  :style="{ width: funnelWidth(f.contacted) }"
+                />
               </div>
               <div class="bg-surface-muted h-2.5 overflow-hidden rounded-full">
-                <div class="bg-success-500 h-full rounded-full" :style="{ width: funnelWidth(f.qualified) }" />
+                <div
+                  class="bg-success-500 h-full rounded-full"
+                  :style="{ width: funnelWidth(f.qualified) }"
+                />
               </div>
             </div>
-            <div class="text-ink-muted mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+            <div
+              class="text-ink-muted mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]"
+            >
               <span class="inline-flex items-center gap-1">
                 <span class="bg-brand-600 size-2 rounded-full" />
                 {{ f.contacted }} تماس ({{ pct(f.leadToContactedRate) }})
@@ -259,7 +288,10 @@ function funnelWidth(count: number): string {
               <span class="text-ink-muted text-xs">{{ item.count }} لید</span>
             </div>
             <div class="bg-surface-muted mt-1.5 h-2 overflow-hidden rounded-full">
-              <div class="bg-brand-600 h-full rounded-full" :style="{ width: `${(item.count / maxCampaignCount) * 100}%` }" />
+              <div
+                class="bg-brand-600 h-full rounded-full"
+                :style="{ width: `${(item.count / maxCampaignCount) * 100}%` }"
+              />
             </div>
           </div>
         </div>
@@ -274,7 +306,10 @@ function funnelWidth(count: number): string {
               <span class="text-ink-muted text-xs">{{ item.count }} لید</span>
             </div>
             <div class="bg-surface-muted mt-1.5 h-2 overflow-hidden rounded-full">
-              <div class="bg-success-500 h-full rounded-full" :style="{ width: `${(item.count / maxSourceCount) * 100}%` }" />
+              <div
+                class="bg-success-500 h-full rounded-full"
+                :style="{ width: `${(item.count / maxSourceCount) * 100}%` }"
+              />
             </div>
           </div>
         </div>
@@ -311,7 +346,7 @@ function funnelWidth(count: number): string {
           <input
             v-model="draft.q"
             type="text"
-            class="border-line bg-surface text-ink-strong mt-1 w-full rounded-ui border px-3 py-2 text-sm outline-none"
+            class="border-line bg-surface text-ink-strong rounded-ui mt-1 w-full border px-3 py-2 text-sm outline-none"
             placeholder="نام، ایمیل یا شرکت"
           />
         </label>
@@ -320,7 +355,7 @@ function funnelWidth(count: number): string {
           <input
             v-model="draft.from"
             type="date"
-            class="border-line bg-surface text-ink-strong mt-1 w-full rounded-ui border px-3 py-2 text-sm outline-none"
+            class="border-line bg-surface text-ink-strong rounded-ui mt-1 w-full border px-3 py-2 text-sm outline-none"
           />
         </label>
         <label class="block">
@@ -328,7 +363,7 @@ function funnelWidth(count: number): string {
           <input
             v-model="draft.to"
             type="date"
-            class="border-line bg-surface text-ink-strong mt-1 w-full rounded-ui border px-3 py-2 text-sm outline-none"
+            class="border-line bg-surface text-ink-strong rounded-ui mt-1 w-full border px-3 py-2 text-sm outline-none"
           />
         </label>
       </div>
@@ -343,7 +378,7 @@ function funnelWidth(count: number): string {
     </div>
 
     <!-- Leads table -->
-    <div class="rounded-panel border-line mt-5 overflow-x-auto border bg-surface">
+    <div class="rounded-panel border-line bg-surface mt-5 overflow-x-auto border">
       <table class="w-full min-w-[860px] border-collapse text-sm">
         <thead>
           <tr class="border-line bg-surface-muted/60 border-b">
@@ -359,21 +394,36 @@ function funnelWidth(count: number): string {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="lead in leads" :key="lead.id" class="border-line border-b last:border-0 hover:bg-surface-muted/40">
+          <tr
+            v-for="lead in leads"
+            :key="lead.id"
+            class="border-line hover:bg-surface-muted/40 border-b last:border-0"
+          >
             <td class="px-4 py-3.5">
-              <Link :href="`/app/marketing/leads/${lead.id}`" class="text-brand-700 font-bold hover:underline">
+              <Link
+                :href="`/app/marketing/leads/${lead.id}`"
+                class="text-brand-700 font-bold hover:underline"
+              >
                 {{ lead.name }}
               </Link>
               <p class="text-ink-muted mt-0.5 text-xs">{{ lead.company ?? '—' }}</p>
             </td>
             <td class="text-ink px-4 py-3.5" dir="ltr">{{ contactLabel(lead) }}</td>
             <td class="px-4 py-3.5 text-center">
-              <VBadge :tone="lead.source === 'demo' ? 'info' : 'warning'">{{ sourceLabels[lead.source] }}</VBadge>
+              <VBadge :tone="lead.source === 'demo' ? 'info' : 'warning'">{{
+                sourceLabels[lead.source]
+              }}</VBadge>
             </td>
-            <td class="text-ink px-4 py-3.5 text-center">{{ lead.utmCampaign ? campaignLabel(lead.utmCampaign) : '—' }}</td>
-            <td class="text-ink px-4 py-3.5 text-center">{{ lead.utmSource ?? (lead.referrer ? 'referrer' : 'direct') }}</td>
+            <td class="text-ink px-4 py-3.5 text-center">
+              {{ lead.utmCampaign ? campaignLabel(lead.utmCampaign) : '—' }}
+            </td>
+            <td class="text-ink px-4 py-3.5 text-center">
+              {{ lead.utmSource ?? (lead.referrer ? 'referrer' : 'direct') }}
+            </td>
             <td class="px-4 py-3.5 text-center">
-              <VBadge v-if="lead.score !== null" :tone="scoreTone(lead.score)">{{ lead.score }}/۱۰۰</VBadge>
+              <VBadge v-if="lead.score !== null" :tone="scoreTone(lead.score)"
+                >{{ lead.score }}/۱۰۰</VBadge
+              >
               <span v-else class="text-ink-muted text-xs">—</span>
             </td>
             <td class="px-4 py-3.5 text-center">
@@ -386,13 +436,21 @@ function funnelWidth(count: number): string {
                   aria-label="تغییر وضعیت"
                   @change="changeStatus(lead, ($event.target as HTMLSelectElement).value)"
                 >
-                  <option v-for="(label, key) in statusLabels" :key="key" :value="key">{{ label }}</option>
+                  <option v-for="(label, key) in statusLabels" :key="key" :value="key">
+                    {{ label }}
+                  </option>
                 </select>
               </div>
             </td>
-            <td class="text-ink-muted px-4 py-3.5 text-center">{{ formatJalaliDate(lead.createdAt) }}</td>
+            <td class="text-ink-muted px-4 py-3.5 text-center">
+              {{ formatJalaliDate(lead.createdAt) }}
+            </td>
             <td class="px-4 py-3.5 text-center">
-              <Link :href="`/app/marketing/leads/${lead.id}`" class="text-brand-700 text-xs font-bold hover:underline">جزئیات</Link>
+              <Link
+                :href="`/app/marketing/leads/${lead.id}`"
+                class="text-brand-700 text-xs font-bold hover:underline"
+                >جزئیات</Link
+              >
             </td>
           </tr>
         </tbody>

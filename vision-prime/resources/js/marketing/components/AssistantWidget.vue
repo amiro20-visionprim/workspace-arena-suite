@@ -176,7 +176,8 @@ onMounted(() => {
           <div>
             <p class="text-sm font-bold">مشاور سوئیت</p>
             <p class="text-brand-200 flex items-center gap-1 text-xs">
-              <span class="size-1.5 animate-pulse rounded-full bg-emerald-400" /> آنلاین — همیشه به‌روز
+              <span class="size-1.5 animate-pulse rounded-full bg-emerald-400" /> آنلاین — همیشه
+              به‌روز
             </p>
           </div>
         </div>
@@ -195,7 +196,9 @@ onMounted(() => {
         <button
           type="button"
           class="flex-1 px-4 py-2.5 text-sm font-bold transition"
-          :class="activeTab === 'chat' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'"
+          :class="
+            activeTab === 'chat' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'
+          "
           @click="activeTab = 'chat'"
         >
           مشاوره
@@ -203,7 +206,11 @@ onMounted(() => {
         <button
           type="button"
           class="flex-1 px-4 py-2.5 text-sm font-bold transition"
-          :class="activeTab === 'support' ? 'text-brand-700 border-brand-700 border-b-2' : 'text-ink-muted'"
+          :class="
+            activeTab === 'support'
+              ? 'text-brand-700 border-brand-700 border-b-2'
+              : 'text-ink-muted'
+          "
           @click="activeTab = 'support'"
         >
           پشتیبانی
@@ -227,7 +234,7 @@ onMounted(() => {
               :class="
                 message.role === 'user'
                   ? 'bg-brand-700 rounded-bl-sm text-white'
-                  : 'border-line bg-surface rounded-br-sm text-ink shadow-sm'
+                  : 'border-line bg-surface text-ink rounded-br-sm shadow-sm'
               "
             >
               <p>{{ message.text }}</p>
@@ -236,7 +243,7 @@ onMounted(() => {
                   v-for="link in message.links"
                   :key="link.href"
                   :href="link.href"
-                  class="rounded-ui bg-brand-50 text-brand-700 px-2.5 py-1 text-xs font-bold hover:bg-brand-100"
+                  class="rounded-ui bg-brand-50 text-brand-700 hover:bg-brand-100 px-2.5 py-1 text-xs font-bold"
                   >{{ link.label }}</a
                 >
               </div>
@@ -287,14 +294,14 @@ onMounted(() => {
           <input
             v-model="draft"
             type="text"
-            class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 min-w-0 flex-1 rounded-ui border px-3 py-2 text-sm outline-none"
+            class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 rounded-ui min-w-0 flex-1 border px-3 py-2 text-sm outline-none"
             placeholder="سؤال خود را بپرسید…"
             :disabled="loading"
             @keydown="onKeydown"
           />
           <button
             type="button"
-            class="rounded-ui bg-brand-700 flex size-9 shrink-0 items-center justify-center text-white transition hover:bg-brand-900 disabled:opacity-50"
+            class="rounded-ui bg-brand-700 hover:bg-brand-900 flex size-9 shrink-0 items-center justify-center text-white transition disabled:opacity-50"
             :disabled="loading || draft.trim() === ''"
             aria-label="ارسال"
             @click="ask(draft.trim())"
@@ -334,7 +341,7 @@ onMounted(() => {
                 v-model="supportForm.name"
                 type="text"
                 required
-                class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 w-full rounded-ui border px-3 py-2 text-sm outline-none"
+                class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 rounded-ui w-full border px-3 py-2 text-sm outline-none"
                 placeholder="نام شما"
               />
               <input
@@ -342,21 +349,17 @@ onMounted(() => {
                 type="text"
                 required
                 dir="ltr"
-                class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 w-full rounded-ui border px-3 py-2 text-sm outline-none"
+                class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 rounded-ui w-full border px-3 py-2 text-sm outline-none"
                 placeholder="ایمیل یا شمارهٔ تماس"
               />
               <textarea
                 v-model="supportForm.message"
                 required
                 rows="3"
-                class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 w-full resize-none rounded-ui border px-3 py-2 text-sm outline-none"
+                class="border-line bg-surface text-ink-strong placeholder:text-ink-muted/60 focus:border-brand-400 rounded-ui w-full resize-none border px-3 py-2 text-sm outline-none"
                 placeholder="پیام شما"
               />
-              <VButton
-                type="submit"
-                class="w-full"
-                size="sm"
-                :loading="supportStatus === 'sending'"
+              <VButton type="submit" class="w-full" size="sm" :loading="supportStatus === 'sending'"
                 >ارسال پیام</VButton
               >
               <p
@@ -384,7 +387,10 @@ onMounted(() => {
       :aria-label="open ? 'بستن مشاور' : 'باز کردن مشاور'"
       @click="toggle"
     >
-      <span class="bg-brand-600 relative flex size-6 items-center justify-center rounded-full" aria-hidden="true">
+      <span
+        class="bg-brand-600 relative flex size-6 items-center justify-center rounded-full"
+        aria-hidden="true"
+      >
         <VIcon name="sparkles" size="sm" />
         <span
           class="absolute -top-0.5 -right-0.5 size-2.5 animate-pulse rounded-full border-2 border-white bg-emerald-400"

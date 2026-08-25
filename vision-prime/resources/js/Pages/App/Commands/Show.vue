@@ -69,11 +69,7 @@ const impactStatusLabels: Record<string, string> = {
       :description="labelOf(commandTypeLabels, command.type)"
     >
       <template #actions>
-        <VButton
-          v-if="command.status === 'approved'"
-          :loading="executing"
-          @click="dispatch"
-        >
+        <VButton v-if="command.status === 'approved'" :loading="executing" @click="dispatch">
           اجرای تغییر
         </VButton>
       </template>
@@ -144,15 +140,12 @@ const impactStatusLabels: Record<string, string> = {
         </div>
         <div v-if="impact.series && impact.series.length" class="mt-2">
           <p class="text-ink-strong mb-2 text-sm font-semibold">روند روزانه (قبل/بعد انتشار)</p>
-          <VTrendChart
-            :points="impact.series"
-            :publish-date="impact.published_at ?? ''"
-          />
+          <VTrendChart :points="impact.series" :publish-date="impact.published_at ?? ''" />
         </div>
-        <div class="border-line overflow-x-auto rounded-ui border">
+        <div class="border-line rounded-ui overflow-x-auto border">
           <table class="w-full text-sm">
             <thead>
-              <tr class="border-line border-b bg-surface-muted text-start">
+              <tr class="border-line bg-surface-muted border-b text-start">
                 <th class="px-3 py-2 text-start">معیار</th>
                 <th class="px-3 py-2 text-start">پیش از انتشار ({{ impact.window_days }} روز)</th>
                 <th class="px-3 py-2 text-start">پس از انتشار</th>

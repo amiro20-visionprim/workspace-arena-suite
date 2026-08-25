@@ -23,18 +23,14 @@ function toggle(index: number): void {
 <template>
   <section class="mx-auto max-w-4xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
     <div v-reveal>
-      <SectionHeading
-        eyebrow="FAQ"
-        title="سؤال‌هایی که معمولاً می‌پرسند."
-        centered
-      />
+      <SectionHeading eyebrow="FAQ" title="سؤال‌هایی که معمولاً می‌پرسند." centered />
     </div>
     <div class="mt-10 space-y-3">
       <div
         v-for="(faq, index) in faqs"
         :key="faq.q"
         v-reveal="{ delay: index * 70 }"
-        class="rounded-xl border border-line bg-surface shadow-card"
+        class="border-line bg-surface shadow-card rounded-xl border"
       >
         <button
           type="button"
@@ -50,10 +46,7 @@ function toggle(index: number): void {
             >+</span
           >
         </button>
-        <div
-          v-show="openIndex === index"
-          class="border-line border-t px-5 py-4"
-        >
+        <div v-show="openIndex === index" class="border-line border-t px-5 py-4">
           <p class="text-ink-muted leading-7">{{ faq.a }}</p>
         </div>
       </div>

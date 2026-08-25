@@ -70,9 +70,7 @@ const sourceLabels: Record<string, string> = {
             @update:model-value="changeAction"
           />
         </div>
-        <p class="text-ink-muted text-sm">
-          {{ logs.data.length }} رویداد در این صفحه
-        </p>
+        <p class="text-ink-muted text-sm">{{ logs.data.length }} رویداد در این صفحه</p>
       </div>
 
       <div v-if="logs.data.length">
@@ -109,7 +107,12 @@ const sourceLabels: Record<string, string> = {
             :model-value="logs.current_page"
             :total-pages="logs.last_page"
             @update:model-value="
-              (page) => router.get('/app/settings/audit-log', { page, action: selectedAction || undefined }, { preserveState: true, replace: true })
+              (page) =>
+                router.get(
+                  '/app/settings/audit-log',
+                  { page, action: selectedAction || undefined },
+                  { preserveState: true, replace: true },
+                )
             "
           />
         </div>

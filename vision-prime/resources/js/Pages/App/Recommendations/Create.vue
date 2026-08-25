@@ -91,12 +91,7 @@ function submit(): void {
             :error="form.errors.owner_id"
           />
         </div>
-        <VInput
-          v-model="form.due_at"
-          label="مهلت انجام"
-          type="date"
-          :error="form.errors.due_at"
-        />
+        <VInput v-model="form.due_at" label="مهلت انجام" type="date" :error="form.errors.due_at" />
         <div class="flex items-center justify-end gap-3 border-t pt-5">
           <VButton href="/app/recommendations" variant="secondary">انصراف</VButton>
           <VButton type="submit" :loading="form.processing">ثبت پیشنهاد</VButton>

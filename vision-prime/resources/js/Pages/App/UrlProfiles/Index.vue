@@ -44,14 +44,13 @@ const statusTone: Record<string, 'success' | 'info' | 'warning' | 'neutral' | 'd
   <Head title="URLها و محتوا" /><AppLayout
     ><VPageHeader
       title="URLها و محتوا"
-      description="پروفایل‌های همگام‌سازی‌شده، دادهٔ جستجو و تاریخچه محتوای سایت‌ها."
-    />
+      description="پروفایل‌های همگام‌سازی‌شده، دادهٔ جستجو و تاریخچه محتوای سایت‌ها." />
     <div v-if="profiles.data.length" class="mt-8 space-y-3">
       <Link
         v-for="p in profiles.data"
         :key="p.id"
         :href="`/app/url-profiles/${p.id}`"
-        class="rounded-card border-line bg-surface block border p-5 transition-colors hover:border-brand-300"
+        class="rounded-card border-line bg-surface hover:border-brand-300 block border p-5 transition-colors"
       >
         <div class="flex flex-wrap items-center justify-between gap-3">
           <p class="font-latin text-brand-700 text-sm font-semibold break-all" dir="ltr">
@@ -65,7 +64,11 @@ const statusTone: Record<string, 'success' | 'info' | 'warning' | 'neutral' | 'd
             <VBadge v-if="p.auditId" tone="warning">صفحهٔ درآمدزا</VBadge>
           </div>
         </div>
-        <div v-if="p.gsc" class="font-latin text-ink-muted mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs" dir="ltr">
+        <div
+          v-if="p.gsc"
+          class="font-latin text-ink-muted mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs"
+          dir="ltr"
+        >
           <span>{{ p.gsc.clicks }} clicks</span>
           <span>{{ p.gsc.impressions }} impressions</span>
           <span>pos {{ p.gsc.position }}</span>

@@ -266,7 +266,7 @@ const decisionTypeLabels: Record<string, string> = {
   <ClientPortalLayout>
     <!-- بنر وضعیت هوشمند -->
     <section
-      :class="['rounded-panel border flex items-start gap-4 p-5 sm:p-6', bannerTone[banner.tone]]"
+      :class="['rounded-panel flex items-start gap-4 border p-5 sm:p-6', bannerTone[banner.tone]]"
       role="status"
     >
       <span
@@ -288,7 +288,7 @@ const decisionTypeLabels: Record<string, string> = {
       <Link
         v-if="banner.action"
         :href="banner.action.href"
-        class="transition-ui rounded-ui bg-ink-strong text-white hover:opacity-90 shrink-0 px-4 py-2 text-sm font-semibold"
+        class="transition-ui rounded-ui bg-ink-strong shrink-0 px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
       >
         {{ banner.action.label }}
       </Link>
@@ -326,7 +326,9 @@ const decisionTypeLabels: Record<string, string> = {
         <VCard v-for="decision in props.pendingDecisions" :key="decision.id">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex min-w-0 items-center gap-3">
-              <span class="rounded-ui bg-warning-50 text-warning-600 flex size-9 shrink-0 items-center justify-center">
+              <span
+                class="rounded-ui bg-warning-50 text-warning-600 flex size-9 shrink-0 items-center justify-center"
+              >
                 <VIcon name="user-check" size="sm" />
               </span>
               <div class="min-w-0">
@@ -340,7 +342,7 @@ const decisionTypeLabels: Record<string, string> = {
             </div>
             <Link
               href="/client/decisions"
-              class="transition-ui rounded-ui bg-brand-700 text-white hover:bg-brand-800 px-4 py-2 text-sm font-semibold"
+              class="transition-ui rounded-ui bg-brand-700 hover:bg-brand-800 px-4 py-2 text-sm font-semibold text-white"
               >بررسی و تصمیم</Link
             >
           </div>
@@ -383,9 +385,15 @@ const decisionTypeLabels: Record<string, string> = {
               {{ formatJalaliDate(props.latestReport.period_end) }}
             </p>
             <div class="flex flex-wrap gap-2 pt-1">
-              <VBadge tone="info">فرصت‌ها: {{ reportCount(props.latestReport, 'opportunities') ?? '—' }}</VBadge>
-              <VBadge tone="warning">نقاط خطر: {{ reportCount(props.latestReport, 'high_risks') ?? '—' }}</VBadge>
-              <VBadge tone="success">پیشنهادها: {{ reportCount(props.latestReport, 'recommendations') ?? '—' }}</VBadge>
+              <VBadge tone="info"
+                >فرصت‌ها: {{ reportCount(props.latestReport, 'opportunities') ?? '—' }}</VBadge
+              >
+              <VBadge tone="warning"
+                >نقاط خطر: {{ reportCount(props.latestReport, 'high_risks') ?? '—' }}</VBadge
+              >
+              <VBadge tone="success"
+                >پیشنهادها: {{ reportCount(props.latestReport, 'recommendations') ?? '—' }}</VBadge
+              >
             </div>
             <p class="text-ink-muted text-xs">
               منتشرشده در {{ formatJalaliDate(props.latestReport.published_at) }}
@@ -417,7 +425,7 @@ const decisionTypeLabels: Record<string, string> = {
               </span>
             </div>
           </div>
-          <p class="text-ink-muted mt-4 border-line border-t pt-3 text-xs leading-5">
+          <p class="text-ink-muted border-line mt-4 border-t pt-3 text-xs leading-5">
             <VIcon name="lightbulb" tone="warning" size="sm" class="ms-1 inline" />
             این اعداد با پیشرفت کار تیم به‌روز می‌شوند.
           </p>
@@ -439,7 +447,11 @@ const decisionTypeLabels: Record<string, string> = {
         >
       </div>
       <div v-if="props.opportunities.length" class="mt-4 grid gap-4 md:grid-cols-3">
-        <VCard v-for="opportunity in props.opportunities" :key="opportunity.id" class="transition-ui hover:-translate-y-0.5">
+        <VCard
+          v-for="opportunity in props.opportunities"
+          :key="opportunity.id"
+          class="transition-ui hover:-translate-y-0.5"
+        >
           <div class="flex items-start justify-between gap-3">
             <span
               :class="[
@@ -485,7 +497,9 @@ const decisionTypeLabels: Record<string, string> = {
             :key="`${activity.action}-${activity.occurred_at}`"
             class="flex items-start gap-3 py-3"
           >
-            <span class="rounded-ui bg-surface-muted text-ink-muted flex size-9 shrink-0 items-center justify-center">
+            <span
+              class="rounded-ui bg-surface-muted text-ink-muted flex size-9 shrink-0 items-center justify-center"
+            >
               <VIcon :name="activityIcon(activity.action)" size="sm" />
             </span>
             <div class="min-w-0 flex-1">

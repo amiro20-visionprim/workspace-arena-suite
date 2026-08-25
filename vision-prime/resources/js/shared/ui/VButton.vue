@@ -35,8 +35,7 @@ const variantClasses: Record<ButtonVariant, string> = {
     'border border-line-strong bg-surface text-ink-strong hover:border-brand-200 hover:bg-surface-muted',
   ghost: 'text-brand-700 hover:bg-brand-50',
   danger: 'bg-danger-600 text-white hover:bg-danger-700',
-  gradient:
-    'bg-gradient-brand text-white shadow-md shadow-indigo-500/25 hover:brightness-110',
+  gradient: 'bg-gradient-brand text-white shadow-md shadow-indigo-500/25 hover:brightness-110',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

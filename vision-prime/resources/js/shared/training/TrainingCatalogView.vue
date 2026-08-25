@@ -41,13 +41,11 @@ function toggle(id: string): void {
       <p class="text-ink-muted max-w-3xl leading-7">{{ intro }}</p>
     </header>
 
-    <section
-      v-for="category in categories"
-      :key="category"
-      class="space-y-3"
-    >
+    <section v-for="category in categories" :key="category" class="space-y-3">
       <h2 class="text-ink-strong flex items-center gap-2 text-base font-bold">
-        <span class="bg-brand-50 text-brand-700 rounded-ui inline-flex size-7 items-center justify-center">
+        <span
+          class="bg-brand-50 text-brand-700 rounded-ui inline-flex size-7 items-center justify-center"
+        >
           <VIcon name="list" size="sm" tone="brand" />
         </span>
         {{ category }}
@@ -99,13 +97,11 @@ function toggle(id: string): void {
               <span
                 class="text-ink-muted transition-transform"
                 :class="openItem === item.id ? 'rotate-180' : ''"
-              >▾</span>
+                >▾</span
+              >
             </button>
 
-            <ol
-              v-if="openItem === item.id"
-              class="space-y-2"
-            >
+            <ol v-if="openItem === item.id" class="space-y-2">
               <li
                 v-for="(step, stepIndex) in item.steps"
                 :key="stepIndex"
@@ -113,17 +109,13 @@ function toggle(id: string): void {
               >
                 <span
                   class="bg-brand-700 mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                >{{ stepIndex + 1 }}</span>
+                  >{{ stepIndex + 1 }}</span
+                >
                 <p class="text-ink text-sm leading-6">{{ step }}</p>
               </li>
             </ol>
 
-            <VButton
-              :href="item.href"
-              class="w-full"
-              variant="secondary"
-              size="sm"
-            >
+            <VButton :href="item.href" class="w-full" variant="secondary" size="sm">
               <template #icon><VIcon :name="item.icon" size="sm" /></template>
               {{ item.hrefLabel }}
             </VButton>

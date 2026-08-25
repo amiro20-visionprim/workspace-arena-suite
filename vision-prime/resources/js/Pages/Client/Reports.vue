@@ -39,7 +39,9 @@ function reportCount(report: ClientReport, key: string): number | null {
     <div v-if="reports.length" class="mt-8 grid gap-4 md:grid-cols-2">
       <VCard v-for="report in reports" :key="report.id">
         <div class="flex items-start gap-4">
-          <span class="rounded-ui bg-brand-50 text-brand-700 flex size-11 shrink-0 items-center justify-center">
+          <span
+            class="rounded-ui bg-brand-50 text-brand-700 flex size-11 shrink-0 items-center justify-center"
+          >
             <VIcon name="file" size="lg" />
           </span>
           <div class="min-w-0 flex-1">
@@ -54,11 +56,15 @@ function reportCount(report: ClientReport, key: string): number | null {
         <div class="mt-4 flex flex-wrap gap-2">
           <VBadge tone="info">فرصت‌ها: {{ reportCount(report, 'opportunities') ?? '—' }}</VBadge>
           <VBadge tone="warning">نقاط خطر: {{ reportCount(report, 'high_risks') ?? '—' }}</VBadge>
-          <VBadge tone="success">پیشنهادها: {{ reportCount(report, 'recommendations') ?? '—' }}</VBadge>
+          <VBadge tone="success"
+            >پیشنهادها: {{ reportCount(report, 'recommendations') ?? '—' }}</VBadge
+          >
         </div>
 
         <div class="border-line mt-4 flex items-center justify-between border-t pt-3">
-          <p class="text-ink-muted text-xs">منتشرشده در {{ formatJalaliDate(report.published_at) }}</p>
+          <p class="text-ink-muted text-xs">
+            منتشرشده در {{ formatJalaliDate(report.published_at) }}
+          </p>
           <Link
             href="/client/growth"
             class="text-brand-700 hover:text-brand-800 text-xs font-semibold"

@@ -93,17 +93,26 @@ const monthGrid = computed<(null | { jd: number; gregorian: string })[]>(() => {
   const firstWeekday = new Date(Date.UTC(first.gy, first.gm - 1, first.gd)).getUTCDay()
   const offset = (firstWeekday + 1) % 7
 
-  const cells: (null | { jd: number; gregorian: string })[] = Array.from({ length: offset }, () => null)
+  const cells: (null | { jd: number; gregorian: string })[] = Array.from(
+    { length: offset },
+    () => null,
+  )
   for (let day = 1; day <= length; day++) {
     const g = toGregorian(jy.value, jm.value, day)
-    cells.push({ jd: day, gregorian: `${g.gy}-${String(g.gm).padStart(2, '0')}-${String(g.gd).padStart(2, '0')}` })
+    cells.push({
+      jd: day,
+      gregorian: `${g.gy}-${String(g.gm).padStart(2, '0')}-${String(g.gd).padStart(2, '0')}`,
+    })
   }
   return cells
 })
 
 /** سلول‌های هفته: ۷ روز از شنبه تا جمعه */
 const weekCells = computed(() =>
-  Array.from({ length: 7 }, (_, i) => ({ day: weekDayFull[i], gregorian: addDays(weekStart.value, i) })),
+  Array.from({ length: 7 }, (_, i) => ({
+    day: weekDayFull[i],
+    gregorian: addDays(weekStart.value, i),
+  })),
 )
 
 const monthLabel = computed(() => `${jm.value} / ${jy.value}`)
@@ -181,7 +190,9 @@ const dialogOpen = ref(false)
 const scheduledValue = ref('')
 const saving = ref(false)
 
-const selectedItem = computed(() => props.items.find((i) => i.id === selected.value?.id) ?? selected.value)
+const selectedItem = computed(
+  () => props.items.find((i) => i.id === selected.value?.id) ?? selected.value,
+)
 
 function suggestionFor(item: CalendarItem): PublishSlot | null {
   return props.suggestions[item.site_id] ?? null
@@ -190,7 +201,9 @@ function suggestionFor(item: CalendarItem): PublishSlot | null {
 function openDialog(item: CalendarItem): void {
   selected.value = item
   const suggestion = suggestionFor(item)
-  scheduledValue.value = toLocalInput(item.scheduled_for ?? item.created_at ?? '') || (suggestion ? toLocalInput(suggestion.datetime) : '')
+  scheduledValue.value =
+    toLocalInput(item.scheduled_for ?? item.created_at ?? '') ||
+    (suggestion ? toLocalInput(suggestion.datetime) : '')
   dialogOpen.value = true
 }
 
@@ -272,7 +285,8 @@ const filteredSubtypes = computed(() => {
   const profile = props.profiles.find((p) => p.id === Number(createProfile.value))
   const type = profile?.content_type === 'product' ? 'product' : 'article'
   return Object.entries(props.subtypes).filter(([key]) => {
-    if (type === 'product') return ['short_desc', 'long_desc', 'comparison', 'technical'].includes(key)
+    if (type === 'product')
+      return ['short_desc', 'long_desc', 'comparison', 'technical'].includes(key)
     return !['short_desc', 'long_desc', 'technical'].includes(key)
   })
 })
@@ -410,19 +424,33 @@ function onCellDragLeave(): void {
       <!-- نوار ابزار -->
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <VButton size="sm" variant="secondary" @click="mode === 'week' ? moveWeek(-1) : moveMonth(-1)">
+          <VButton
+            size="sm"
+            variant="secondary"
+            @click="mode === 'week' ? moveWeek(-1) : moveMonth(-1)"
+          >
             قبلی
           </VButton>
           <VButton size="sm" variant="secondary" @click="goToday">امروز</VButton>
-          <VButton size="sm" variant="secondary" @click="mode === 'week' ? moveWeek(1) : moveMonth(1)">
+          <VButton
+            size="sm"
+            variant="secondary"
+            @click="mode === 'week' ? moveWeek(1) : moveMonth(1)"
+          >
             بعدی
           </VButton>
-          <span class="text-ink-strong text-sm font-bold">{{ mode === 'week' ? weekLabel : monthLabel }}</span>
+          <span class="text-ink-strong text-sm font-bold">{{
+            mode === 'week' ? weekLabel : monthLabel
+          }}</span>
           <div class="border-line flex overflow-hidden rounded-md border">
             <button
               type="button"
               class="px-3 py-1.5 text-xs font-semibold transition-colors"
-              :class="mode === 'month' ? 'bg-brand-50 text-brand-700' : 'text-ink-muted hover:text-ink-strong'"
+              :class="
+                mode === 'month'
+                  ? 'bg-brand-50 text-brand-700'
+                  : 'text-ink-muted hover:text-ink-strong'
+              "
               @click="switchMode('month')"
             >
               ماه
@@ -430,7 +458,11 @@ function onCellDragLeave(): void {
             <button
               type="button"
               class="px-3 py-1.5 text-xs font-semibold transition-colors"
-              :class="mode === 'week' ? 'bg-brand-50 text-brand-700' : 'text-ink-muted hover:text-ink-strong'"
+              :class="
+                mode === 'week'
+                  ? 'bg-brand-50 text-brand-700'
+                  : 'text-ink-muted hover:text-ink-strong'
+              "
               @click="switchMode('week')"
             >
               هفته
@@ -454,9 +486,16 @@ function onCellDragLeave(): void {
       </div>
 
       <!-- شبکهٔ ماه -->
-      <div v-if="mode === 'month'" class="rounded-card border-line overflow-hidden border bg-surface">
-        <div class="border-line grid grid-cols-7 border-b bg-surface-muted">
-          <div v-for="(day, i) in weekDays" :key="i" class="px-2 py-2 text-center text-xs font-bold">
+      <div
+        v-if="mode === 'month'"
+        class="rounded-card border-line bg-surface overflow-hidden border"
+      >
+        <div class="border-line bg-surface-muted grid grid-cols-7 border-b">
+          <div
+            v-for="(day, i) in weekDays"
+            :key="i"
+            class="px-2 py-2 text-center text-xs font-bold"
+          >
             {{ day }}
           </div>
         </div>
@@ -464,8 +503,10 @@ function onCellDragLeave(): void {
           <template v-for="(cell, i) in monthGrid" :key="i">
             <div
               v-if="cell"
-              class="border-line min-h-28 border-b border-l p-2 last:border-l-0 transition-colors"
-              :class="isDragOver(cell.gregorian) ? 'bg-brand-50/60 ring-2 ring-inset ring-brand-300' : ''"
+              class="border-line min-h-28 border-b border-l p-2 transition-colors last:border-l-0"
+              :class="
+                isDragOver(cell.gregorian) ? 'bg-brand-50/60 ring-brand-300 ring-2 ring-inset' : ''
+              "
               @dragover="onCellDragOver(cell.gregorian, $event)"
               @dragleave="onCellDragLeave"
               @drop="onDrop(cell.gregorian)"
@@ -477,7 +518,10 @@ function onCellDragLeave(): void {
                   :key="item.id"
                   type="button"
                   class="bg-brand-50 text-brand-800 hover:bg-brand-100 block w-full truncate rounded px-1.5 py-1 text-left text-[11px] font-medium"
-                  :class="{ 'cursor-grab': canSchedule(item), 'opacity-60': draggingId === item.id }"
+                  :class="{
+                    'cursor-grab': canSchedule(item),
+                    'opacity-60': draggingId === item.id,
+                  }"
                   :title="item.title"
                   :draggable="canSchedule(item)"
                   @click="openDialog(item)"
@@ -488,19 +532,21 @@ function onCellDragLeave(): void {
                 </button>
               </div>
             </div>
-            <div v-else class="bg-surface-muted/50 min-h-28 border-line border-b" />
+            <div v-else class="bg-surface-muted/50 border-line min-h-28 border-b" />
           </template>
         </div>
       </div>
 
       <!-- شبکهٔ هفته -->
-      <div v-else class="rounded-card border-line overflow-hidden border bg-surface">
+      <div v-else class="rounded-card border-line bg-surface overflow-hidden border">
         <div class="grid grid-cols-7">
           <div
             v-for="cell in weekCells"
             :key="cell.gregorian"
-            class="border-line min-h-40 border-b border-l p-2 last:border-l-0 transition-colors"
-            :class="isDragOver(cell.gregorian) ? 'bg-brand-50/60 ring-2 ring-inset ring-brand-300' : ''"
+            class="border-line min-h-40 border-b border-l p-2 transition-colors last:border-l-0"
+            :class="
+              isDragOver(cell.gregorian) ? 'bg-brand-50/60 ring-brand-300 ring-2 ring-inset' : ''
+            "
             @dragover="onCellDragOver(cell.gregorian, $event)"
             @dragleave="onCellDragLeave"
             @drop="onDrop(cell.gregorian)"
@@ -527,7 +573,7 @@ function onCellDragLeave(): void {
       </div>
 
       <!-- لیست جزئیات -->
-      <div v-if="items.length" class="rounded-card border-line border bg-surface p-5">
+      <div v-if="items.length" class="rounded-card border-line bg-surface border p-5">
         <p class="text-ink-strong mb-3 text-sm font-semibold">پیش‌نویس‌های این محدوده</p>
         <ul class="divide-line divide-y">
           <li
@@ -555,7 +601,12 @@ function onCellDragLeave(): void {
               <VBadge :tone="statusTone(item.status)">
                 {{ labelOf(commandStatusLabels, item.status) }}
               </VBadge>
-              <VButton v-if="canSchedule(item)" size="sm" variant="secondary" @click="openDialog(item)">
+              <VButton
+                v-if="canSchedule(item)"
+                size="sm"
+                variant="secondary"
+                @click="openDialog(item)"
+              >
                 {{ item.status === 'scheduled' ? 'تغییر زمان' : 'زمان‌بندی' }}
               </VButton>
               <VButton
@@ -571,7 +622,10 @@ function onCellDragLeave(): void {
         </ul>
       </div>
 
-      <p v-else class="text-ink-muted rounded-card border-line border bg-surface p-6 text-center text-sm">
+      <p
+        v-else
+        class="text-ink-muted rounded-card border-line bg-surface border p-6 text-center text-sm"
+      >
         در این محدوده پیش‌نویس مقاله/محصولی وجود ندارد.
       </p>
     </div>
@@ -591,11 +645,14 @@ function onCellDragLeave(): void {
           <div class="rounded-ui bg-surface-muted px-3 py-2 text-xs">
             <p class="text-ink-strong font-semibold">⏱ انتشار فوری</p>
             <p class="text-ink-muted mt-0.5">
-              موعد را به همین لحظه می‌رساند و پیش‌نویس بلافاصله از گیت‌های انتشار خودکار عبور می‌کند.
+              موعد را به همین لحظه می‌رساند و پیش‌نویس بلافاصله از گیت‌های انتشار خودکار عبور
+              می‌کند.
             </p>
           </div>
           <div class="flex flex-wrap justify-end gap-2">
-            <VButton variant="danger" :loading="saving" @click="cancelSchedule">لغو زمان‌بندی</VButton>
+            <VButton variant="danger" :loading="saving" @click="cancelSchedule"
+              >لغو زمان‌بندی</VButton
+            >
             <VButton :loading="saving" @click="publishNow(selectedItem)">انتشار فوری</VButton>
           </div>
         </template>
@@ -603,7 +660,8 @@ function onCellDragLeave(): void {
           <div v-if="suggestionFor(selectedItem)" class="rounded-ui bg-brand-50 px-3 py-2 text-xs">
             <p class="text-brand-800 font-semibold">✨ پیشنهاد سیستم</p>
             <p class="text-brand-700 mt-0.5">
-              {{ suggestionFor(selectedItem)!.label }} (میانگین {{ suggestionFor(selectedItem)!.avg_clicks }} کلیک در
+              {{ suggestionFor(selectedItem)!.label }} (میانگین
+              {{ suggestionFor(selectedItem)!.avg_clicks }} کلیک در
               {{ suggestionFor(selectedItem)!.samples }} روز) — پیشنهاد به‌صورت خودکار پر شده است.
             </p>
           </div>
@@ -615,7 +673,9 @@ function onCellDragLeave(): void {
           />
           <div class="flex flex-wrap justify-end gap-2">
             <VButton variant="secondary" @click="dialogOpen = false">بستن</VButton>
-            <VButton :loading="saving" :disabled="!scheduledValue" @click="saveSchedule">ثبت زمان</VButton>
+            <VButton :loading="saving" :disabled="!scheduledValue" @click="saveSchedule"
+              >ثبت زمان</VButton
+            >
           </div>
         </template>
       </div>
@@ -625,8 +685,8 @@ function onCellDragLeave(): void {
     <VModal v-model="createOpen" title="پیش‌نویس زمان‌بندی‌شده" size="md">
       <div class="space-y-4">
         <p class="text-ink-muted text-xs">
-          پیش‌نویس مقاله/محصول ساخته می‌شود و به صف بازبینی می‌رود؛ پس از تأیید، در موعد تعیین‌شده از
-          گیت‌های انتشار خودکار عبور می‌کند.
+          پیش‌نویس مقاله/محصول ساخته می‌شود و به صف بازبینی می‌رود؛ پس از تأیید، در موعد تعیین‌شده
+          از گیت‌های انتشار خودکار عبور می‌کند.
         </p>
         <div class="grid gap-4 sm:grid-cols-2">
           <VSelect
@@ -638,10 +698,16 @@ function onCellDragLeave(): void {
           <VSelect
             v-model="createProfile"
             label="URL / صفحهٔ هدف"
-            :options="filteredProfiles.map((p) => ({ label: p.canonical_url, value: String(p.id) }))"
+            :options="
+              filteredProfiles.map((p) => ({ label: p.canonical_url, value: String(p.id) }))
+            "
           />
         </div>
-        <VInput v-model="createTitle" label="عنوان (اختیاری)" placeholder="مثلاً: راهنمای جامع سئو تکنیکال" />
+        <VInput
+          v-model="createTitle"
+          label="عنوان (اختیاری)"
+          placeholder="مثلاً: راهنمای جامع سئو تکنیکال"
+        />
         <VSelect
           v-model="createSubtype"
           label="زیرنوع"

@@ -44,7 +44,13 @@ export function captureTrafficAttributes(): TrafficAttributes {
   const url = new URL(window.location.href)
   const incoming: TrafficAttributes = {}
 
-  for (const key of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const) {
+  for (const key of [
+    'utm_source',
+    'utm_medium',
+    'utm_campaign',
+    'utm_term',
+    'utm_content',
+  ] as const) {
     const value = url.searchParams.get(key)?.trim()
     if (value) {
       incoming[key] = value

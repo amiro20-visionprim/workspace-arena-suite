@@ -13,7 +13,13 @@ interface NavItem {
 }
 
 const items: NavItem[] = [
-  { label: 'خانه', hint: 'سایت من در یک نگاه', href: '/client/dashboard', icon: 'chart-line', exact: true },
+  {
+    label: 'خانه',
+    hint: 'سایت من در یک نگاه',
+    href: '/client/dashboard',
+    icon: 'chart-line',
+    exact: true,
+  },
   { label: 'رشد من', hint: 'چقدر دیده می‌شوم', href: '/client/growth', icon: 'trend-up' },
   { label: 'اولویت‌ها', hint: 'کجا بهتر شویم', href: '/client/opportunities', icon: 'lightbulb' },
   { label: 'تأییدهای من', hint: 'منتظر تصمیم شما', href: '/client/decisions', icon: 'user-check' },
@@ -48,7 +54,9 @@ function isActive(item: NavItem): boolean {
       <span
         :class="[
           'rounded-ui flex size-8 shrink-0 items-center justify-center transition-colors',
-          isActive(item) ? 'bg-brand-100 text-brand-700' : 'bg-surface-muted text-ink-muted group-hover:text-ink-strong',
+          isActive(item)
+            ? 'bg-brand-100 text-brand-700'
+            : 'bg-surface-muted text-ink-muted group-hover:text-ink-strong',
         ]"
       >
         <VIcon :name="item.icon" :tone="isActive(item) ? 'brand' : 'neutral'" size="sm" />

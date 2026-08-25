@@ -59,8 +59,14 @@ export function formatJalaliDateTime(
   const year = formatInteger(jalali.jy, digits)
   const month = formatInteger(jalali.jm, digits).padStart(2, digits === 'persian' ? '۰' : '0')
   const day = formatInteger(jalali.jd, digits).padStart(2, digits === 'persian' ? '۰' : '0')
-  const hours = formatInteger(date.getUTCHours(), digits).padStart(2, digits === 'persian' ? '۰' : '0')
-  const minutes = formatInteger(date.getUTCMinutes(), digits).padStart(2, digits === 'persian' ? '۰' : '0')
+  const hours = formatInteger(date.getUTCHours(), digits).padStart(
+    2,
+    digits === 'persian' ? '۰' : '0',
+  )
+  const minutes = formatInteger(date.getUTCMinutes(), digits).padStart(
+    2,
+    digits === 'persian' ? '۰' : '0',
+  )
 
   return `${year}/${month}/${day} ${hours}:${minutes}`
 }

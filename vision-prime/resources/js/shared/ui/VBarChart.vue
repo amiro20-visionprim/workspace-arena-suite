@@ -38,7 +38,11 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
       :style="{ height: `${height}px` }"
       @mouseleave="hovered = null"
     >
-      <div v-for="(d, i) in data" :key="i" class="group relative flex h-full flex-1 flex-col justify-end">
+      <div
+        v-for="(d, i) in data"
+        :key="i"
+        class="group relative flex h-full flex-1 flex-col justify-end"
+      >
         <!-- tooltip -->
         <div
           v-if="hovered === i"
@@ -56,18 +60,17 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
                 ? 'bg-gradient-brand'
                 : 'bg-gradient-brand opacity-85 hover:opacity-100'
           "
-          :style="{ height: `${(d.value / max) * 100}%`, animation: `vp-bar-grow 0.8s ${i * 60}ms cubic-bezier(0.2, 0.8, 0.2, 1) both` }"
+          :style="{
+            height: `${(d.value / max) * 100}%`,
+            animation: `vp-bar-grow 0.8s ${i * 60}ms cubic-bezier(0.2, 0.8, 0.2, 1) both`,
+          }"
           @mouseenter="hovered = i"
           @mouseleave="hovered = null"
         />
       </div>
     </div>
     <div class="mt-2 flex gap-2">
-      <span
-        v-for="(d, i) in data"
-        :key="i"
-        class="text-ink-muted flex-1 text-center text-[11px]"
-      >
+      <span v-for="(d, i) in data" :key="i" class="text-ink-muted flex-1 text-center text-[11px]">
         {{ d.label }}
       </span>
     </div>

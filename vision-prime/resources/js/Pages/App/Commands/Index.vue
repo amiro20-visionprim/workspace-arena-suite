@@ -30,8 +30,7 @@ const statusTone = (status: string) =>
           ? 'warning'
           : 'info'
 
-const isAutoPublishable = (command: Command) =>
-  command.type === 'publish_new_article'
+const isAutoPublishable = (command: Command) => command.type === 'publish_new_article'
 
 function factorLabel(key: string): string {
   const labels: Record<string, string> = {
@@ -48,7 +47,10 @@ function factorLabel(key: string): string {
 }
 
 function factorValue(value: unknown): string {
-  if (typeof value === 'number') return Math.round(value * 100) / 100 === value ? String(value) : String(Math.round(value * 100) / 100)
+  if (typeof value === 'number')
+    return Math.round(value * 100) / 100 === value
+      ? String(value)
+      : String(Math.round(value * 100) / 100)
   if (typeof value === 'boolean') return value ? 'بله' : 'خیر'
   if (value === null || value === undefined) return '—'
   return String(value)
@@ -92,7 +94,7 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
       >
         <Link
           :href="`/app/commands/${command.id}`"
-          class="block transition-colors hover:text-brand-700"
+          class="hover:text-brand-700 block transition-colors"
         >
           <div class="flex justify-between">
             <div class="flex flex-wrap items-center gap-2">
@@ -112,7 +114,9 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
               · <span class="font-latin" dir="ltr">{{ command.platform_url }}</span>
             </template>
             · {{ labelOf(riskTierLabels, command.risk_tier) }}
-            <template v-if="command.confidence_score !== null && command.confidence_score !== undefined">
+            <template
+              v-if="command.confidence_score !== null && command.confidence_score !== undefined"
+            >
               · اطمینان: {{ command.confidence_score }}
             </template>
             <template v-if="command.published_at">
@@ -146,22 +150,20 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
                 :key="key"
                 class="text-ink-muted text-sm"
               >
-                {{ factorLabel(key) }}: <span class="text-ink-strong">{{ factorValue(value) }}</span>
+                {{ factorLabel(key) }}:
+                <span class="text-ink-strong">{{ factorValue(value) }}</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div
-          v-if="command.post_url"
-          class="border-line mt-3 flex items-center gap-2 border-t pt-3"
-        >
+        <div v-if="command.post_url" class="border-line mt-3 flex items-center gap-2 border-t pt-3">
           <span class="text-ink-strong text-sm">📄 مقالهٔ منتشرشده:</span>
           <a
             :href="command.post_url"
             target="_blank"
             rel="noopener noreferrer"
-            class="font-latin text-sm text-brand-700 underline hover:text-brand-900"
+            class="font-latin text-brand-700 hover:text-brand-900 text-sm underline"
             dir="ltr"
           >
             {{ command.post_url }}
@@ -195,9 +197,7 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
               <VBadge tone="neutral">نمایش: {{ command.impact.delta.impressions }}</VBadge>
             </div>
           </template>
-          <p v-else class="text-ink-muted text-sm">
-            دادهٔ GSC کافی برای مقایسه در دسترس نیست.
-          </p>
+          <p v-else class="text-ink-muted text-sm">دادهٔ GSC کافی برای مقایسه در دسترس نیست.</p>
         </div>
 
         <div
