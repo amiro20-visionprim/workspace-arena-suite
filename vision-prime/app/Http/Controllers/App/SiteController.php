@@ -72,8 +72,13 @@ class SiteController extends Controller
     public function update(UpdateSiteRequest $r, Site $site, UpdateSite $a): RedirectResponse
     {
         Gate::authorize('update', $site);
+
+        // انتقال سایت به پروژه‌ای دیگر مجاز است، اما پروژهٔ مقصد باید در
+        // «همان سازمانِ خودِ سایت» باشد (جلوگیری از آلودگی بین‌سازمانی
+        // وقتی کاربر در چند سازمان عضویت دارد).
         $p = Project::query()->findOrFail($r->integer('project_id'));
-        abort_unless($p->id === $site->project_id && $p->organization_id === app(CurrentOrganization::class)->id(), 422);
+        abort_unless($p->organization_id === $site->organization_id, 404);
+
         $a->handle($site, $r->validated());
 
         return back()->with('status', 'سایت به‌روزرسانی شد.');

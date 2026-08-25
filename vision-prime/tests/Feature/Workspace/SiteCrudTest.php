@@ -89,4 +89,52 @@ class SiteCrudTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['action' => 'site.updated', 'subject_id' => $site->id]);
         $this->actingAs($admin)->put("/app/sites/{$site->id}", ['project_id' => $project->id, 'name' => 'New', 'canonical_url' => 'https://taken.example.ir', 'locale' => 'fa', 'timezone' => 'Asia/Tehran', 'business_importance' => 5])->assertSessionHasErrors('canonical_url');
     }
+
+    public function test_site_can_be_moved_to_another_project_in_same_organization(): void
+    {
+        $organization = Organization::query()->create(['public_id' => (string) Str::ulid(), 'name' => 'M', 'slug' => 'm-'.Str::random(5), 'status' => 'active']);
+        $admin = User::factory()->create();
+        Membership::query()->create(['organization_id' => $organization->id, 'user_id' => $admin->id, 'role_id' => Role::query()->where('key', 'agency-admin')->valueOrFail('id'), 'status' => 'active']);
+        $client = Client::query()->create(['organization_id' => $organization->id, 'public_id' => (string) Str::ulid(), 'name' => 'C', 'status' => 'active']);
+        $projectA = Project::query()->create(['organization_id' => $organization->id, 'client_id' => $client->id, 'public_id' => (string) Str::ulid(), 'name' => 'A', 'status' => 'active']);
+        $projectB = Project::query()->create(['organization_id' => $organization->id, 'client_id' => $client->id, 'public_id' => (string) Str::ulid(), 'name' => 'B', 'status' => 'active']);
+        $site = Site::query()->create(['organization_id' => $organization->id, 'project_id' => $projectA->id, 'public_id' => (string) Str::ulid(), 'name' => 'Site', 'canonical_url' => 'https://move.example.ir', 'status' => 'active']);
+
+        $this->actingAs($admin)->put("/app/sites/{$site->id}", [
+            'project_id' => $projectB->id,
+            'name' => 'Site',
+            'canonical_url' => 'https://move.example.ir',
+            'locale' => 'fa',
+            'timezone' => 'Asia/Tehran',
+            'business_importance' => 4,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('sites', ['id' => $site->id, 'project_id' => $projectB->id]);
+    }
+
+    public function test_site_cannot_be_moved_to_a_project_in_another_organization(): void
+    {
+        $organizationA = Organization::query()->create(['public_id' => (string) Str::ulid(), 'name' => 'A', 'slug' => 'a-'.Str::random(5), 'status' => 'active']);
+        $organizationB = Organization::query()->create(['public_id' => (string) Str::ulid(), 'name' => 'B', 'slug' => 'b-'.Str::random(5), 'status' => 'active']);
+        $admin = User::factory()->create();
+        Membership::query()->create(['organization_id' => $organizationA->id, 'user_id' => $admin->id, 'role_id' => Role::query()->where('key', 'agency-admin')->valueOrFail('id'), 'status' => 'active']);
+        Membership::query()->create(['organization_id' => $organizationB->id, 'user_id' => $admin->id, 'role_id' => Role::query()->where('key', 'agency-admin')->valueOrFail('id'), 'status' => 'active']);
+
+        $clientA = Client::query()->create(['organization_id' => $organizationA->id, 'public_id' => (string) Str::ulid(), 'name' => 'C', 'status' => 'active']);
+        $projectA = Project::query()->create(['organization_id' => $organizationA->id, 'client_id' => $clientA->id, 'public_id' => (string) Str::ulid(), 'name' => 'A', 'status' => 'active']);
+        $clientB = Client::query()->create(['organization_id' => $organizationB->id, 'public_id' => (string) Str::ulid(), 'name' => 'C', 'status' => 'active']);
+        $projectB = Project::query()->create(['organization_id' => $organizationB->id, 'client_id' => $clientB->id, 'public_id' => (string) Str::ulid(), 'name' => 'B', 'status' => 'active']);
+        $siteA = Site::query()->create(['organization_id' => $organizationA->id, 'project_id' => $projectA->id, 'public_id' => (string) Str::ulid(), 'name' => 'Site', 'canonical_url' => 'https://cross.example.ir', 'status' => 'active']);
+
+        $this->actingAs($admin)->put("/app/sites/{$siteA->id}", [
+            'project_id' => $projectB->id,
+            'name' => 'Site',
+            'canonical_url' => 'https://cross.example.ir',
+            'locale' => 'fa',
+            'timezone' => 'Asia/Tehran',
+            'business_importance' => 4,
+        ])->assertNotFound();
+
+        $this->assertDatabaseHas('sites', ['id' => $siteA->id, 'project_id' => $projectA->id]);
+    }
 }

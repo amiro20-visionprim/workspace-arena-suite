@@ -21,7 +21,7 @@ class SitePolicy
 
     public function view(User $user, Site $site): bool
     {
-        return $this->viewAny($user, Organization::query()->findOrFail($site->organization_id));
+        return $this->viewAny($user, $site->organization);
     }
 
     public function create(User $user, Organization $organization): bool
@@ -31,7 +31,7 @@ class SitePolicy
 
     public function update(User $user, Site $site): bool
     {
-        return $this->create($user, Organization::query()->findOrFail($site->organization_id));
+        return $this->create($user, $site->organization);
     }
 
     public function delete(User $user, Site $site): bool

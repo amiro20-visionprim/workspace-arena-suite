@@ -698,6 +698,34 @@
 
 ---
 
+## فاز ۲ — Organization & Membership — ✅ تکمیل شد
+> تسک‌های O2-05 (سوئیچ سازمان) و O2-06 (ماتریس مجوز) و O2-07 (تست‌های مرجع) پیش از این در کد موجود و صحیح بودند (بازبینی و تأیید شدند). چهار باگ اصلی فیکس شد (2.1–2.4 بالا).
+
+---
+
+## فاز ۳ — Workspace: Site CRUD — 🚧 در حال اجرا
+
+### 3.1 — فیکس باگ «تغییر پروژهٔ سایت» 🟠
+- **هدف:** فعال‌کردن انتقال سایت بین پروژه‌ها (فرم selector داشت ولی بک‌اند 422 می‌داد و ذخیره نمی‌کرد).
+- **تغییر:** `SiteController::update` + `UpdateSite::handle` — ذخیرهٔ `project_id` + اسکوپِ صحیح.
+- **فایل:** `app/Http/Controllers/App/SiteController.php`, `app/Domains/Workspace/Actions/UpdateSite.php`
+- **تست:** `test_site_can_be_moved_to_another_project_in_same_organization`
+- **وضعیت:** ✅ lint سبز
+
+### 3.2 — رفع ریسک آلودگی بین‌سازمانی 🟡
+- **هدف:** جلوگیری از انتساب سایتِ org B به پروژهٔ org A (فساد داده در کاربر چندسازمانی).
+- **تغییر:** پروژهٔ مقصد باید در «همان سازمانِ خودِ سایت» باشد؛ یکتایی canonical_url بر اساس `$site->organization_id`.
+- **فایل:** همان دو فایل.
+- **تست:** `test_site_cannot_be_moved_to_a_project_in_another_organization`
+- **وضعیت:** ✅ lint سبز
+
+### 3.3 — بهینه‌سازی SitePolicy 🟡
+- **تغییر:** استفاده از `$site->organization` به‌جای `findOrFail`.
+- **فایل:** `app/Domains/Workspace/Policies/SitePolicy.php`
+- **وضعیت:** ✅ lint سبز
+
+---
+
 ## وضعیت کنونی
-- **فاز جاری:** فاز ۲ — Organization & Membership (تسک‌های 2.1–2.4 اجرا شد؛ 2.5–2.7 در ادامه).
-- **اقدام بعدی:** ادامهٔ تسک‌های فاز ۲ (سوئیچ سازمان، ماتریس مجوز، تست‌های مرجع)، سپس commit + push + آپدیت داکیومنت‌های `vision-prime-docs/`.
+- **فاز جاری:** فاز ۳ — Site CRUD (تسک‌های 3.1–3.3 اجرا شد؛ S3-04 URL Profiles در ادامه).
+- **اقدام بعدی:** commit + push، سپس ادامهٔ فاز ۳ (URL Profiles) و فاز ۴ (Project & Client).
