@@ -62,6 +62,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return Inertia::location(route('login'));
+        // پس از خروج به صفحهٔ اصلی می‌رویم (قرارداد تست + UX: کاربر مهمان
+        // روی لندینگ می‌ماند، نه صفحهٔ ورود).
+        return Inertia::location(route('home'));
     }
 }
