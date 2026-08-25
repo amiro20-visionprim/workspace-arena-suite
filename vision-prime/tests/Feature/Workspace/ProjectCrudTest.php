@@ -39,6 +39,42 @@ class ProjectCrudTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['action' => 'project.archived', 'subject_id' => $project->id]);
     }
 
+    public function test_project_can_be_moved_to_another_client_in_same_organization(): void
+    {
+        $org = $this->org();
+        $admin = $this->member($org, 'agency-admin');
+        $clientA = $this->client($org);
+        $clientB = $this->client($org);
+        $project = Project::query()->create(['organization_id' => $org->id, 'client_id' => $clientA->id, 'public_id' => (string) Str::ulid(), 'name' => 'P', 'status' => 'active']);
+
+        $this->actingAs($admin)->put("/app/projects/{$project->id}", [
+            'client_id' => $clientB->id,
+            'name' => 'P',
+            'objective' => null,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'client_id' => $clientB->id]);
+    }
+
+    public function test_project_cannot_be_moved_to_a_client_in_another_organization(): void
+    {
+        $orgA = $this->org();
+        $orgB = $this->org();
+        $admin = $this->member($orgA, 'agency-admin');
+        Membership::query()->create(['organization_id' => $orgB->id, 'user_id' => $admin->id, 'role_id' => Role::query()->where('key', 'agency-admin')->valueOrFail('id'), 'status' => 'active']);
+        $clientA = $this->client($orgA);
+        $clientB = $this->client($orgB);
+        $project = Project::query()->create(['organization_id' => $orgA->id, 'client_id' => $clientA->id, 'public_id' => (string) Str::ulid(), 'name' => 'P', 'status' => 'active']);
+
+        $this->actingAs($admin)->put("/app/projects/{$project->id}", [
+            'client_id' => $clientB->id,
+            'name' => 'P',
+            'objective' => null,
+        ])->assertNotFound();
+
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'client_id' => $clientA->id]);
+    }
+
     private function org(): Organization
     {
         return Organization::query()->create(['public_id' => (string) Str::ulid(), 'name' => 'آژانس', 'slug' => 'agency-'.Str::lower(Str::random(6)), 'status' => 'active']);

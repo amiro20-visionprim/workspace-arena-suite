@@ -40,8 +40,10 @@ class ProjectController extends Controller
     public function store(StoreProjectRequest $request, CreateProject $create): RedirectResponse
     {
         $client = Client::query()->findOrFail($request->integer('client_id'));
-        Gate::authorize('update', $client);
         $this->ensureCurrentOrg($client);
+        // مجوزِ «ایجاد پروژه» باید همان «project.manage.organization» باشد (نه client.manage)
+        // تا با متد create() هم‌راستا باشد و کاربرِ دارای مجوزِ ساخت پروژه، از ساخت منع نشود.
+        Gate::authorize('create', [Project::class, app(CurrentOrganization::class)->get()]);
         $project = $create->handle($client, $request->string('name')->trim()->toString(), $request->string('objective')->trim()->toString() ?: null);
 
         return redirect()->route('app.projects.show', $project)->with('status', 'پروژه با موفقیت ایجاد شد.');
@@ -66,9 +68,10 @@ class ProjectController extends Controller
     {
         Gate::authorize('update', $project);
         $client = Client::query()->findOrFail($request->integer('client_id'));
-        $this->ensureCurrentOrg($client);
-        abort_unless($client->getKey() === $project->client_id, 422);
-        $update->handle($project, $request->string('name')->trim()->toString(), $request->string('objective')->trim()->toString() ?: null);
+        // انتقال پروژه به مشتری دیگر مجاز است، اما مشتری مقصد باید در «همان
+        // سازمانِ خودِ پروژه» باشد (جلوگیری از آلودگی بین‌سازمانی).
+        abort_unless($client->organization_id === $project->organization_id, 404);
+        $update->handle($project, $client, $request->string('name')->trim()->toString(), $request->string('objective')->trim()->toString() ?: null);
 
         return redirect()->route('app.projects.show', $project)->with('status', 'پروژه به‌روزرسانی شد.');
     }

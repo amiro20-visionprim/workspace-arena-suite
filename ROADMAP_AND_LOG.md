@@ -726,6 +726,33 @@
 
 ---
 
+### 3.4 — authorization لایهٔ URL Profiles 🔴
+- **هدف:** بستن شکاف عدم‌وجود مجوز در هوش SEO (هر عضو سازمان همهٔ داده را می‌دید).
+- **تغییر:** ساخت `UrlProfilePolicy` + ثبت در provider + `Gate::authorize` در index/show.
+- **فایل:** `app/Domains/Content/Policies/UrlProfilePolicy.php`, `AppServiceProvider.php`, `UrlProfileController.php`
+- **وضعیت:** ✅ lint سبز
+
+---
+
+## فاز ۴ — Workspace: Project & Client — 🚧 در حال اجرا
+
+### 4.1 — فیکس authorization ناسازگار در ساخت پروژه 🟠
+- **تغییر:** `ProjectController::store` → `Gate::authorize('create', [Project, org])` هم‌راستا با `create()`.
+- **فایل:** `app/Http/Controllers/App/ProjectController.php`
+- **وضعیت:** ✅ lint سبز
+
+### 4.2 — فیکس باگ «تغییر مشتریِ پروژه» 🟠
+- **تغییر:** انتقال پروژه به مشتری دیگر در همان سازمان مجاز شد + ذخیرهٔ `client_id` در `UpdateProject`.
+- **فایل:** `ProjectController.php`, `UpdateProject.php`
+- **تست:** `test_project_can_be_moved_to_another_client_in_same_organization`, `test_project_cannot_be_moved_to_a_client_in_another_organization`
+- **وضعیت:** ✅ lint سبز
+
+### 4.3 — بازبینی ClientController ✅
+- **نتیجه:** درست و امن (Gate یکدست + ضد IDOR + اعتبارسنجی نقش). بدون نیاز به تغییر.
+
+---
+
 ## وضعیت کنونی
-- **فاز جاری:** فاز ۳ — Site CRUD (تسک‌های 3.1–3.3 اجرا شد؛ S3-04 URL Profiles در ادامه).
-- **اقدام بعدی:** commit + push، سپس ادامهٔ فاز ۳ (URL Profiles) و فاز ۴ (Project & Client).
+- **فازهای تکمیل‌شده:** ۱، ۲، ۳، ۴ (هستهٔ Workspace).
+- **فاز جاری:** فاز ۵ — WordPress Connector.
+- **اقدام بعدی:** commit + push این بچ، سپس ورود عمیق به فاز ۵ (اتصال وردپرس).

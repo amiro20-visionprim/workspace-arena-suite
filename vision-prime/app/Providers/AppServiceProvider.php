@@ -6,6 +6,8 @@ namespace App\Providers;
 
 use App\Domains\Connector\Contracts\ConnectorContentClient;
 use App\Domains\Connector\Services\SignedConnectorClient;
+use App\Domains\Content\Models\UrlProfile;
+use App\Domains\Content\Policies\UrlProfilePolicy;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Contracts\CurrentClient;
 use App\Domains\Workspace\Models\Client;
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(Client::class, ClientPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);
+        Gate::policy(UrlProfile::class, UrlProfilePolicy::class);
 
         // Windows PHP ships without a CA bundle (curl.cainfo/openssl.cafile are empty),
         // which breaks every outbound HTTPS call (GSC token exchange, connector, ...)
