@@ -60,6 +60,7 @@ class ImageSuggestionService
                 $headings[] = $text;
             }
         }
+
         return array_unique($headings);
     }
 
@@ -130,16 +131,17 @@ class ImageSuggestionService
     {
         // Alt text should be: descriptive + include keyword + under 125 chars
         $alt = $heading;
-        if (!str_contains(mb_strtolower($alt, 'UTF-8'), mb_strtolower($mainKeyword, 'UTF-8'))) {
-            $alt .= ' - ' . $mainKeyword;
+        if (! str_contains(mb_strtolower($alt, 'UTF-8'), mb_strtolower($mainKeyword, 'UTF-8'))) {
+            $alt .= ' - '.$mainKeyword;
         }
-        if ($siteName !== '' && !str_contains($alt, $siteName)) {
-            $alt .= ' | ' . $siteName;
+        if ($siteName !== '' && ! str_contains($alt, $siteName)) {
+            $alt .= ' | '.$siteName;
         }
         // Truncate to 125 chars
         if (mb_strlen($alt, 'UTF-8') > 125) {
-            $alt = mb_substr($alt, 0, 122, 'UTF-8') . '...';
+            $alt = mb_substr($alt, 0, 122, 'UTF-8').'...';
         }
+
         return $alt;
     }
 
@@ -152,9 +154,9 @@ class ImageSuggestionService
         if ($apiKey === '') {
             // Return placeholder if no API key
             return [
-                'url' => "https://source.unsplash.com/800x450/?" . urlencode($query),
+                'url' => 'https://source.unsplash.com/800x450/?'.urlencode($query),
                 'photographer' => 'Unsplash',
-                'link' => 'https://unsplash.com/s/photos/' . urlencode($query),
+                'link' => 'https://unsplash.com/s/photos/'.urlencode($query),
             ];
         }
 
@@ -183,9 +185,9 @@ class ImageSuggestionService
 
         // Fallback to source.unsplash.com
         return [
-            'url' => "https://source.unsplash.com/800x450/?" . urlencode($query),
+            'url' => 'https://source.unsplash.com/800x450/?'.urlencode($query),
             'photographer' => 'Unsplash',
-            'link' => 'https://unsplash.com/s/photos/' . urlencode($query),
+            'link' => 'https://unsplash.com/s/photos/'.urlencode($query),
         ];
     }
 }

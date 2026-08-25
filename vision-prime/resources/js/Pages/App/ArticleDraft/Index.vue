@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/app/layouts/AppLayout.vue'
-import VBadge from '@/shared/ui/VBadge.vue'
+import VBadge, { type BadgeTone } from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
@@ -38,7 +38,7 @@ const statusLabels: Record<string, string> = {
   archived: 'بایگانی شده',
 }
 
-const statusTones: Record<string, string> = {
+const statusTones: Record<string, BadgeTone> = {
   draft: 'warning',
   review: 'info',
   published: 'success',

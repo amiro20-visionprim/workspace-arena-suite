@@ -3,7 +3,6 @@ import { computed } from 'vue'
 import { Head, useForm, usePage } from '@inertiajs/vue3'
 import AppLayout from '@/app/layouts/AppLayout.vue'
 import VAlert from '@/shared/ui/VAlert.vue'
-import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
@@ -102,8 +101,8 @@ function save() {
           </div>
         </VCard>
 
-        <VButton @click="save" :loading="f.processing" variant="primary" size="lg" class="w-full">ذخیره تغییرات</VButton>
-        <VButton @click="$inertia.get('/app/ai-drafts')" variant="secondary" class="w-full">بازگشت به لیست</VButton>
+        <VButton :loading="f.processing" variant="primary" size="lg" class="w-full" @click="save">ذخیره تغییرات</VButton>
+        <VButton variant="secondary" class="w-full" @click="$inertia.get('/app/ai-drafts')">بازگشت به لیست</VButton>
       </div>
     </div>
   </AppLayout>

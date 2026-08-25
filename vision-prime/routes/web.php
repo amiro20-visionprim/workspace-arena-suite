@@ -3,16 +3,16 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\App\AiDraftController;
-use App\Http\Controllers\App\ContentApiController;
-use App\Http\Controllers\App\ContentGuardrailController;
-use App\Http\Controllers\App\PromptTemplateController;
-use App\Http\Controllers\App\ContentCommandCenterController;
+use App\Http\Controllers\App\AiModelDetectionController;
 use App\Http\Controllers\App\AutomationPolicyController;
 use App\Http\Controllers\App\ClientController;
 use App\Http\Controllers\App\CommandController;
 use App\Http\Controllers\App\CommandDecisionController;
 use App\Http\Controllers\App\CommandDispatchController;
+use App\Http\Controllers\App\ContentApiController;
 use App\Http\Controllers\App\ContentCalendarController;
+use App\Http\Controllers\App\ContentCommandCenterController;
+use App\Http\Controllers\App\ContentGuardrailController;
 use App\Http\Controllers\App\ConversionRiskController;
 use App\Http\Controllers\App\CurrentOrganizationController;
 use App\Http\Controllers\App\DashboardController;
@@ -28,6 +28,7 @@ use App\Http\Controllers\App\NotificationController;
 use App\Http\Controllers\App\OpportunityController;
 use App\Http\Controllers\App\OrganizationOnboardingController;
 use App\Http\Controllers\App\ProjectController;
+use App\Http\Controllers\App\PromptTemplateController;
 use App\Http\Controllers\App\RecommendationController;
 use App\Http\Controllers\App\ReportController;
 use App\Http\Controllers\App\ReportPublishController;
@@ -273,54 +274,52 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::post('/app/ai-drafts/article', [AiDraftController::class, 'storeArticle'])->name('app.ai-drafts.article')->middleware('throttle:10,1');
     Route::get('/app/ai-drafts/product/create', [AiDraftController::class, 'createProduct'])->name('app.ai-drafts.product.create');
     Route::post('/app/ai-drafts/product', [AiDraftController::class, 'storeProduct'])->name('app.ai-drafts.product')->middleware('throttle:10,1');
-    Route::get('/app/ai-drafts', [\App\Http\Controllers\App\AiDraftController::class, 'index'])->name('app.ai-drafts.index');
-    Route::get('/app/ai-drafts/{id}/edit', [\App\Http\Controllers\App\AiDraftController::class, 'edit'])->name('app.ai-drafts.edit');
-    Route::put('/app/ai-drafts/{id}', [\App\Http\Controllers\App\AiDraftController::class, 'update'])->name('app.ai-drafts.update');
-
+    Route::get('/app/ai-drafts', [AiDraftController::class, 'index'])->name('app.ai-drafts.index');
+    Route::get('/app/ai-drafts/{id}/edit', [AiDraftController::class, 'edit'])->name('app.ai-drafts.edit');
+    Route::put('/app/ai-drafts/{id}', [AiDraftController::class, 'update'])->name('app.ai-drafts.update');
 
     // ─── Content API (AI Gateway + SEO Intelligence) ───
-    Route::get("/api/content/research", [ContentApiController::class, "research"])->name("api.content.research");
-    Route::post("/api/content/score", [ContentApiController::class, "score"])->name("api.content.score")->middleware("throttle:30,1");
-    Route::post("/api/content/links", [ContentApiController::class, "links"])->name("api.content.links")->middleware("throttle:30,1");
-    Route::post("/api/content/schema", [ContentApiController::class, "schema"])->name("api.content.schema")->middleware("throttle:30,1");
-    Route::post("/api/content/serp-analysis", [ContentApiController::class, "serpAnalysis"])->name("api.content.serp-analysis")->middleware("throttle:10,1");
-    Route::post("/api/content/outline", [ContentApiController::class, "outline"])->name("api.content.outline")->middleware("throttle:10,1");
-    Route::post("/api/content/generate", [ContentApiController::class, "generate"])->name("api.content.generate")->middleware("throttle:5,1");
-    Route::get("/api/content/gsc-context", [ContentApiController::class, "gscContext"])->name("api.content.gsc-context");
-    Route::get("/api/content/providers", [ContentApiController::class, "providers"])->name("api.content.providers");
-    Route::post("/api/content/test-provider", [ContentApiController::class, "testProvider"])->name("api.content.test-provider")->middleware("throttle:5,1");
-    Route::post("/api/content/detect-models", [\App\Http\Controllers\App\AiModelDetectionController::class, "detectModels"])->name("api.content.detect-models")->middleware("throttle:10,1");
-    Route::post("/api/content/provider-usage", [\App\Http\Controllers\App\AiModelDetectionController::class, "getUsage"])->name("api.content.provider-usage")->middleware("throttle:10,1");
+    Route::get('/api/content/research', [ContentApiController::class, 'research'])->name('api.content.research');
+    Route::post('/api/content/score', [ContentApiController::class, 'score'])->name('api.content.score')->middleware('throttle:30,1');
+    Route::post('/api/content/links', [ContentApiController::class, 'links'])->name('api.content.links')->middleware('throttle:30,1');
+    Route::post('/api/content/schema', [ContentApiController::class, 'schema'])->name('api.content.schema')->middleware('throttle:30,1');
+    Route::post('/api/content/serp-analysis', [ContentApiController::class, 'serpAnalysis'])->name('api.content.serp-analysis')->middleware('throttle:10,1');
+    Route::post('/api/content/outline', [ContentApiController::class, 'outline'])->name('api.content.outline')->middleware('throttle:10,1');
+    Route::post('/api/content/generate', [ContentApiController::class, 'generate'])->name('api.content.generate')->middleware('throttle:5,1');
+    Route::get('/api/content/gsc-context', [ContentApiController::class, 'gscContext'])->name('api.content.gsc-context');
+    Route::get('/api/content/providers', [ContentApiController::class, 'providers'])->name('api.content.providers');
+    Route::post('/api/content/test-provider', [ContentApiController::class, 'testProvider'])->name('api.content.test-provider')->middleware('throttle:5,1');
+    Route::post('/api/content/detect-models', [AiModelDetectionController::class, 'detectModels'])->name('api.content.detect-models')->middleware('throttle:10,1');
+    Route::post('/api/content/provider-usage', [AiModelDetectionController::class, 'getUsage'])->name('api.content.provider-usage')->middleware('throttle:10,1');
 
-
-        // Content Guardrails (Command Center)
-        Route::get("/api/content/guardrails", [ContentGuardrailController::class, "index"])->name("api.content.guardrails.index");
-        Route::get("/api/content/guardrails/resolve", [ContentGuardrailController::class, "resolve"])->name("api.content.guardrails.resolve");
-        Route::post("/api/content/guardrails", [ContentGuardrailController::class, "store"])->name("api.content.guardrails.store")->middleware("throttle:20,1");
-        Route::delete("/api/content/guardrails/{guardrail}", [ContentGuardrailController::class, "destroy"])->name("api.content.guardrails.destroy")->middleware("throttle:20,1");
-        Route::post("/api/content/guardrails/seed", [ContentGuardrailController::class, "seed"])->name("api.content.guardrails.seed")->middleware("throttle:10,1");
-        Route::post("/api/content/check-duplicate", [ContentApiController::class, "checkDuplicate"])->name("api.content.check-duplicate");
-        // Prompt Templates Library
-        Route::get("/api/content/prompt-templates", [PromptTemplateController::class, "index"])->name("api.content.prompt-templates.index");
-        Route::post("/api/content/prompt-templates", [PromptTemplateController::class, "store"])->name("api.content.prompt-templates.store")->middleware("throttle:20,1");
-        Route::get("/api/content/prompt-templates/stats", [PromptTemplateController::class, "stats"])->name("api.content.prompt-templates.stats");
-        Route::get("/api/content/prompt-templates/{template}", [PromptTemplateController::class, "show"])->name("api.content.prompt-templates.show");
-        Route::put("/api/content/prompt-templates/{template}", [PromptTemplateController::class, "update"])->name("api.content.prompt-templates.update")->middleware("throttle:20,1");
-        Route::delete("/api/content/prompt-templates/{template}", [PromptTemplateController::class, "destroy"])->name("api.content.prompt-templates.destroy")->middleware("throttle:20,1");
-        Route::post("/api/content/prompt-templates/{template}/render", [PromptTemplateController::class, "render"])->name("api.content.prompt-templates.render")->middleware("throttle:10,1");
-        Route::post("/api/content/publish", [ContentApiController::class, "publishToWordPress"])->name("api.content.publish")->middleware("throttle:5,1");
-        Route::post("/api/content/test-wp", [ContentApiController::class, "testWordPress"])->name("api.content.test-wp")->middleware("throttle:5,1");
-        Route::post("/api/content/drafts", [ContentApiController::class, "saveDraft"])->name("api.content.drafts.save");
-        Route::post("/api/content/test-wp-connection", [ContentApiController::class, "testWpConnection"])->name("api.content.test-wp-connection");
-        Route::post("/api/content/publish-stored", [ContentApiController::class, "publishStored"])->name("api.content.publish-stored");
-        Route::get("/api/content/drafts", [ContentApiController::class, "listDrafts"])->name("api.content.drafts");
-        Route::get("/api/content/drafts/{id}", [ContentApiController::class, "getDraft"])->name("api.content.drafts.show");
-        Route::delete("/api/content/drafts/{id}", [ContentApiController::class, "deleteDraft"])->name("api.content.drafts.delete")->middleware("throttle:10,1");
-        Route::post("/api/content/apply-suggestions", [ContentApiController::class, "applySuggestions"])->name("api.content.apply-suggestions")->middleware("throttle:10,1");
-        Route::post("/api/content/save-user-template", [PromptTemplateController::class, "store"])->name("api.content.save-user-template")->middleware("throttle:20,1");
-        Route::post("/api/content/regenerate-section", [ContentApiController::class, "regenerateSection"])->name("api.content.regenerate-section")->middleware("throttle:10,1");});
-        Route::post("/api/content/sync-wordpress", [ContentApiController::class, "syncWordPressContent"])->name("api.content.sync-wordpress")->middleware("throttle:3,1");
-
+    // Content Guardrails (Command Center)
+    Route::get('/api/content/guardrails', [ContentGuardrailController::class, 'index'])->name('api.content.guardrails.index');
+    Route::get('/api/content/guardrails/resolve', [ContentGuardrailController::class, 'resolve'])->name('api.content.guardrails.resolve');
+    Route::post('/api/content/guardrails', [ContentGuardrailController::class, 'store'])->name('api.content.guardrails.store')->middleware('throttle:20,1');
+    Route::delete('/api/content/guardrails/{guardrail}', [ContentGuardrailController::class, 'destroy'])->name('api.content.guardrails.destroy')->middleware('throttle:20,1');
+    Route::post('/api/content/guardrails/seed', [ContentGuardrailController::class, 'seed'])->name('api.content.guardrails.seed')->middleware('throttle:10,1');
+    Route::post('/api/content/check-duplicate', [ContentApiController::class, 'checkDuplicate'])->name('api.content.check-duplicate');
+    // Prompt Templates Library
+    Route::get('/api/content/prompt-templates', [PromptTemplateController::class, 'index'])->name('api.content.prompt-templates.index');
+    Route::post('/api/content/prompt-templates', [PromptTemplateController::class, 'store'])->name('api.content.prompt-templates.store')->middleware('throttle:20,1');
+    Route::get('/api/content/prompt-templates/stats', [PromptTemplateController::class, 'stats'])->name('api.content.prompt-templates.stats');
+    Route::get('/api/content/prompt-templates/{template}', [PromptTemplateController::class, 'show'])->name('api.content.prompt-templates.show');
+    Route::put('/api/content/prompt-templates/{template}', [PromptTemplateController::class, 'update'])->name('api.content.prompt-templates.update')->middleware('throttle:20,1');
+    Route::delete('/api/content/prompt-templates/{template}', [PromptTemplateController::class, 'destroy'])->name('api.content.prompt-templates.destroy')->middleware('throttle:20,1');
+    Route::post('/api/content/prompt-templates/{template}/render', [PromptTemplateController::class, 'render'])->name('api.content.prompt-templates.render')->middleware('throttle:10,1');
+    Route::post('/api/content/publish', [ContentApiController::class, 'publishToWordPress'])->name('api.content.publish')->middleware('throttle:5,1');
+    Route::post('/api/content/test-wp', [ContentApiController::class, 'testWordPress'])->name('api.content.test-wp')->middleware('throttle:5,1');
+    Route::post('/api/content/drafts', [ContentApiController::class, 'saveDraft'])->name('api.content.drafts.save');
+    Route::post('/api/content/test-wp-connection', [ContentApiController::class, 'testWpConnection'])->name('api.content.test-wp-connection');
+    Route::post('/api/content/publish-stored', [ContentApiController::class, 'publishStored'])->name('api.content.publish-stored');
+    Route::get('/api/content/drafts', [ContentApiController::class, 'listDrafts'])->name('api.content.drafts');
+    Route::get('/api/content/drafts/{id}', [ContentApiController::class, 'getDraft'])->name('api.content.drafts.show');
+    Route::delete('/api/content/drafts/{id}', [ContentApiController::class, 'deleteDraft'])->name('api.content.drafts.delete')->middleware('throttle:10,1');
+    Route::post('/api/content/apply-suggestions', [ContentApiController::class, 'applySuggestions'])->name('api.content.apply-suggestions')->middleware('throttle:10,1');
+    Route::post('/api/content/save-user-template', [PromptTemplateController::class, 'store'])->name('api.content.save-user-template')->middleware('throttle:20,1');
+    Route::post('/api/content/regenerate-section', [ContentApiController::class, 'regenerateSection'])->name('api.content.regenerate-section')->middleware('throttle:10,1');
+});
+Route::post('/api/content/sync-wordpress', [ContentApiController::class, 'syncWordPressContent'])->name('api.content.sync-wordpress')->middleware('throttle:3,1');
 
 // بازگشت از درگاه پرداخت — عمومی است چون درگاه به آن ریدایرکت می‌کند (بدون لاگین)
 Route::get('/platform/payments/callback/{gateway}/{transaction}', [PlatformPaymentGatewayController::class, 'callback'])->name('platform.payments.callback');

@@ -5,24 +5,25 @@ declare(strict_types=1);
 namespace App\Http\Controllers\App;
 
 use App\Domains\Ai\Services\AiGateway;
+use App\Domains\Content\Models\ContentDraft;
+use App\Domains\Content\Models\ContentGuardrail;
+use App\Domains\Content\Models\PromptTemplate;
 use App\Domains\Content\Services\ContentProfiler;
 use App\Domains\Content\Services\ContentQualityGuard;
 use App\Domains\Content\Services\InternalLinkEngine;
 use App\Domains\Content\Services\SchemaGenerator;
-use App\Domains\Content\Models\ContentGuardrail;
-use App\Domains\Content\Models\PromptTemplate;
-use App\Domains\Content\Models\ContentDraft;
-use App\Domains\Content\Services\StandardsKB;
-use App\Domains\Content\Services\SERPAnalyzer;
 use App\Domains\Content\Services\SEOExpertAnalyzer;
+use App\Domains\Content\Services\SERPAnalyzer;
+use App\Domains\Content\Services\StandardsKB;
 use App\Domains\Content\Services\WordPressPublisher;
-use App\Domain\Content\Services\ImageSuggestionService;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Models\Site;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 /**
  * REST API endpoints for intelligent content creation.
@@ -59,7 +60,6 @@ class ContentApiController extends Controller
      *
      * GET /api/content/research?site_id=1
      */
-    
     private function upsertUrlProfile(int $siteId, string $url, string $contentType, string $slug, string $title, int $wpId, string $modifiedAt, array $extra = []): void
     {
         $metadata = array_merge(['title' => $title, 'wp_id' => $wpId], $extra);
@@ -87,6 +87,7 @@ class ContentApiController extends Controller
             ]);
         }
     }
+
     public function research(Request $request, CurrentOrganization $org): JsonResponse
     {
         $siteId = (int) $request->query('site_id', 0);
@@ -126,9 +127,11 @@ class ContentApiController extends Controller
 
         // From opportunities
         foreach ($opportunities as $opp) {
-            $insight = $insights->first(fn($i) => $i->id === $opp->keyword_insight_id);
+            $insight = $insights->first(fn ($i) => $i->id === $opp->keyword_insight_id);
             $query = $insight->query_normalized ?? '';
-            if ($query === '') continue;
+            if ($query === '') {
+                continue;
+            }
 
             $profiled = $this->profiler->profile([
                 'title' => $query,
@@ -170,7 +173,9 @@ class ContentApiController extends Controller
         // From keyword insights (top queries not yet covered)
         foreach ($insights->take(10) as $insight) {
             $query = $insight->query_normalized ?? '';
-            if ($query === '') continue;
+            if ($query === '') {
+                continue;
+            }
 
             $exists = DB::table('url_profiles')
                 ->where('site_id', $siteId)
@@ -181,7 +186,7 @@ class ContentApiController extends Controller
                 'type' => 'keyword_gap',
                 'keyword' => $query,
                 'score' => 50,
-                'explanation' => "کوئری پرجستجو بدون محتوای اختصاصی",
+                'explanation' => 'کوئری پرجستجو بدون محتوای اختصاصی',
                 'suggested_type' => 'article',
                 'intent' => DB::table('intent_classifications')
                     ->where('keyword_insight_id', $insight->id)
@@ -195,7 +200,7 @@ class ContentApiController extends Controller
         }
 
         // Sort by score
-        usort($topics, fn($a, $b) => $b['score'] <=> $a['score']);
+        usort($topics, fn ($a, $b) => $b['score'] <=> $a['score']);
 
         return response()->json([
             'topics' => array_slice($topics, 0, 30),
@@ -265,7 +270,6 @@ class ContentApiController extends Controller
     }
 
     /**
-     *
      * Schema.org preview.
      *
      * POST /api/content/schema
@@ -337,7 +341,7 @@ class ContentApiController extends Controller
 
         // Load template if specified
         $template = null;
-        if (!empty($data['template_id'])) {
+        if (! empty($data['template_id'])) {
             $template = PromptTemplate::find((int) $data['template_id']);
         }
 
@@ -360,19 +364,19 @@ class ContentApiController extends Controller
         // Build custom instructions from template and user prompt
         $customInstructions = '';
         if ($template !== null) {
-            $customInstructions .= $template->render($data['title'] ?? $data['keyword']) . "
+            $customInstructions .= $template->render($data['title'] ?? $data['keyword']).'
 
-";
+';
         }
-        if (!empty($data['custom_prompt'])) {
-            $customInstructions .= "دستور ویژه کاربر:
-" . $data['custom_prompt'] . "
+        if (! empty($data['custom_prompt'])) {
+            $customInstructions .= 'دستور ویژه کاربر:
+'.$data['custom_prompt'].'
 
-";
+';
         }
-        if (!empty($data['tone'])) {
-            $customInstructions .= "لحن مورد نظر: " . $data['tone'] . "
-";
+        if (! empty($data['tone'])) {
+            $customInstructions .= 'لحن مورد نظر: '.$data['tone'].'
+';
         }
         $wordCount = (int) ($data['word_count'] ?? 0);
 
@@ -394,11 +398,11 @@ class ContentApiController extends Controller
         try {
             $result = $this->gateway->generateArticleDraft($site->organization, $context);
 
-            $metaTitle = $data['meta_title'] ?? ($data['keyword'] . ' | ' . $site->name);
+            $metaTitle = $data['meta_title'] ?? ($data['keyword'].' | '.$site->name);
             $metaDesc = $data['meta_description'] ?? '';
 
             // Auto-generate meta_description from content if empty
-            if ($metaDesc === '' && !empty($result['content'])) {
+            if ($metaDesc === '' && ! empty($result['content'])) {
                 $stripped = strip_tags($result['content']);
                 $stripped = preg_replace('/\s+/', ' ', trim($stripped));
                 // Extract first meaningful sentence after h1/title
@@ -406,7 +410,7 @@ class ContentApiController extends Controller
                 $metaDesc = '';
                 foreach ($parts as $part) {
                     $part = trim($part);
-                    if (mb_strlen($part) > 30 && !str_contains($part, $data['title'] ?? '')) {
+                    if (mb_strlen($part) > 30 && ! str_contains($part, $data['title'] ?? '')) {
                         $metaDesc = mb_substr($part, 0, 155);
                         break;
                     }
@@ -414,7 +418,7 @@ class ContentApiController extends Controller
                 if ($metaDesc === '') {
                     $metaDesc = mb_substr($stripped, 0, 155);
                 }
-                $metaDesc = rtrim($metaDesc, '،. ') . '...';
+                $metaDesc = rtrim($metaDesc, '،. ').'...';
             }
 
             $schemas = $this->schemaGen->generate(
@@ -435,7 +439,6 @@ class ContentApiController extends Controller
                 'meta_title' => $metaTitle,
                 'meta_description' => $metaDesc,
             ], (int) $site->id, $this->standards);
-
 
             // Auto-save draft
             $draft = ContentDraft::create([
@@ -466,7 +469,7 @@ class ContentApiController extends Controller
                     ->latest()->first()?->update(['expert_analysis' => $expertResult]);
                 $evaluation['expert_analysis'] = $expertResult;
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('Expert analysis failed');
+                Log::warning('Expert analysis failed');
             }
 
             return response()->json([
@@ -483,10 +486,9 @@ class ContentApiController extends Controller
                 'draft_id' => $draft->id,
             ]);
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'تولید محتوا ناموفق بود: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'تولید محتوا ناموفق بود: '.$e->getMessage()], 500);
         }
     }
-
 
     /**
      * Check for duplicate content before generation.
@@ -505,7 +507,7 @@ class ContentApiController extends Controller
 
         // Search for similar titles in content_drafts
         $normalizedName = ContentProfiler::normalizeFa($title);
-        $words = array_filter(explode(' ', $normalizedName), fn(string $w): bool => mb_strlen($w) > 2);
+        $words = array_filter(explode(' ', $normalizedName), fn (string $w): bool => mb_strlen($w) > 2);
 
         $existingDrafts = ContentDraft::query()
             ->where('site_id', $siteId)
@@ -514,7 +516,7 @@ class ContentApiController extends Controller
                 $q->where('title', $title);
                 // Or similar (any word match)
                 foreach ($words as $word) {
-                    $q->orWhere('title', 'LIKE', '%' . $word . '%');
+                    $q->orWhere('title', 'LIKE', '%'.$word.'%');
                 }
             })
             ->orderByDesc('created_at')
@@ -539,7 +541,7 @@ class ContentApiController extends Controller
             }
         }
 
-        usort($similar, fn(array $a, array $b): int => $b['similarity'] <=> $a['similarity']);
+        usort($similar, fn (array $a, array $b): int => $b['similarity'] <=> $a['similarity']);
 
         return response()->json([
             'has_duplicate' => count($similar) > 0,
@@ -567,32 +569,33 @@ class ContentApiController extends Controller
 
         $system = 'تو یک متخصص سئو و تولید محتوای فارسی هستی. فقط بخش درخواستی را بازنویسی کن.
 '
-            . 'خروجی فقط HTML معتبر آن بخش باشد (بدون h1 اولیه).
+            .'خروجی فقط HTML معتبر آن بخش باشد (بدون h1 اولیه).
 '
-            . 'ساختار و لحن بقیه محتوا را حفظ کن.';
+            .'ساختار و لحن بقیه محتوا را حفظ کن.';
 
         $instruction = $data['instruction'] ?? '';
         $user = "بخش «{$data['heading']}» را بازنویسی کن.
 
 "
-            . "موضوع کلی مقاله: {$data['context']}
+            ."موضوع کلی مقاله: {$data['context']}
 "
-            . ($data['keyword'] ? "کلمه کلیدی: {$data['keyword']}
+            .($data['keyword'] ? "کلمه کلیدی: {$data['keyword']}
 " : '')
-            . ($instruction !== '' ? "دستور ویژه: {$instruction}
+            .($instruction !== '' ? "دستور ویژه: {$instruction}
 " : '')
-            . "
-فقط خروجی HTML این بخش را برگردان:";
+            .'
+فقط خروجی HTML این بخش را برگردان:';
 
         try {
             $result = $this->gateway->generate($system, $user, 'section');
+
             return response()->json([
                 'content' => $result['content'],
                 'model' => $result['model'],
                 'source' => $result['source'],
             ]);
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'بازنویسی بخش ناموفق بود: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'بازنویسی بخش ناموفق بود: '.$e->getMessage()], 500);
         }
     }
 
@@ -619,9 +622,9 @@ class ContentApiController extends Controller
             ->where('status', 'active')
             ->where(function ($q) use ($title) {
                 // Split title into words and match any
-                $words = array_filter(explode(' ', trim($title)), fn($w) => mb_strlen($w) > 2);
+                $words = array_filter(explode(' ', trim($title)), fn ($w) => mb_strlen($w) > 2);
                 foreach ($words as $word) {
-                    $q->orWhere('query_normalized', 'LIKE', '%' . $word . '%');
+                    $q->orWhere('query_normalized', 'LIKE', '%'.$word.'%');
                 }
             })
             ->orderByDesc('latest_metrics->clicks')
@@ -658,7 +661,7 @@ class ContentApiController extends Controller
         }
 
         // Sort by opportunity score
-        usort($queries, fn($a, $b) => $b['opportunity_score'] <=> $a['opportunity_score']);
+        usort($queries, fn ($a, $b) => $b['opportunity_score'] <=> $a['opportunity_score']);
 
         return response()->json([
             'queries' => $queries,
@@ -690,7 +693,7 @@ class ContentApiController extends Controller
 
         $data = $request->validate([
             'site_id' => 'required|integer|exists:sites,id',
-            'title'   => 'required|string|max:500',
+            'title' => 'required|string|max:500',
             'subtype' => 'nullable|string|max:100',
             'template_id' => 'nullable|integer|exists:prompt_templates,id',
         ]);
@@ -705,8 +708,8 @@ class ContentApiController extends Controller
 
         // Load prompt template if selected
         $template = null;
-        if (!empty($data["template_id"])) {
-            $template = PromptTemplate::find((int) $data["template_id"]);
+        if (! empty($data['template_id'])) {
+            $template = PromptTemplate::find((int) $data['template_id']);
         }
 
         // Get guardrails for context
@@ -716,11 +719,11 @@ class ContentApiController extends Controller
         // Generate outline via AI
         if ($template) {
             $system = $template->system_prompt;
-            $user = $template->render($title) . "
-" . "Subtype: " . $subtype . ". Site: " . $site->name;
+            $user = $template->render($title).'
+'.'Subtype: '.$subtype.'. Site: '.$site->name;
             if ($gscData) {
-                $user .= "
-" . "GSC Context: " . json_encode($gscData, JSON_UNESCAPED_UNICODE);
+                $user .= '
+'.'GSC Context: '.json_encode($gscData, JSON_UNESCAPED_UNICODE);
             }
         } else {
             [$system, $user] = $this->gateway->generateOutline($title, $subtype, $site->name, $gscData);
@@ -738,29 +741,29 @@ class ContentApiController extends Controller
         $outline = json_decode($trimmed, true);
 
         // Step 2: Strip markdown code fences
-        if (!is_array($outline)) {
+        if (! is_array($outline)) {
             $cleaned = preg_replace('/^```(?:json)?\s*/im', '', $trimmed);
             $cleaned = preg_replace('/```\s*$/m', '', $cleaned);
             $outline = json_decode(trim($cleaned), true);
         }
 
         // Step 3: Extract JSON array from mixed text
-        if (!is_array($outline)) {
+        if (! is_array($outline)) {
             if (preg_match('/\[{.*?}\]/s', $content, $matches)) {
                 $outline = json_decode($matches[0], true);
             }
         }
 
         // Step 4: Try non-greedy match for array
-        if (!is_array($outline)) {
+        if (! is_array($outline)) {
             if (preg_match('/\[.*\]/s', $content, $matches)) {
                 $outline = json_decode($matches[0], true);
             }
         }
 
-        if (!is_array($outline)) {
+        if (! is_array($outline)) {
             $outline = [];
-            \Illuminate\Support\Facades\Log::warning('Outline parsing failed', [
+            Log::warning('Outline parsing failed', [
                 'raw_content' => mb_substr($content, 0, 500),
                 'model' => $result['model'] ?? 'unknown',
                 'source' => $result['source'] ?? 'unknown',
@@ -770,7 +773,7 @@ class ContentApiController extends Controller
         // Validate and normalize each item
         $normalized = [];
         foreach ($outline as $item) {
-            if (!is_array($item) || empty($item['heading'])) {
+            if (! is_array($item) || empty($item['heading'])) {
                 continue;
             }
             $normalized[] = [
@@ -785,10 +788,9 @@ class ContentApiController extends Controller
             'model' => $result['model'] ?? 'unknown',
             'source' => $result['source'] ?? 'unknown',
             'gsc_queries_count' => count($gscData['related_queries'] ?? []),
-            'guardrails_applied' => !empty($guardrailConfig),
+            'guardrails_applied' => ! empty($guardrailConfig),
         ]);
     }
-
 
     /**
      * SERP Intelligence — analyze competitor content for a keyword.
@@ -800,16 +802,16 @@ class ContentApiController extends Controller
         $this->authorizeSuperAdmin();
 
         $data = $request->validate([
-            'keyword'  => 'required|string|max:500',
-            'subtype'  => 'nullable|string|max:100',
-            'outline'  => 'nullable|array',
+            'keyword' => 'required|string|max:500',
+            'subtype' => 'nullable|string|max:100',
+            'outline' => 'nullable|array',
         ]);
 
         $keyword = $data['keyword'];
         $subtype = $data['subtype'] ?? 'how_to_guide';
         $outline = $data['outline'] ?? [];
 
-        $analysis = app(\App\Domains\Content\Services\SERPAnalyzer::class)->analyze($keyword, $subtype, $outline);
+        $analysis = app(SERPAnalyzer::class)->analyze($keyword, $subtype, $outline);
 
         return response()->json($analysis);
     }
@@ -817,6 +819,7 @@ class ContentApiController extends Controller
     public function providers(): JsonResponse
     {
         $this->authorizeSuperAdmin();
+
         return response()->json(['providers' => $this->gateway->getProviderStatus()]);
     }
 
@@ -868,6 +871,7 @@ class ContentApiController extends Controller
         if ($slug === '') {
             $slug = str()->slug($keyword ?: 'article');
         }
+
         return $slug;
     }
 
@@ -878,6 +882,7 @@ class ContentApiController extends Controller
         foreach ($matches as $match) {
             $headings[] = strip_tags($match[2]);
         }
+
         return $headings;
     }
 
@@ -894,9 +899,9 @@ class ContentApiController extends Controller
             ->where('site_id', $siteId)
             ->where('status', 'active')
             ->where(function ($q) use ($keyword) {
-                $words = array_filter(explode(' ', trim($keyword)), fn($w) => mb_strlen($w) > 2);
+                $words = array_filter(explode(' ', trim($keyword)), fn ($w) => mb_strlen($w) > 2);
                 foreach ($words as $word) {
-                    $q->orWhere('query_normalized', 'LIKE', '%' . $word . '%');
+                    $q->orWhere('query_normalized', 'LIKE', '%'.$word.'%');
                 }
             })
             ->orderByDesc('latest_metrics->clicks')
@@ -931,7 +936,6 @@ class ContentApiController extends Controller
         ];
     }
 
-
     public function applySuggestions(Request $request, CurrentOrganization $org): JsonResponse
     {
         $this->authorizeSuperAdmin();
@@ -942,7 +946,7 @@ class ContentApiController extends Controller
             'keyword' => 'required|string|max:200',
         ]);
 
-        $system = "تو یک متخصص سئو و ویرایش محتوا هستی. محتوا را بر اساس پیشنهادات بهبود بده. فقط HTML بهبود یافته را برگردان.";
+        $system = 'تو یک متخصص سئو و ویرایش محتوا هستی. محتوا را بر اساس پیشنهادات بهبود بده. فقط HTML بهبود یافته را برگردان.';
         $user = "پیشنهادات:\n";
         foreach ($data['suggestions'] as $s) {
             $user .= "- {$s}\n";
@@ -951,9 +955,10 @@ class ContentApiController extends Controller
 
         try {
             $result = $this->gateway->generate($system, $user, 'apply_suggestions');
+
             return response()->json(['content' => $result['content'], 'model' => $result['model']]);
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'اعمال پیشنهادات ناموفق: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'اعمال پیشنهادات ناموفق: '.$e->getMessage()], 500);
         }
     }
 
@@ -1046,6 +1051,7 @@ class ContentApiController extends Controller
         ]);
 
         $publisher = app(WordPressPublisher::class);
+
         return response()->json($publisher->testConnection(
             $data['wp_url'], $data['wp_username'], $data['wp_app_password']
         ));
@@ -1070,10 +1076,11 @@ class ContentApiController extends Controller
             'audit_log' => 'nullable|array',
         ]);
 
-        if (!empty($data['draft_id'])) {
-            $draft = ContentDraft::whereHas('site', fn($q) => $q->where('organization_id', $org->id()))
+        if (! empty($data['draft_id'])) {
+            $draft = ContentDraft::whereHas('site', fn ($q) => $q->where('organization_id', $org->id()))
                 ->findOrFail($data['draft_id']);
-            $draft->update(array_filter($data, fn($v) => $v !== null));
+            $draft->update(array_filter($data, fn ($v) => $v !== null));
+
             return response()->json(['id' => $draft->id, 'updated' => true]);
         }
 
@@ -1101,7 +1108,7 @@ class ContentApiController extends Controller
     public function listDrafts(Request $request, CurrentOrganization $org): JsonResponse
     {
         $query = ContentDraft::query()
-            ->whereHas('site', fn($q) => $q->where('organization_id', $org->id()));
+            ->whereHas('site', fn ($q) => $q->where('organization_id', $org->id()));
 
         if ($status = $request->query('status')) {
             $query->where('status', $status);
@@ -1110,7 +1117,7 @@ class ContentApiController extends Controller
             $query->where('site_id', (int) $siteId);
         }
         if ($search = $request->query('search')) {
-            $query->where('title', 'LIKE', '%' . $search . '%');
+            $query->where('title', 'LIKE', '%'.$search.'%');
         }
 
         $drafts = $query->orderByDesc('created_at')
@@ -1126,7 +1133,7 @@ class ContentApiController extends Controller
      */
     public function getDraft(int $id, CurrentOrganization $org): JsonResponse
     {
-        $draft = ContentDraft::whereHas('site', fn($q) => $q->where('organization_id', $org->id()))
+        $draft = ContentDraft::whereHas('site', fn ($q) => $q->where('organization_id', $org->id()))
             ->findOrFail($id);
 
         return response()->json($draft);
@@ -1139,7 +1146,7 @@ class ContentApiController extends Controller
     public function deleteDraft(int $id, CurrentOrganization $org): JsonResponse
     {
         $this->authorizeSuperAdmin();
-        ContentDraft::whereHas('site', fn($q) => $q->where('organization_id', $org->id()))
+        ContentDraft::whereHas('site', fn ($q) => $q->where('organization_id', $org->id()))
             ->findOrFail($id)
             ->delete();
 
@@ -1201,7 +1208,7 @@ class ContentApiController extends Controller
         // 2. If not found, try site_connections + settings combo
         if (empty($wp['wp_url']) || empty($wp['wp_username'])) {
             $conn = \DB::table('site_connections')->where('site_id', $site->id)->where('status', 'connected')->first();
-            if ($conn && !empty($conn->platform_url)) {
+            if ($conn && ! empty($conn->platform_url)) {
                 $wp = [
                     'wp_url' => $conn->platform_url,
                     'wp_username' => $wp['wp_username'] ?? '',
@@ -1211,7 +1218,7 @@ class ContentApiController extends Controller
         }
 
         // 3. Validate credentials
-        if (!$wp || empty($wp['wp_url']) || empty($wp['wp_username'])) {
+        if (! $wp || empty($wp['wp_url']) || empty($wp['wp_username'])) {
             return response()->json([
                 'success' => false,
                 'error' => 'تنظیمات وردپرس ذخیره نشده. ابتدا از صفحه «اتصال وردپرس» اطلاعات WP را وارد کنید.',
@@ -1222,16 +1229,17 @@ class ContentApiController extends Controller
 
         $publisher = app(WordPressPublisher::class);
         $result = $publisher->publish(
-            ['wp_url'=>$wp['wp_url'],'wp_username'=>$wp['wp_username'],'wp_app_password'=>$wp['wp_app_password'] ?? ''],
-            ['title'=>$draft->title,'content'=>$draft->content,'meta_title'=>$draft->meta_title,'meta_description'=>$draft->meta_description,'slug'=>$draft->slug,'status'=>$data['status'] ?? 'draft']
+            ['wp_url' => $wp['wp_url'], 'wp_username' => $wp['wp_username'], 'wp_app_password' => $wp['wp_app_password'] ?? ''],
+            ['title' => $draft->title, 'content' => $draft->content, 'meta_title' => $draft->meta_title, 'meta_description' => $draft->meta_description, 'slug' => $draft->slug, 'status' => $data['status'] ?? 'draft']
         );
 
         if ($result['success']) {
-            $draft->update(['status'=>'published','audit_log'=>array_merge($draft->audit_log ?? [],['wp_post_id'=>$result['post_id'],'wp_post_url'=>$result['post_url'],'published_at'=>now()->toISOString()])]);
+            $draft->update(['status' => 'published', 'audit_log' => array_merge($draft->audit_log ?? [], ['wp_post_id' => $result['post_id'], 'wp_post_url' => $result['post_url'], 'published_at' => now()->toISOString()])]);
         }
 
         return response()->json($result);
     }
+
     /**
      * Sync content from WordPress REST API to url_profiles.
      * This enables internal link suggestions.
@@ -1252,7 +1260,7 @@ class ContentApiController extends Controller
             return response()->json(['error' => 'آدرس سایت وردپرس تنظیم نشده است.'], 422);
         }
 
-        $baseUrl = rtrim($wpUrl, "/");
+        $baseUrl = rtrim($wpUrl, '/');
         $synced = 0;
         $errors = [];
         $categories = [];
@@ -1260,36 +1268,40 @@ class ContentApiController extends Controller
 
         // --- 1. Sync Categories ---
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->get($baseUrl . "/wp-json/wp/v2/categories", ["per_page" => 100, "_fields" => "id,name,slug,parent,count"]);
+            $response = Http::timeout(30)
+                ->get($baseUrl.'/wp-json/wp/v2/categories', ['per_page' => 100, '_fields' => 'id,name,slug,parent,count']);
             if ($response->successful()) {
                 foreach ($response->json() as $cat) {
-                    $catUrl = $baseUrl . "/" . $cat["slug"] . "/";
-                    $categories[$cat["id"]] = ["name" => $cat["name"], "slug" => $cat["slug"], "count" => $cat["count"] ?? 0];
-                    $this->upsertUrlProfile($site->id, $catUrl, "category", $cat["slug"], $cat["name"], (int)$cat["id"], now()->toDateTimeString(), ["name" => $cat["name"], "slug" => $cat["slug"], "count" => $cat["count"] ?? 0]);
+                    $catUrl = $baseUrl.'/'.$cat['slug'].'/';
+                    $categories[$cat['id']] = ['name' => $cat['name'], 'slug' => $cat['slug'], 'count' => $cat['count'] ?? 0];
+                    $this->upsertUrlProfile($site->id, $catUrl, 'category', $cat['slug'], $cat['name'], (int) $cat['id'], now()->toDateTimeString(), ['name' => $cat['name'], 'slug' => $cat['slug'], 'count' => $cat['count'] ?? 0]);
                     $synced++;
                 }
             }
-        } catch (\Throwable $e) { $errors[] = "categories: " . $e->getMessage(); }
+        } catch (\Throwable $e) {
+            $errors[] = 'categories: '.$e->getMessage();
+        }
 
         // --- 2. Sync Tags ---
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->get($baseUrl . "/wp-json/wp/v2/tags", ["per_page" => 100, "_fields" => "id,name,slug,count"]);
+            $response = Http::timeout(30)
+                ->get($baseUrl.'/wp-json/wp/v2/tags', ['per_page' => 100, '_fields' => 'id,name,slug,count']);
             if ($response->successful()) {
                 foreach ($response->json() as $tag) {
-                    $tagUrl = $baseUrl . "/tag/" . $tag["slug"] . "/";
-                    $tags[$tag["id"]] = ["name" => $tag["name"], "slug" => $tag["slug"], "count" => $tag["count"] ?? 0];
-                    $this->upsertUrlProfile($site->id, $tagUrl, "tag", $tag["slug"], $tag["name"], (int)$tag["id"], now()->toDateTimeString(), ["name" => $tag["name"], "slug" => $tag["slug"], "count" => $tag["count"] ?? 0]);
+                    $tagUrl = $baseUrl.'/tag/'.$tag['slug'].'/';
+                    $tags[$tag['id']] = ['name' => $tag['name'], 'slug' => $tag['slug'], 'count' => $tag['count'] ?? 0];
+                    $this->upsertUrlProfile($site->id, $tagUrl, 'tag', $tag['slug'], $tag['name'], (int) $tag['id'], now()->toDateTimeString(), ['name' => $tag['name'], 'slug' => $tag['slug'], 'count' => $tag['count'] ?? 0]);
                     $synced++;
                 }
             }
-        } catch (\Throwable $e) { $errors[] = "tags: " . $e->getMessage(); }
+        } catch (\Throwable $e) {
+            $errors[] = 'tags: '.$e->getMessage();
+        }
 
         // --- 3. Sync Posts (with category/tag metadata) ---
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->get(rtrim($wpUrl, '/') . '/wp-json/wp/v2/posts', [
+            $response = Http::timeout(30)
+                ->get(rtrim($wpUrl, '/').'/wp-json/wp/v2/posts', [
                     'per_page' => 100,
                     '_fields' => 'id,title,link,modified,slug,categories,tags,excerpt',
                 ]);
@@ -1298,49 +1310,55 @@ class ContentApiController extends Controller
                 foreach ($response->json() as $post) {
                     $title = is_array($post['title']) ? ($post['title']['rendered'] ?? '') : $post['title'];
                     $url = $post['link'] ?? '';
-                    if (empty($url)) continue;
+                    if (empty($url)) {
+                        continue;
+                    }
 
                     // Resolve category and tag names
                     $postCatNames = [];
-                    foreach (($post["categories"] ?? []) as $catId) {
-                        if (isset($categories[$catId])) $postCatNames[] = $categories[$catId]["name"];
+                    foreach (($post['categories'] ?? []) as $catId) {
+                        if (isset($categories[$catId])) {
+                            $postCatNames[] = $categories[$catId]['name'];
+                        }
                     }
                     $postTagNames = [];
-                    foreach (($post["tags"] ?? []) as $tagId) {
-                        if (isset($tags[$tagId])) $postTagNames[] = $tags[$tagId]["name"];
+                    foreach (($post['tags'] ?? []) as $tagId) {
+                        if (isset($tags[$tagId])) {
+                            $postTagNames[] = $tags[$tagId]['name'];
+                        }
                     }
-                    $excerpt = isset($post["excerpt"]["rendered"]) ? strip_tags($post["excerpt"]["rendered"]) : "";
+                    $excerpt = isset($post['excerpt']['rendered']) ? strip_tags($post['excerpt']['rendered']) : '';
 
                     $metadata = [
-                        "title" => $title,
-                        "wp_id" => $post["id"],
-                        "categories" => $postCatNames,
-                        "tags" => $postTagNames,
-                        "category_ids" => $post["categories"] ?? [],
-                        "tag_ids" => $post["tags"] ?? [],
-                        "excerpt" => mb_substr($excerpt, 0, 300),
+                        'title' => $title,
+                        'wp_id' => $post['id'],
+                        'categories' => $postCatNames,
+                        'tags' => $postTagNames,
+                        'category_ids' => $post['categories'] ?? [],
+                        'tag_ids' => $post['tags'] ?? [],
+                        'excerpt' => mb_substr($excerpt, 0, 300),
                     ];
 
-                    $existing = DB::table("url_profiles")
-                        ->where("site_id", $site->id)
-                        ->where("canonical_url", $url)
+                    $existing = DB::table('url_profiles')
+                        ->where('site_id', $site->id)
+                        ->where('canonical_url', $url)
                         ->first();
                     if ($existing) {
-                        DB::table("url_profiles")->where("id", $existing->id)->update([
-                            "metadata" => json_encode($metadata, JSON_UNESCAPED_UNICODE),
-                            "updated_at" => $post["modified"] ?? now(),
+                        DB::table('url_profiles')->where('id', $existing->id)->update([
+                            'metadata' => json_encode($metadata, JSON_UNESCAPED_UNICODE),
+                            'updated_at' => $post['modified'] ?? now(),
                         ]);
                     } else {
-                        DB::table("url_profiles")->insert([
-                            "site_id" => $site->id,
-                            "public_id" => \Illuminate\Support\Str::ulid(),
-                            "canonical_url" => $url,
-                            "content_type" => "post",
-                            "post_status" => "publish",
-                            "slug" => $post["slug"] ?? "",
-                            "metadata" => json_encode($metadata, JSON_UNESCAPED_UNICODE),
-                            "created_at" => now(),
-                            "updated_at" => $post["modified"] ?? now(),
+                        DB::table('url_profiles')->insert([
+                            'site_id' => $site->id,
+                            'public_id' => \Illuminate\Support\Str::ulid(),
+                            'canonical_url' => $url,
+                            'content_type' => 'post',
+                            'post_status' => 'publish',
+                            'slug' => $post['slug'] ?? '',
+                            'metadata' => json_encode($metadata, JSON_UNESCAPED_UNICODE),
+                            'created_at' => now(),
+                            'updated_at' => $post['modified'] ?? now(),
                         ]);
                     }
                     $synced++;
@@ -1348,13 +1366,13 @@ class ContentApiController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            $errors[] = 'posts: ' . $e->getMessage();
+            $errors[] = 'posts: '.$e->getMessage();
         }
 
         // Sync products (WooCommerce)
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->get(rtrim($wpUrl, '/') . '/wp-json/wc/v3/products', [
+            $response = Http::timeout(30)
+                ->get(rtrim($wpUrl, '/').'/wp-json/wc/v3/products', [
                     'per_page' => 100,
                     '_fields' => 'id,name,permalink,date_modified',
                 ]);
@@ -1362,20 +1380,22 @@ class ContentApiController extends Controller
             if ($response->successful()) {
                 foreach ($response->json() as $product) {
                     $url = $product['permalink'] ?? '';
-                    if (empty($url)) continue;
+                    if (empty($url)) {
+                        continue;
+                    }
 
                     $this->upsertUrlProfile($site->id, $url, 'product', \Illuminate\Support\Str::slug($product['name'] ?? ''), $product['name'] ?? '', $product['id'], $product['date_modified'] ?? now()->toDateTimeString());
                     $synced++;
                 }
             }
         } catch (\Throwable $e) {
-            $errors[] = 'products: ' . $e->getMessage();
+            $errors[] = 'products: '.$e->getMessage();
         }
 
         // Sync pages
         try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)
-                ->get(rtrim($wpUrl, '/') . '/wp-json/wp/v2/pages', [
+            $response = Http::timeout(30)
+                ->get(rtrim($wpUrl, '/').'/wp-json/wp/v2/pages', [
                     'per_page' => 100,
                     '_fields' => 'id,title,link,modified,type',
                 ]);
@@ -1384,14 +1404,16 @@ class ContentApiController extends Controller
                 foreach ($response->json() as $page) {
                     $title = is_array($page['title']) ? ($page['title']['rendered'] ?? '') : $page['title'];
                     $url = $page['link'] ?? '';
-                    if (empty($url)) continue;
+                    if (empty($url)) {
+                        continue;
+                    }
 
                     $this->upsertUrlProfile($site->id, $url, 'page', $page['slug'] ?? '', $title, $page['id'], $page['modified'] ?? now()->toDateTimeString());
                     $synced++;
                 }
             }
         } catch (\Throwable $e) {
-            $errors[] = 'pages: ' . $e->getMessage();
+            $errors[] = 'pages: '.$e->getMessage();
         }
 
         $totalProfiles = DB::table('url_profiles')->where('site_id', $site->id)->count();
@@ -1400,6 +1422,7 @@ class ContentApiController extends Controller
             ->groupBy('content_type')
             ->pluck('cnt', 'content_type')
             ->toArray();
+
         return response()->json([
             'synced' => $synced,
             'errors' => $errors,
@@ -1409,6 +1432,4 @@ class ContentApiController extends Controller
             'tags_count' => count($tags),
         ]);
     }
-
-
 }

@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VCard from '@/shared/ui/VCard.vue'
-import VBadge from '@/shared/ui/VBadge.vue'
+import VBadge, { type BadgeTone } from '@/shared/ui/VBadge.vue'
 
 interface LinkSuggestion {
   url: string
@@ -31,7 +31,7 @@ function scoreLabel(s: number): string {
   return 'کم‌ارتباط'
 }
 
-function scoreColor(s: number): string {
+function scoreColor(s: number): BadgeTone {
   if (s >= 0.7) return 'success'
   if (s >= 0.4) return 'info'
   return 'neutral'

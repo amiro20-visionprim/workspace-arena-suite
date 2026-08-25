@@ -23,7 +23,7 @@ class WordPressPublisher
         $username = $siteConfig['wp_username'] ?? '';
         $appPassword = $siteConfig['wp_app_password'] ?? '';
 
-        if (!$baseUrl || !$username || !$appPassword) {
+        if (! $baseUrl || ! $username || ! $appPassword) {
             return ['success' => false, 'error' => 'تنظیمات وردپرس ناقص است. URL، نام کاربری و Application Password را وارد کنید.'];
         }
 
@@ -47,10 +47,12 @@ class WordPressPublisher
 
             if ($response->failed()) {
                 Log::warning('WordPress publish failed', ['status' => $response->status(), 'body' => $response->body()]);
-                return ['success' => false, 'error' => 'خطا در انتشار: ' . $response->body()];
+
+                return ['success' => false, 'error' => 'خطا در انتشار: '.$response->body()];
             }
 
             $post = $response->json();
+
             return [
                 'success' => true,
                 'post_id' => $post['id'],
@@ -59,7 +61,8 @@ class WordPressPublisher
             ];
         } catch (\Throwable $e) {
             Log::error('WordPress publish exception', ['error' => $e->getMessage()]);
-            return ['success' => false, 'error' => 'خطای اتصال: ' . $e->getMessage()];
+
+            return ['success' => false, 'error' => 'خطای اتصال: '.$e->getMessage()];
         }
     }
 
@@ -71,19 +74,21 @@ class WordPressPublisher
         try {
             $response = Http::withBasicAuth($username, $appPassword)
                 ->timeout(10)
-                ->get(rtrim($url, '/') . '/wp-json/wp/v2/users/me');
+                ->get(rtrim($url, '/').'/wp-json/wp/v2/users/me');
 
             if ($response->successful()) {
                 $user = $response->json();
+
                 return [
                     'success' => true,
                     'user' => $user['name'] ?? 'Unknown',
                     'roles' => $user['roles'] ?? [],
                 ];
             }
-            return ['success' => false, 'error' => 'خطای احراز هویت: ' . $response->status()];
+
+            return ['success' => false, 'error' => 'خطای احراز هویت: '.$response->status()];
         } catch (\Throwable $e) {
-            return ['success' => false, 'error' => 'خطای اتصال: ' . $e->getMessage()];
+            return ['success' => false, 'error' => 'خطای اتصال: '.$e->getMessage()];
         }
     }
 
@@ -92,11 +97,15 @@ class WordPressPublisher
      */
     private function resolveCategories(string $baseUrl, string $user, string $pass, array $names): array
     {
-        if (empty($names)) return [];
+        if (empty($names)) {
+            return [];
+        }
         $ids = [];
         foreach ($names as $name) {
             $name = trim($name);
-            if ($name === '') continue;
+            if ($name === '') {
+                continue;
+            }
             // Search existing
             $res = Http::withBasicAuth($user, $pass)
                 ->get("{$baseUrl}/wp-json/wp/v2/categories", ['search' => $name, 'per_page' => 1]);
@@ -111,6 +120,7 @@ class WordPressPublisher
                 }
             }
         }
+
         return $ids;
     }
 
@@ -119,11 +129,15 @@ class WordPressPublisher
      */
     private function resolveTags(string $baseUrl, string $user, string $pass, array $names): array
     {
-        if (empty($names)) return [];
+        if (empty($names)) {
+            return [];
+        }
         $ids = [];
         foreach ($names as $name) {
             $name = trim($name);
-            if ($name === '') continue;
+            if ($name === '') {
+                continue;
+            }
             $res = Http::withBasicAuth($user, $pass)
                 ->get("{$baseUrl}/wp-json/wp/v2/tags", ['search' => $name, 'per_page' => 1]);
             if ($res->successful() && count($res->json()) > 0) {
@@ -136,6 +150,7 @@ class WordPressPublisher
                 }
             }
         }
+
         return $ids;
     }
 }

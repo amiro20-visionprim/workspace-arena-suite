@@ -57,19 +57,19 @@ class ReadabilityService
         }
 
         // ۱) میانگین طول جمله
-        $sentenceLengths = array_map(fn(string $s) => count($this->splitWords($s)), $sentences);
+        $sentenceLengths = array_map(fn (string $s) => count($this->splitWords($s)), $sentences);
         $avgSentenceLength = array_sum($sentenceLengths) / $sentenceCount;
 
         // ۲) میانگین طول کلمه
-        $wordLengths = array_map(fn(string $w) => mb_strlen($w, 'UTF-8'), $words);
+        $wordLengths = array_map(fn (string $w) => mb_strlen($w, 'UTF-8'), $words);
         $avgWordLength = array_sum($wordLengths) / $wordCount;
 
         // ۳) درصد جملات طولانی (بیش از ۲۰ کلمه)
-        $longSentences = count(array_filter($sentenceLengths, fn(int $len): bool => $len > 20));
+        $longSentences = count(array_filter($sentenceLengths, fn (int $len): bool => $len > 20));
         $longSentencesPct = ($longSentences / $sentenceCount) * 100;
 
         // ۴) درصد کلمات پیچیده (بیش از ۸ کاراکتر)
-        $complexWords = count(array_filter($wordLengths, fn(int $len): bool => $len > 8));
+        $complexWords = count(array_filter($wordLengths, fn (int $len): bool => $len > 8));
         $complexWordsPct = ($complexWords / $wordCount) * 100;
 
         // ۵) محاسبه امتیاز (الگوی ساده‌شده Flesch فارسی)
@@ -138,9 +138,10 @@ class ReadabilityService
     {
         // جداکننده‌های جمله: نقطه، علامت سوال، علامت تعجب، newline
         $sentences = preg_split('/[.؟!。\n]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+
         return array_values(array_filter(
             array_map('trim', $sentences ?? []),
-            fn(string $s): bool => mb_strlen($s, 'UTF-8') > 3,
+            fn (string $s): bool => mb_strlen($s, 'UTF-8') > 3,
         ));
     }
 
@@ -150,9 +151,10 @@ class ReadabilityService
     private function splitWords(string $text): array
     {
         $words = preg_split('/[\s,.؟!؛:،\[\](){}*#\-–—\/\\\\|]+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
+
         return array_values(array_filter(
             $words ?? [],
-            fn(string $w): bool => mb_strlen($w, 'UTF-8') > 0,
+            fn (string $w): bool => mb_strlen($w, 'UTF-8') > 0,
         ));
     }
 }

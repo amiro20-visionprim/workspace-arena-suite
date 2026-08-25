@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use App\Domains\Content\Models\ContentGuardrail;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -88,6 +87,7 @@ class AiGateway
     public function generate(string $system, string $user, string $kind = 'article', array $context = []): array
     {
         $org = app(CurrentOrganization::class)->get();
+
         return $this->generateWithFailover($org, $kind, $system, $user, $context);
     }
 
@@ -115,6 +115,7 @@ class AiGateway
 
                 // 3. Fallback to rule-based
                 Log::info('AiGateway: all AI providers exhausted, using RuleBased fallback');
+
                 return $this->fallback->generate($kind, ['kind' => $kind] + ($context !== [] ? $context : $this->contextFromPrompts($system, $user)));
 
             } catch (\RuntimeException $e) {
@@ -123,10 +124,11 @@ class AiGateway
                     Log::error("AiGateway: max retries ({$retryCount}) reached, using RuleBased fallback", [
                         'error' => $e->getMessage(),
                     ]);
+
                     return $this->fallback->generate($kind, ['kind' => $kind] + ($context !== [] ? $context : $this->contextFromPrompts($system, $user)));
                 }
 
-                Log::warning("AiGateway: retry {$retryCount}/" . self::MAX_RETRIES . " after rate limit", [
+                Log::warning("AiGateway: retry {$retryCount}/".self::MAX_RETRIES.' after rate limit', [
                     'error' => $e->getMessage(),
                 ]);
                 // Brief pause before retry
@@ -149,7 +151,7 @@ class AiGateway
             return null;
         }
 
-        $cacheKey = self::CACHE_PREFIX . 'user:' . $org->getKey();
+        $cacheKey = self::CACHE_PREFIX.'user:'.$org->getKey();
         if (Cache::has($cacheKey)) {
             return null; // Rate limited, skip
         }
@@ -202,6 +204,7 @@ class AiGateway
                 'model' => $model,
                 'error' => $e->getMessage(),
             ]);
+
             return null; // Non-rate-limit error, try next provider
         }
     }
@@ -222,7 +225,7 @@ class AiGateway
         }
 
         foreach (self::FREE_MODELS as $model) {
-            $cacheKey = self::CACHE_PREFIX . 'free:' . $model;
+            $cacheKey = self::CACHE_PREFIX.'free:'.$model;
             if (Cache::has($cacheKey)) {
                 continue; // Rate limited, skip
             }
@@ -238,13 +241,14 @@ class AiGateway
                     Log::warning('AiGateway: free model rate limited', ['model' => $model]);
                     // Cache for 60 seconds
                     Cache::put($cacheKey, true, 60);
-           
+
                     continue; // Try next model
                 }
                 Log::warning('AiGateway: free model failed', [
                     'model' => $model,
                     'error' => $e->getMessage(),
                 ]);
+
                 continue; // Try next model
             }
         }
@@ -267,7 +271,7 @@ class AiGateway
         };
 
         $headers = [
-            'Authorization' => 'Bearer ' . $apiKey,
+            'Authorization' => 'Bearer '.$apiKey,
             'Content-Type' => 'application/json',
         ];
 
@@ -286,15 +290,15 @@ class AiGateway
         }
 
         $payload = [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => $system],
-                    ['role' => 'user', 'content' => $user],
-                ],
-                'temperature' => 0.7,
-                'max_tokens' => $provider === 'gapgpt' ? 8000 : 4096,
-            ];
-            $response = $http->withBody(json_encode($payload), 'application/json')->post($endpoint);
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => $system],
+                ['role' => 'user', 'content' => $user],
+            ],
+            'temperature' => 0.7,
+            'max_tokens' => $provider === 'gapgpt' ? 8000 : 4096,
+        ];
+        $response = $http->withBody(json_encode($payload), 'application/json')->post($endpoint);
 
         if (! $response->successful()) {
             $status = $response->status();
@@ -304,7 +308,7 @@ class AiGateway
                 throw new \RuntimeException("Rate limit hit on {$provider}/{$model}: {$status}");
             }
 
-            throw new \RuntimeException("AI provider {$provider}/{$model} error {$status}: " . mb_substr($body, 0, 200));
+            throw new \RuntimeException("AI provider {$provider}/{$model} error {$status}: ".mb_substr($body, 0, 200));
         }
 
         $data = $response->json();
@@ -351,7 +355,7 @@ class AiGateway
                 throw new \RuntimeException("Rate limit hit on anthropic/{$model}: {$status}");
             }
 
-            throw new \RuntimeException("Anthropic error {$status}: " . mb_substr($body, 0, 200));
+            throw new \RuntimeException("Anthropic error {$status}: ".mb_substr($body, 0, 200));
         }
 
         $blocks = $response->json('content') ?? [];
@@ -379,6 +383,7 @@ class AiGateway
     private function isRateLimit(\RuntimeException $e): bool
     {
         $message = strtolower($e->getMessage());
+
         return str_contains($message, 'rate limit')
             || str_contains($message, '429')
             || str_contains($message, '402')
@@ -397,7 +402,7 @@ class AiGateway
 
         $settings = DB::table('ai_provider_settings')->where('status', 'active')->first();
         if ($settings !== null) {
-            $cacheKey = self::CACHE_PREFIX . 'user:' . $settings->organization_id;
+            $cacheKey = self::CACHE_PREFIX.'user:'.$settings->organization_id;
             $status[] = [
                 'name' => $settings->provider,
                 'model' => json_decode($settings->encrypted_config, true)['model'] ?? 'default',
@@ -409,7 +414,7 @@ class AiGateway
         $apiKey = config('services.openrouter.key', env('OPENROUTER_API_KEY', ''));
         if ($apiKey !== '') {
             foreach (self::FREE_MODELS as $model) {
-                $cacheKey = self::CACHE_PREFIX . 'free:' . $model;
+                $cacheKey = self::CACHE_PREFIX.'free:'.$model;
                 $status[] = [
                     'name' => $model,
                     'model' => $model,
@@ -475,66 +480,66 @@ class AiGateway
         $subtypeLabel = $subtypeLabels[$subtype] ?? 'عمومی';
 
         $gscHint = '';
-        if (!empty($gscData['queries'])) {
+        if (! empty($gscData['queries'])) {
             $queries = array_slice($gscData['queries'], 0, 5);
             $queryList = [];
             foreach ($queries as $q) {
-                $queryList[] = $q['query'] . ' (position: ' . $q['position'] . ', impressions: ' . $q['impressions'] . ')';
+                $queryList[] = $q['query'].' (position: '.$q['position'].', impressions: '.$q['impressions'].')';
             }
-            $gscHint = "
+            $gscHint = '
 
 کوئری‌های مرتبط در Google Search Console:
-" . implode("
-", $queryList);
+'.implode('
+', $queryList);
         }
 
         $system = 'تو یک متخصص سئو و معماری محتوا هستی. وظیفه تو طراحی یک outline حرفه‌ای برای مقاله‌ای است که قرار است در صفحه اول Google رتبه بگیرد.
 '
-            . ' principles:
+            .' principles:
 '
-            . '- از اصول E-E-A-T پیروی کن (تجربه، تخصص، اعتبار، اعتماد)
+            .'- از اصول E-E-A-T پیروی کن (تجربه، تخصص، اعتبار، اعتماد)
 '
-            . '- عناوین باید "کلیک‌خور" باشند (شامل عدد، سال، یا کلمه جذاب)
+            .'- عناوین باید "کلیک‌خور" باشند (شامل عدد، سال، یا کلمه جذاب)
 '
-            . '- ساختار محتوا باید Skyscraper باشد (عمیق‌تر و جامع‌تر از رقبا)
+            .'- ساختار محتوا باید Skyscraper باشد (عمیق‌تر و جامع‌تر از رقبا)
 '
-            . '- هر H2 باید یک سوال یا نیاز واقعی کاربر را پوشش دهد
+            .'- هر H2 باید یک سوال یا نیاز واقعی کاربر را پوشش دهد
 '
-            . 'خروجی باید JSON array باشد:
+            .'خروجی باید JSON array باشد:
 '
-            . '[{"heading": "متن عنوان", "level": 2, "note": "توضیح اختیاری - چه محتوایی اینجا برود"}]
+            .'[{"heading": "متن عنوان", "level": 2, "note": "توضیح اختیاری - چه محتوایی اینجا برود"}]
 '
-            . 'حداقل ۷ H2 و ۳ H3. H2 اول: مقدمه. H2 آخر: نتیجه‌گیری.
+            .'حداقل ۷ H2 و ۳ H3. H2 اول: مقدمه. H2 آخر: نتیجه‌گیری.
 '
-            . 'فقط JSON array برگردان — بدون توضیح اضافه.';
+            .'فقط JSON array برگردان — بدون توضیح اضافه.';
 
-        $user = "ساختار outline حرفه‌ای برای مقاله زیر بساز:
+        $user = 'ساختار outline حرفه‌ای برای مقاله زیر بساز:
 
+'
+            ."عنوان: {$title}
 "
-            . "عنوان: {$title}
+            ."زیرنوع: {$subtypeLabel}
 "
-            . "زیرنوع: {$subtypeLabel}
-"
-            . ($siteName !== '' ? "نام برند: {$siteName}
+            .($siteName !== '' ? "نام برند: {$siteName}
 " : '')
-            . $gscHint . "
+            .$gscHint.'
 
-"
-            . "اهداف:
-"
-            . "- outline باید جامع‌تر و عمیق‌تر از مقالات رقبا باشد
-"
-            . "- هر H2 باید یک بخش مستقل و مفید باشد (نه فقط پرکردن فضا)
-"
-            . "- از عناوین جذاب و کلیک‌خور استفاده کن (اعداد، سال، مقایسه)
-"
-            . "- زیربخش‌ها (H3) باید اطلاعات عملی و کاربردی ارائه دهند
-"
-            . "- شامل بخش‌های: مقدمه، آموزش، مقایسه/بررسی، مزایا/معایب، FAQ، نتیجه‌گیری
-"
-            . "- هر عنوان حداکثر ۶۰ کاراکتر
-"
-            . "- فقط JSON array: [{\"heading\": \"...\", \"level\": 2, \"note\": \"چه محتوایی\"}]";
+'
+            .'اهداف:
+'
+            .'- outline باید جامع‌تر و عمیق‌تر از مقالات رقبا باشد
+'
+            .'- هر H2 باید یک بخش مستقل و مفید باشد (نه فقط پرکردن فضا)
+'
+            .'- از عناوین جذاب و کلیک‌خور استفاده کن (اعداد، سال، مقایسه)
+'
+            .'- زیربخش‌ها (H3) باید اطلاعات عملی و کاربردی ارائه دهند
+'
+            .'- شامل بخش‌های: مقدمه، آموزش، مقایسه/بررسی، مزایا/معایب، FAQ، نتیجه‌گیری
+'
+            .'- هر عنوان حداکثر ۶۰ کاراکتر
+'
+            .'- فقط JSON array: [{"heading": "...", "level": 2, "note": "چه محتوایی"}]';
 
         return [$system, $user];
     }
@@ -567,7 +572,7 @@ class AiGateway
 
         // Apply guardrail overrides
         $requireCta = (bool) ($guardrails['require_cta'] ?? true);
-        $requireFaq = (bool) ($guardrails["require_faq"] ?? true);
+        $requireFaq = (bool) ($guardrails['require_faq'] ?? true);
         $requireLinks = (bool) ($guardrails['require_internal_links'] ?? true);
         $minLinks = (int) ($guardrails['min_internal_links'] ?? 2);
         $requireBrand = (bool) ($guardrails['require_brand_mention'] ?? true);
@@ -588,13 +593,13 @@ class AiGateway
         if (count($relatedQueries) > 0) {
             $queryLines = [];
             foreach (array_slice($relatedQueries, 0, 5) as $rq) {
-                $queryLines[] = $rq['query'] . ' | clicks=' . $rq['clicks'] . ' impressions=' . $rq['impressions'] . ' position=' . $rq['position'];
+                $queryLines[] = $rq['query'].' | clicks='.$rq['clicks'].' impressions='.$rq['impressions'].' position='.$rq['position'];
             }
-            $relatedQueriesText = "
+            $relatedQueriesText = '
 
 کوئری‌های مرتبط در GSC:
-" . implode("
-", $queryLines);
+'.implode('
+', $queryLines);
         }
 
         $linksText = '';
@@ -603,14 +608,14 @@ class AiGateway
             foreach (array_slice($internalLinks, 0, 5) as $link) {
                 $linkLines[] = "- لینک: {$link['url']} (anchor: {$link['anchor']})";
             }
-            $linksText = "
+            $linksText = '
 لینک‌های داخلی پیشنهادی:
-" . implode("
-", $linkLines);
+'.implode('
+', $linkLines);
         }
 
         $elementLabels = [
-            'h2_structure' => 'زیرعنوان‌های h2 (حداقل ' . $minHeadings . ' عدد)',
+            'h2_structure' => 'زیرعنوان‌های h2 (حداقل '.$minHeadings.' عدد)',
             'table_of_contents' => 'فهرست مطالب در ابتدای مقاله',
             'faq' => 'بخش سؤالات متداول (با تگ‌های strong برای پرسش/پاسخ)',
             'cta' => 'دعوت به اقدام در انتهای مقاله',
@@ -634,12 +639,12 @@ class AiGateway
         // Build guardrail rules for system prompt
         $guardrailRules = '';
         if ($requireCta) {
-            $guardrailRules .= "
-- حتماً در انتهای مقاله یک CTA (دعوت به اقدام) بنویس";
+            $guardrailRules .= '
+- حتماً در انتهای مقاله یک CTA (دعوت به اقدام) بنویس';
         }
         if ($requireFaq) {
-            $guardrailRules .= "
-- حتماً بخش سؤالات متداول (FAQ) با فرمت <strong>پرسش:</strong> و <strong>پاسخ:</strong> بنویس";
+            $guardrailRules .= '
+- حتماً بخش سؤالات متداول (FAQ) با فرمت <strong>پرسش:</strong> و <strong>پاسخ:</strong> بنویس';
         }
         if ($requireLinks && $minLinks > 0) {
             $guardrailRules .= "
@@ -660,9 +665,9 @@ class AiGateway
         // Use custom system prompt if provided in guardrails, otherwise use default
         $customSystem = $guardrails['system_prompt'] ?? null;
         $system = $customSystem !== null && trim($customSystem) !== ''
-            ? $customSystem . "
+            ? $customSystem.'
 
-خروجی باید فقط HTML معتبر باشد."
+خروجی باید فقط HTML معتبر باشد.'
             : "تو یک تیم محتوایی حرفه‌ای هستی با ۳ تخصص: SEO Strategist + Content Editor + Conversion Writer.
 
 === هویت ===
@@ -713,91 +718,90 @@ class AiGateway
 - bold حداقل ۵ بار برای نکات حیاتی
 - لیست حداکثر ۷ آیتم | جدول حداکثر ۳ ستون
 {$guardrailRules}"
-        . ($customInstructions !== '' ? "\n\n=== CUSTOM INSTRUCTIONS ===\n" . $customInstructions : '')
-        . ($userWordCount > 0 ? "\n\n--- Target word count: " . $userWordCount . " words ---" : '')
-        ;
-        $user = "=== درخواست: تولید مقاله حرفه‌ای سئو شده ===
+        .($customInstructions !== '' ? "\n\n=== CUSTOM INSTRUCTIONS ===\n".$customInstructions : '')
+        .($userWordCount > 0 ? "\n\n--- Target word count: ".$userWordCount.' words ---' : '');
+        $user = '=== درخواست: تولید مقاله حرفه‌ای سئو شده ===
 
-"
-            . "عنوان مقاله: " . ($title !== '' ? $title : $targetQuery) . "
-"
-            . "کلمه کلیدی اصلی: " . $targetQuery . "
-"
-            . ($siteName !== '' ? "نام برند/سایت: {$siteName}
+'
+            .'عنوان مقاله: '.($title !== '' ? $title : $targetQuery).'
+'
+            .'کلمه کلیدی اصلی: '.$targetQuery.'
+'
+            .($siteName !== '' ? "نام برند/سایت: {$siteName}
 " : '')
-            . "نوع محتوا: {$schemaType}
+            ."نوع محتوا: {$schemaType}
 "
-            . "
+            .'
 === داده‌های GSC (BoundingClientRect از Google Search Console) ===
-"
-            . $metricsLine . $relatedQueriesText . "
-"
-            . "
+'
+            .$metricsLine.$relatedQueriesText.'
+'
+            .'
 === نکته مهم بر اساس داده‌ها ===
-"
-            . "- اگر position > 5 و CTR < 10%: عنوان و meta باید جذاب‌تر باشند
-"
-            . "- اگر impressions بالا ولی clicks پایین: محتوا باید دقیق‌تر به سوال کاربر پاسخ دهد
-"
-            . "- اگر کوئری‌های مرتبط زیاد است: مقاله باید جامع و گسترده باشد
-"
-            . "
+'
+            .'- اگر position > 5 و CTR < 10%: عنوان و meta باید جذاب‌تر باشند
+'
+            .'- اگر impressions بالا ولی clicks پایین: محتوا باید دقیق‌تر به سوال کاربر پاسخ دهد
+'
+            .'- اگر کوئری‌های مرتبط زیاد است: مقاله باید جامع و گسترده باشد
+'
+            .'
 === ساختار اجباری مقاله ===
-"
-            . "- h1: عنوان اصلی (دقیقاً یکبار)
-"
-            . "- مقدمه جذاب (۲-۳ پاراگراف) با کلمه کلیدی در خط اول
-"
-            . "- فهرست مطالب (اختیاری ولی توصیه‌شده)
-"
-            . "- بدنه اصلی با " . $minHeadings . "+ بخش h2
-"
-            . "- هر h2 حداکثر ۳-۴ پاراگراف (خوانایی بالا)
-"
-            . "- جدول مقایسه یا مشخصات (حداقل ۱ جدول)
-"
-            . "- لیست‌های عددی یا غیرعددی برای نکات کلیدی
-"
-            . "- بخش FAQ (سؤالات متداول) با تگ strong برای پرسش
-"
-            . "- CTA (دعوت به اقدام) در انتهای مقاله
-"
-            . "- نتیجه‌گیری خلاصه و عملی
-"
-            . "
+'
+            .'- h1: عنوان اصلی (دقیقاً یکبار)
+'
+            .'- مقدمه جذاب (۲-۳ پاراگراف) با کلمه کلیدی در خط اول
+'
+            .'- فهرست مطالب (اختیاری ولی توصیه‌شده)
+'
+            .'- بدنه اصلی با '.$minHeadings.'+ بخش h2
+'
+            .'- هر h2 حداکثر ۳-۴ پاراگراف (خوانایی بالا)
+'
+            .'- جدول مقایسه یا مشخصات (حداقل ۱ جدول)
+'
+            .'- لیست‌های عددی یا غیرعددی برای نکات کلیدی
+'
+            .'- بخش FAQ (سؤالات متداول) با تگ strong برای پرسش
+'
+            .'- CTA (دعوت به اقدام) در انتهای مقاله
+'
+            .'- نتیجه‌گیری خلاصه و عملی
+'
+            .'
 === الزامات طول ===
-"
-            . "- حداقل: " . $wordMin . " کلمه
-"
-            . "- حداکثر: " . $wordMax . " کلمه
-"
-            . "- هر پاراگراف: ۲-۴ جمله کوتاه (۱۰-۲۰ کلمه)
-"
-            . $requiredText . $linksText . "
+'
+            .'- حداقل: '.$wordMin.' کلمه
+'
+            .'- حداکثر: '.$wordMax.' کلمه
+'
+            .'- هر پاراگراف: ۲-۴ جمله کوتاه (۱۰-۲۰ کلمه)
+'
+            .$requiredText.$linksText.'
 
-"
-            . "=== استراتژی محتوا ===
-"
-            . "- محتوا باید عمیق‌تر و جامع‌تر از مقالات رقبا باشد (Skyscraper)
-"
-            . "- از مثال‌های عملی و واقعی استفاده کن
-"
-            . "- LSI keywords را طبیعی در متن پراکنده کن
-"
-            . "- خوانایی بالا: جملات کوتاه، پاراگراف‌های کوتاه، bullet points
-"
-            . "- Micro-CTA در میانه مقاله (نرم و غیرمستقیم)
-"
-            . "- حداقل یک پاراگراف Featured Snippet (پاسخ مستقیم ۴۰-۵۰ کلمه‌ای)
-"
-            . "- جدول مقایسه با حداکثر ۳ ستون (mobile-friendly)
-"
-            . "
+'
+            .'=== استراتژی محتوا ===
+'
+            .'- محتوا باید عمیق‌تر و جامع‌تر از مقالات رقبا باشد (Skyscraper)
+'
+            .'- از مثال‌های عملی و واقعی استفاده کن
+'
+            .'- LSI keywords را طبیعی در متن پراکنده کن
+'
+            .'- خوانایی بالا: جملات کوتاه، پاراگراف‌های کوتاه، bullet points
+'
+            .'- Micro-CTA در میانه مقاله (نرم و غیرمستقیم)
+'
+            .'- حداقل یک پاراگراف Featured Snippet (پاسخ مستقیم ۴۰-۵۰ کلمه‌ای)
+'
+            .'- جدول مقایسه با حداکثر ۳ ستون (mobile-friendly)
+'
+            .'
 === پیشنهاد تصویر ===
 برای هر H2 اصلی یک تگ img پیشنهاد بده با alt text SEO شده:
 img src=UNSPLASH_KEYWORD alt=alt text با کلیدواژه loading=lazy
 
-فقط خروجی HTML خالص بنویس (بدون markdown، بدون علامت‌های کد):";
+فقط خروجی HTML خالص بنویس (بدون markdown، بدون علامت‌های کد):';
 
         return [$system, $user];
     }
@@ -831,62 +835,62 @@ img src=UNSPLASH_KEYWORD alt=alt text با کلیدواژه loading=lazy
             $user = 'برای صفحه زیر یک meta title عالی بنویس:
 
 '
-            . 'آدرس: ' . $url . '
+            .'آدرس: '.$url.'
 '
-            . 'نام برند: ' . $siteName . '
+            .'نام برند: '.$siteName.'
 '
-            . 'کلمه کلیدی: ' . $topQuery . '
+            .'کلمه کلیدی: '.$topQuery.'
 '
-            . 'داده GSC: ' . $metricsLine . '
+            .'داده GSC: '.$metricsLine.'
 '
-            . 'عنوان فعلی: ' . ($existing !== '' ? $existing : 'ندارد') . '
+            .'عنوان فعلی: '.($existing !== '' ? $existing : 'ندارد').'
 '
-            . 'نمونه محتوا: ' . ($snippet !== '' ? $snippet : 'در دسترس نیست') . '
+            .'نمونه محتوا: '.($snippet !== '' ? $snippet : 'در دسترس نیست').'
 
 '
-            . 'الزامات:
+            .'الزامات:
 '
-            . '- حداکثر ۶۰ کاراکتر
+            .'- حداکثر ۶۰ کاراکتر
 '
-            . '- کلمه کلیدی دقیقاً در ابتدا
+            .'- کلمه کلیدی دقیقاً در ابتدا
 '
-            . '- نام برند در انتها (با | جدا شده)
+            .'- نام برند در انتها (با | جدا شده)
 '
-            . '- شامل عدد یا سال باشد (مثلاً ۲۰۲۶)
+            .'- شامل عدد یا سال باشد (مثلاً ۲۰۲۶)
 '
-            . '- جذاب و کلیک‌خور باشد (نه خشک و رسمی)
+            .'- جذاب و کلیک‌خور باشد (نه خشک و رسمی)
 '
-            . '- فقط متن خروjتی، بدون عنوان یا توضیح';
+            .'- فقط متن خروjتی، بدون عنوان یا توضیح';
         } else {
             $user = 'برای صفحه زیر یک meta description جذاب بنویس:
 
 '
-            . 'آدرس: ' . $url . '
+            .'آدرس: '.$url.'
 '
-            . 'نام برند: ' . $siteName . '
+            .'نام برند: '.$siteName.'
 '
-            . 'کلمه کلیدی: ' . $topQuery . '
+            .'کلمه کلیدی: '.$topQuery.'
 '
-            . 'داده GSC: ' . $metricsLine . '
+            .'داده GSC: '.$metricsLine.'
 '
-            . 'توضیح فعلی: ' . ($existing !== '' ? $existing : 'ندارد') . '
+            .'توضیح فعلی: '.($existing !== '' ? $existing : 'ندارد').'
 '
-            . 'نمونه محتوا: ' . ($snippet !== '' ? $snippet : 'در دسترس نیست') . '
+            .'نمونه محتوا: '.($snippet !== '' ? $snippet : 'در دسترس نیست').'
 
 '
-            . 'الزامات:
+            .'الزامات:
 '
-            . '- دقیقاً بین ۱۴۰ تا ۱۵۵ کاراکتر
+            .'- دقیقاً بین ۱۴۰ تا ۱۵۵ کاراکتر
 '
-            . '- شامل کلمه کلیدی به صورت طبیعی
+            .'- شامل کلمه کلیدی به صورت طبیعی
 '
-            . '- شامل CTA (دعوت به اقدام): همین الان، رایگان، مشاوره، مقایسه
+            .'- شامل CTA (دعوت به اقدام): همین الان، رایگان، مشاوره، مقایسه
 '
-            . '- شامل مزیت اصلی یا وعده محتوا
+            .'- شامل مزیت اصلی یا وعده محتوا
 '
-            . '- جذاب و کنجکاوی‌برانگیز باشد
+            .'- جذاب و کنجکاوی‌برانگیز باشد
 '
-            . '- فقط متن خروjتی، بدون عنوان یا توضیح';
+            .'- فقط متن خروjتی، بدون عنوان یا توضیح';
         }
 
         return [$system, $user];

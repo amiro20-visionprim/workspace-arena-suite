@@ -36,12 +36,13 @@ class ContentProfiler
         // و/ؤ → و
         $text = str_replace('ؤ', 'و', $text);
         // ۰-۹ به 0-9
-        $text = preg_replace_callback('/[۰-۹]/u', fn(array $m): string =>
-            (string) (mb_ord($m[0]) - mb_ord('۰')), $text);
+        $text = preg_replace_callback('/[۰-۹]/u', fn (array $m): string => (string) (mb_ord($m[0]) - mb_ord('۰')), $text);
         // فاصله‌های اضافی
         $text = preg_replace('/\s+/u', ' ', $text);
+
         return trim(mb_strtolower($text, 'UTF-8'));
     }
+
     /** واژه‌های زیرنوع → کلید زیرنوع */
     private const SUBTYPE_KEYWORDS = [
         'tutorial' => ['آموزش', 'نحوه', 'چطور', 'راهنمای گام', 'آموزشی', 'tutorial', 'how to', 'learn', 'آموزشگاه'],
@@ -187,13 +188,18 @@ class ContentProfiler
         // مبتدی
         $beginner = ['مبتدی', 'شروع', 'اصول', 'مقدمه', 'پایه', 'ساده', 'آسان', 'از صفر', 'قدم اول', 'beginner', 'basics', 'introduction', 'how to start'];
         foreach ($beginner as $kw) {
-            if (str_contains($normalized, self::normalizeFa($kw))) return 'beginner';
+            if (str_contains($normalized, self::normalizeFa($kw))) {
+                return 'beginner';
+            }
         }
         // متخصص
         $expert = ['پیشرفته', 'حرفه‌ای', 'متخصص', 'تکنیک', 'استراتژی', 'عمیق', 'تکمیلی', 'advanced', 'expert', 'professional', 'master'];
         foreach ($expert as $kw) {
-            if (str_contains($normalized, self::normalizeFa($kw))) return 'expert';
+            if (str_contains($normalized, self::normalizeFa($kw))) {
+                return 'expert';
+            }
         }
+
         // پیش‌فرض: متوسط
         return 'intermediate';
     }
@@ -207,13 +213,22 @@ class ContentProfiler
         // خیلی عمیق (Pillar/Comprehensive)
         $deep = ['جامع', 'کامل', 'all in one', 'comprehensive', 'ultimate', 'definitive', 'complete guide'];
         foreach ($deep as $kw) {
-            if (str_contains($normalized, self::normalizeFa($kw))) return 'very_deep';
+            if (str_contains($normalized, self::normalizeFa($kw))) {
+                return 'very_deep';
+            }
         }
-        if (in_array($subtype, ['pillar', 'guide'], true)) return 'very_deep';
+        if (in_array($subtype, ['pillar', 'guide'], true)) {
+            return 'very_deep';
+        }
         // عمیق
-        if (in_array($subtype, ['tutorial', 'how_to', 'comparison'], true)) return 'deep';
+        if (in_array($subtype, ['tutorial', 'how_to', 'comparison'], true)) {
+            return 'deep';
+        }
         // سطحی (لیستی/خبری)
-        if (in_array($subtype, ['listicle', 'news', 'short_desc'], true)) return 'shallow';
+        if (in_array($subtype, ['listicle', 'news', 'short_desc'], true)) {
+            return 'shallow';
+        }
+
         return 'moderate';
     }
 

@@ -23,6 +23,7 @@ import {
   ListChecks,
   Megaphone,
   Moon,
+  MousePointerClick,
   Newspaper,
   Phone,
   PieChart,
@@ -59,6 +60,8 @@ export type IconName =
   | 'chart-line'
   | 'check'
   | 'clock'
+  | 'cursor-click'
+  | 'document'
   | 'eye'
   | 'eye-off'
   | 'file'
@@ -83,6 +86,7 @@ export type IconName =
   | 'timer'
   | 'trend-down'
   | 'trend-up'
+  | 'trending-up'
   | 'user-check'
   | 'users'
   | 'x'
@@ -93,6 +97,9 @@ export type IconTone = 'brand' | 'success' | 'warning' | 'danger' | 'neutral' | 
 const registry: Record<IconName, Component> = {
   activity: Activity,
   'arrow-down': ArrowDownRight,
+  'cursor-click': MousePointerClick,
+  'document': FileText,
+  'trending-up': TrendingUp,
   'arrow-up': ArrowUpRight,
   ban: Ban,
   bell: BellRing,

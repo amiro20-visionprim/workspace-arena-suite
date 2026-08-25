@@ -8,7 +8,7 @@ export type StatTrend = 'up' | 'down' | 'flat'
 const props = withDefaults(
   defineProps<{
     label: string
-    value: number
+    value: number | string
     icon?: IconName
     iconTone?: IconTone
     hint?: string
@@ -29,7 +29,7 @@ const props = withDefaults(
 )
 
 const root = ref<HTMLElement | null>(null)
-const display = ref(0)
+const display = ref<number | string>(0)
 let rafId = 0
 let started = false
 
@@ -45,12 +45,20 @@ function animate(): void {
     return
   }
   started = true
+
+  // مقادیر رشته‌ای (مثل «۱۲.۳٪») انیمیشن عددی ندارند و مستقیم نمایش داده می‌شوند.
+  if (typeof props.value === 'string') {
+    display.value = props.value
+    return
+  }
+
+  const target: number = props.value
   const start = performance.now()
 
   const tick = (now: number): void => {
     const progress = Math.min(1, (now - start) / props.duration)
     const eased = 1 - Math.pow(1 - progress, 3)
-    display.value = props.value * eased
+    display.value = target * eased
     if (progress < 1) {
       rafId = requestAnimationFrame(tick)
     }
@@ -123,7 +131,7 @@ const trendTone = {
     </div>
 
     <div class="font-display text-ink-strong mt-4 text-3xl leading-none font-extrabold tracking-tight">
-      {{ faNum(display) }}
+      {{ typeof display === 'number' ? faNum(display) : display }}
     </div>
     <p class="text-ink-muted mt-1.5 text-sm">{{ label }}</p>
 

@@ -6,7 +6,6 @@ namespace App\Domains\Content\Services;
 
 use App\Domains\Ai\Services\AiGateway;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 /**
  * SERP Intelligence — analyzes competitor content structure for a keyword.
@@ -17,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 class SERPAnalyzer
 {
     private const CACHE_PREFIX = 'serp_analysis:';
+
     private const CACHE_TTL = 3600; // 1 hour
 
     public function __construct(
@@ -37,7 +37,7 @@ class SERPAnalyzer
      */
     public function analyze(string $keyword, string $subtype = 'how_to_guide', array $existingOutline = []): array
     {
-        $cacheKey = self::CACHE_PREFIX . md5($keyword . $subtype);
+        $cacheKey = self::CACHE_PREFIX.md5($keyword.$subtype);
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
@@ -52,7 +52,7 @@ class SERPAnalyzer
         // Try to extract JSON from response
         $analysis = $this->parseJsonResponse($content);
 
-        if (!is_array($analysis) || empty($analysis)) {
+        if (! is_array($analysis) || empty($analysis)) {
             // Fallback: return basic analysis
             $analysis = $this->fallbackAnalysis($keyword, $existingOutline);
         }
@@ -73,39 +73,39 @@ class SERPAnalyzer
     private function buildAnalysisPrompt(string $keyword, string $subtype, array $existingOutline): array
     {
         $outlineText = '';
-        if (!empty($existingOutline)) {
-            $headings = array_map(fn($item) => ($item['level'] === 3 ? '  ' : '') . 'H' . $item['level'] . ': ' . $item['heading'], $existingOutline);
-            $outlineText = "\n\nساختار فعلی مقاله ما:\n" . implode("\n", $headings);
+        if (! empty($existingOutline)) {
+            $headings = array_map(fn ($item) => ($item['level'] === 3 ? '  ' : '').'H'.$item['level'].': '.$item['heading'], $existingOutline);
+            $outlineText = "\n\nساختار فعلی مقاله ما:\n".implode("\n", $headings);
         }
 
         $system = 'تو یک متخصص SERP Analysis و تحلیل رقبا هستی. وظیفه تو تحلیل صفحات نتایج جستجوی گوگل برای یک کلمه کلیدی و ارائه تحلیل رقابتی است.\n'
-            . 'خروجی تو باید یک JSON object معتبر باشد.\n'
-            . 'فقط JSON object برگردان — بدون توضیح اضافه یا markdown code fence.';
+            .'خروجی تو باید یک JSON object معتبر باشد.\n'
+            .'فقط JSON object برگردان — بدون توضیح اضافه یا markdown code fence.';
 
         $user = "تحلیل SERP برای کلمه کلیدی: {$keyword}\n"
-            . "زیرنوع محتوا: {$subtype}\n"
-            . $outlineText . "\n\n"
-            . "لطفاً تحلیل زیر را ارائه بده:\n\n"
-            . "1. تحلیل ۵ صفحه برتر فرضی (بر اساس تجربه SEO):\n"
-            . "   - عنوان صفحه\n"
-            . "   - آدرس URL فرضی\n"
-            . "   - ساختار عنوان‌ها (فقط H2/H3)\n"
-            . "   - تعداد تقریبی کلمات\n"
-            . "   - snippet تقریبی\n\n"
-            . "2. میانگین تعداد کلمات رقبا\n\n"
-            . "3. عنوان‌های مشترک (Headings) که اکثر رقبا دارند\n\n"
-            . "4. شکاف‌های محتوایی (Content Gaps):\n"
-            . "   - چه موضوعاتی هست که رقبا پوشش دادن ولی ما نداریم؟\n\n"
-            . "5. پیشنهادات بهبود outline فعلی:\n"
-            . "   - چه بخش‌هایی اضافه/حذف/تغییر کنیم؟\n\n"
-            . "فرمت خروجی JSON:\n"
-            . "{\n"
-            . "  \"competitors\": [{\"title\": \"...\", \"url\": \"...\", \"headings\": [\"H2: ...\", \"H3: ...\"], \"word_count\": 1500, \"snippet\": \"...\"}],\n"
-            . "  \"avg_word_count\": 1800,\n"
-            . "  \"common_headings\": [\"H2: مقدمه\", \"H2: ...\"],\n"
-            . "  \"content_gaps\": [\"topic1\", \"topic2\"],\n"
-            . "  \"recommendations\": [\"...\", \"...\"]\n"
-            . "}";
+            ."زیرنوع محتوا: {$subtype}\n"
+            .$outlineText."\n\n"
+            ."لطفاً تحلیل زیر را ارائه بده:\n\n"
+            ."1. تحلیل ۵ صفحه برتر فرضی (بر اساس تجربه SEO):\n"
+            ."   - عنوان صفحه\n"
+            ."   - آدرس URL فرضی\n"
+            ."   - ساختار عنوان‌ها (فقط H2/H3)\n"
+            ."   - تعداد تقریبی کلمات\n"
+            ."   - snippet تقریبی\n\n"
+            ."2. میانگین تعداد کلمات رقبا\n\n"
+            ."3. عنوان‌های مشترک (Headings) که اکثر رقبا دارند\n\n"
+            ."4. شکاف‌های محتوایی (Content Gaps):\n"
+            ."   - چه موضوعاتی هست که رقبا پوشش دادن ولی ما نداریم؟\n\n"
+            ."5. پیشنهادات بهبود outline فعلی:\n"
+            ."   - چه بخش‌هایی اضافه/حذف/تغییر کنیم؟\n\n"
+            ."فرمت خروجی JSON:\n"
+            ."{\n"
+            ."  \"competitors\": [{\"title\": \"...\", \"url\": \"...\", \"headings\": [\"H2: ...\", \"H3: ...\"], \"word_count\": 1500, \"snippet\": \"...\"}],\n"
+            ."  \"avg_word_count\": 1800,\n"
+            ."  \"common_headings\": [\"H2: مقدمه\", \"H2: ...\"],\n"
+            ."  \"content_gaps\": [\"topic1\", \"topic2\"],\n"
+            ."  \"recommendations\": [\"...\", \"...\"]\n"
+            .'}';
 
         return [$system, $user];
     }

@@ -46,8 +46,8 @@ async function syncWordPress() {
       body: JSON.stringify({ site_id: props.site.id })
     })
     syncResult.value = await res.json()
-  } catch (e: any) {
-    syncResult.value = { synced: 0, errors: [e.message], url_profiles_count: 0 }
+  } catch (e) {
+    syncResult.value = { synced: 0, errors: [e instanceof Error ? e.message : String(e)], url_profiles_count: 0 }
   }
   syncing.value = false
 }
@@ -78,7 +78,7 @@ async function saveWpCredentials() {
     } else {
       wpMessage.value = { type: 'error', text: `❌ ${data.error || 'خطا در ذخیره'}` }
     }
-  } catch (e: any) { wpMessage.value = { type: 'error', text: `❌ ${e.message}` } }
+  } catch (e) { wpMessage.value = { type: 'error', text: `❌ ${(e instanceof Error ? e.message : String(e))}` } }
   wpSaving.value = false
 }
 
@@ -96,7 +96,7 @@ async function removeWpCredentials() {
       wpUser.value = ''
       wpPass.value = ''
     }
-  } catch (e: any) { wpMessage.value = { type: 'error', text: `❌ ${e.message}` } }
+  } catch (e) { wpMessage.value = { type: 'error', text: `❌ ${(e instanceof Error ? e.message : String(e))}` } }
   wpSaving.value = false
 }
 </script>
@@ -157,7 +157,7 @@ async function removeWpCredentials() {
       <div v-if="connection?.status === 'connected'" class="border-line mt-6 border-t pt-5">
         <h3 class="text-ink-strong mb-3 text-sm font-bold">همگام‌سازی محتوا از وردپرس</h3>
         <p class="text-ink-muted mb-3 text-sm">صفحات، مقالات و محصولات وردپرس را برای لینک‌سازی داخلی هوشمند دریافت کنید.</p>
-        <VButton @click="syncWordPress" :loading="syncing" variant="secondary">🔄 سینک محتوا از وردپرس</VButton>
+        <VButton :loading="syncing" variant="secondary" @click="syncWordPress">🔄 سینک محتوا از وردپرس</VButton>
         <div v-if="syncResult" class="rounded-card bg-surface mt-4 p-4">
           <p v-if="syncResult.errors?.length === 0" class="text-green-600 text-sm font-semibold">{{ syncResult.synced }} محتوا سینک شد — {{ syncResult.url_profiles_count }} صفحه در پایگاه داده</p>
           <div v-else>
@@ -174,7 +174,7 @@ async function removeWpCredentials() {
               <p class="text-green-600 text-sm font-semibold">✅ متصل به وردپرس</p>
               <p class="text-ink-muted text-xs mt-1">کاربر: {{ wpCredentials.wp_username }} · URL: {{ wpCredentials.wp_url }}</p>
             </div>
-            <VButton size="sm" variant="danger" @click="removeWpCredentials" :loading="wpSaving">حذف</VButton>
+            <VButton size="sm" variant="danger" :loading="wpSaving" @click="removeWpCredentials">حذف</VButton>
           </div>
         </div>
         <div class="space-y-3">
@@ -191,7 +191,7 @@ async function removeWpCredentials() {
             <input v-model="wpPass" type="password" :placeholder="wpCredentials?.has_password ? '(قابل تغییر)' : 'xxxx xxxx xxxx xxxx'" class="border-line mt-1 w-full rounded-lg border px-3 py-2 text-sm" />
             <p class="text-ink-muted mt-1 text-xs">از wp-admin → کاربران → ویرایش → Application Passwords بسازید</p>
           </div>
-          <VButton @click="saveWpCredentials" :loading="wpSaving" variant="primary" size="sm">💾 ذخیره و تست اتصال</VButton>
+          <VButton :loading="wpSaving" variant="primary" size="sm" @click="saveWpCredentials">💾 ذخیره و تست اتصال</VButton>
           <p v-if="wpMessage" :class="wpMessage.type === 'success' ? 'text-green-600' : 'text-red-600'" class="text-xs">{{ wpMessage.text }}</p>
         </div>
       </div>

@@ -138,7 +138,7 @@ async function detectModels(): Promise<void> {
     } else {
       testResult.value = { success: false, message: `خطا در تشخیص مدل‌ها: ${data.error}` }
     }
-  } catch (e: unknown) {
+  } catch {
     testResult.value = { success: false, message: 'خطا در تشخیص مدل‌ها' }
   }
   detectingModels.value = false
@@ -173,7 +173,7 @@ async function testConnection(): Promise<void> {
     })
     const data = await res.json()
     testResult.value = { success: data.success, message: data.success ? `اتصال موفق — مدل: ${data.model}` : `خطا: ${data.error}` }
-  } catch (e: unknown) {
+  } catch {
     testResult.value = { success: false, message: 'خطا در تست اتصال' }
   }
   testing.value = false

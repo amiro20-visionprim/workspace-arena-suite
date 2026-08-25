@@ -1,7 +1,6 @@
 /** Shared UI component: SEO Score Card — RankMath-style */
 <script setup lang="ts">
 import VCard from '@/shared/ui/VCard.vue'
-import VBadge from '@/shared/ui/VBadge.vue'
 
 interface CheckItem {
   label: string
@@ -10,7 +9,7 @@ interface CheckItem {
   detail?: string
 }
 
-const props = defineProps<{
+defineProps<{
   score: number
   checks: CheckItem[]
   metaTitleLength: number
@@ -36,7 +35,8 @@ const scoreLabel = (s: number) => s >= 80 ? 'عالی' : s >= 60 ? 'قابل ق�
       <div class="relative flex h-20 w-20 shrink-0 items-center justify-center">
         <svg class="h-20 w-20 -rotate-90" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2" class="text-surface-muted" />
-          <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2.5"
+          <circle
+cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" stroke-width="2.5"
             :stroke-dasharray="`${score * 1} ${100 - score}`" stroke-linecap="round"
             :class="scoreColor(score) === 'success' ? 'text-green-500' : scoreColor(score) === 'warning' ? 'text-amber-500' : 'text-red-500'" />
         </svg>

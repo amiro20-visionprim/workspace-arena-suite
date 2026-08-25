@@ -44,7 +44,6 @@ class RuleBasedDraft
         $userWordCount = (int) ($context['word_count'] ?? 0);
         $guardrails = (array) ($context['guardrails'] ?? []);
 
-
         $wordMin = $userWordCount > 0 ? (int) max($userWordCount * 0.8, 200) : (int) ($standard['word_min'] ?? 400);
         $minHeadings = max(2, (int) ($standard['min_headings'] ?? 2));
         $requiredElements = (array) ($standard['required_elements'] ?? []);
@@ -59,7 +58,7 @@ class RuleBasedDraft
         // Inject custom instructions as a styled section
         if ($customInstructions !== '') {
             $parts[] = '<div class="custom-note" style="border-right:3px solid #2563eb;padding:12px;margin:16px 0;background:#f0f7ff;">';
-            $parts[] = '<strong>دستور ویژه:</strong> ' . nl2br(htmlspecialchars($customInstructions, ENT_QUOTES, 'UTF-8'));
+            $parts[] = '<strong>دستور ویژه:</strong> '.nl2br(htmlspecialchars($customInstructions, ENT_QUOTES, 'UTF-8'));
             $parts[] = '</div>';
         }
 

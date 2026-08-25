@@ -24,13 +24,13 @@ class SchemaGenerator
      * تولید اسکیمای کامل بر اساس نوع محتوا و محتوای HTML.
      *
      * @param  array{content_type: string, subtype: string, intent: string}  $profile
-     * @param  string  $html        محتوای HTML
-     * @param  string  $title       عنوان
-     * @param  string  $url         آدرس صفحه
-     * @param  string  $siteName    نام سایت
-     * @param  string  $description توضیح کوتاه
-     * @param  array   $standard    خروجی StandardsKB
-     * @param  array   $wooInfo     اطلاعات ووکامرس (اختیاری)
+     * @param  string  $html  محتوای HTML
+     * @param  string  $title  عنوان
+     * @param  string  $url  آدرس صفحه
+     * @param  string  $siteName  نام سایت
+     * @param  string  $description  توضیح کوتاه
+     * @param  array  $standard  خروجی StandardsKB
+     * @param  array  $wooInfo  اطلاعات ووکامرس (اختیاری)
      * @return array<int, array<string, mixed>>
      */
     public function generate(
@@ -73,7 +73,7 @@ class SchemaGenerator
             $schemas[] = $breadcrumb;
         }
 
-        return array_filter($schemas, fn($s): bool => $s !== null);
+        return array_filter($schemas, fn ($s): bool => $s !== null);
     }
 
     /**
@@ -212,7 +212,7 @@ class SchemaGenerator
                 if ($text !== '') {
                     $steps[] = [
                         '@type' => 'HowToStep',
-                        'name' => 'مرحله ' . ($idx + 1),
+                        'name' => 'مرحله '.($idx + 1),
                         'text' => mb_substr($text, 0, 300, 'UTF-8'),
                     ];
                 }
@@ -301,7 +301,7 @@ class SchemaGenerator
         $path = '';
 
         foreach ($parts as $part) {
-            $path .= '/' . rawurlencode($part);
+            $path .= '/'.rawurlencode($part);
             $items[] = [
                 '@type' => 'ListItem',
                 'position' => $position++,
@@ -329,7 +329,7 @@ class SchemaGenerator
     {
         $scripts = [];
         foreach ($schemas as $schema) {
-            $scripts[] = '<script type="application/ld+json">' . json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';
+            $scripts[] = '<script type="application/ld+json">'.json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).'</script>';
         }
 
         return implode("\n", $scripts);
@@ -339,6 +339,6 @@ class SchemaGenerator
     {
         $words = preg_split('/[\\s\\p{P}]+/u', trim($text)) ?: [];
 
-        return count(array_filter($words, fn(string $w): bool => trim($w) !== ''));
+        return count(array_filter($words, fn (string $w): bool => trim($w) !== ''));
     }
 }

@@ -10,7 +10,6 @@ use App\Domains\Workspace\Models\Site;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * API for the Content Command Center — manages guardrails, prompts,
@@ -104,7 +103,7 @@ class ContentGuardrailController extends Controller
                 'content_type' => $data['content_type'],
                 'subtype' => $data['subtype'],
             ],
-            array_filter($data, fn($v) => $v !== null),
+            array_filter($data, fn ($v) => $v !== null),
         );
 
         return response()->json(['guardrail' => $guardrail]);

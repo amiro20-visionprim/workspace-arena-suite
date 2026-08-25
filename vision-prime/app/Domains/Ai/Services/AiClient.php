@@ -19,7 +19,7 @@ class AiClient
     public function __construct(private readonly AiGateway $gateway) {}
 
     /**
-     * @param  array<string, mixed>  
+     * @param  array<string, mixed>
      * @return array{content: string, model: string, source: string, usage: array<string, mixed>}
      */
     public function generateMetaDraft(Organization $org, array $context): array

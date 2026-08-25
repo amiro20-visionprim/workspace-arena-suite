@@ -16,6 +16,8 @@ export interface GscImportRun {
   id: number
   site_name: string
   status: string
+  date_start: string
+  date_end: string
   summary: Record<string, unknown> | null
   error: Record<string, unknown> | null
 }

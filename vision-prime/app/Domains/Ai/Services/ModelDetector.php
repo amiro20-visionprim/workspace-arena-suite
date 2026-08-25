@@ -74,11 +74,11 @@ final class ModelDetector
 
         try {
             $response = Http::timeout(30)
-                ->withHeaders(['Authorization' => 'Bearer ' . $apiKey])
+                ->withHeaders(['Authorization' => 'Bearer '.$apiKey])
                 ->get($endpoint);
 
             if (! $response->successful()) {
-                return ['models' => [], 'usage' => null, 'error' => 'HTTP ' . $response->status()];
+                return ['models' => [], 'usage' => null, 'error' => 'HTTP '.$response->status()];
             }
 
             $data = $response->json();
@@ -102,6 +102,7 @@ final class ModelDetector
             return ['models' => $models, 'usage' => null, 'error' => null];
         } catch (\Throwable $e) {
             Log::warning("ModelDetector: failed for {$provider}", ['error' => $e->getMessage()]);
+
             return ['models' => [], 'usage' => null, 'error' => $e->getMessage()];
         }
     }
@@ -148,7 +149,7 @@ final class ModelDetector
                 ->get("https://generativelanguage.googleapis.com/v1beta/models?key={$apiKey}");
 
             if (! $response->successful()) {
-                return ['models' => [], 'usage' => null, 'error' => 'HTTP ' . $response->status()];
+                return ['models' => [], 'usage' => null, 'error' => 'HTTP '.$response->status()];
             }
 
             $models = [];
@@ -175,11 +176,12 @@ final class ModelDetector
     {
         try {
             $response = Http::timeout(15)
-                ->withHeaders(['Authorization' => 'Bearer ' . $apiKey])
+                ->withHeaders(['Authorization' => 'Bearer '.$apiKey])
                 ->get('https://api.openai.com/v1/usage');
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return [
                     'total_tokens' => $data['total_usage'] ?? null,
                     'total_requests' => null,
@@ -198,11 +200,12 @@ final class ModelDetector
     {
         try {
             $response = Http::timeout(15)
-                ->withHeaders(['Authorization' => 'Bearer ' . $apiKey])
+                ->withHeaders(['Authorization' => 'Bearer '.$apiKey])
                 ->get('https://openrouter.ai/api/v1/auth/key');
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return [
                     'total_tokens' => $data['data']['usage'] ?? null,
                     'total_requests' => null,
@@ -221,11 +224,12 @@ final class ModelDetector
     {
         try {
             $response = Http::timeout(15)
-                ->withHeaders(['Authorization' => 'Bearer ' . $apiKey])
+                ->withHeaders(['Authorization' => 'Bearer '.$apiKey])
                 ->get('https://api.deepseek.com/user/balance');
 
             if ($response->successful()) {
                 $data = $response->json();
+
                 return [
                     'total_tokens' => null,
                     'total_requests' => null,

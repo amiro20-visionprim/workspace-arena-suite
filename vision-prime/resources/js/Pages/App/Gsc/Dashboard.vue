@@ -235,7 +235,7 @@ const formatUrl = (url: string) => { try { return new URL(url).pathname } catch 
           <div v-for="account in accounts" :key="account.id" class="flex items-center justify-between rounded-lg px-3 py-2">
             <div>
               <p class="font-latin text-ink-strong text-sm font-semibold" dir="ltr">{{ account.email }}</p>
-              <p v-if="account.expiresAt" class="text-ink-muted text-xs">انقضا: {{ account.expiresAt }}</p>
+              <p v-if="account.token_expires_at" class="text-ink-muted text-xs">انقضا: {{ account.token_expires_at }}</p>
             </div>
             <VBadge tone="success">متصل</VBadge>
           </div>

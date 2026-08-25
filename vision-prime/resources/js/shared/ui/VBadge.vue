@@ -1,5 +1,5 @@
 <script setup lang="ts">
-export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger'
+export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger' | 'brand'
 
 withDefaults(
   defineProps<{
@@ -16,6 +16,7 @@ const toneClasses: Record<BadgeTone, string> = {
   success: 'bg-success-50 text-success-700',
   warning: 'bg-warning-50 text-warning-700',
   danger: 'bg-danger-50 text-danger-700',
+  brand: 'bg-brand-50 text-brand-700',
 }
 </script>
 

@@ -41,7 +41,7 @@ const saving = ref(false)
 const perfSummary = ref<PerformanceSummary[]>([])
 const perfTrend = ref<PerformanceTrend[]>([])
 const perfTopPages = ref<TopPage[]>([])
-const perfDays = ref(28)
+const perfDays = ref('28')
 
 const serpAnalyses = ref<SerpAnalysis[]>([])
 const serpKeyword = ref('')
@@ -96,7 +96,7 @@ function apiParams() {
   if (selectedSiteId.value) params.set('site_id', selectedSiteId.value)
   return params
 }
-async function fetchJson(url: string, opts?: RequestInit) {
+async function fetchJson(url: string, opts?: Parameters<typeof fetch>[1]) {
   const res = await fetch(url, opts)
   return res.json()
 }
@@ -247,7 +247,7 @@ function formatNum(n: number) { return n?.toLocaleString('fa-IR') ?? '0' }
 function loadTabData() {
   const loaders: Record<string, () => Promise<void>> = {
     performance: loadPerformance, serp: loadSerp, keywords: loadKeywords,
-    calendar: loadCalendar, guardrails: () => { loadGuardrails(); resolveCurrent() }, suggestions: loadSuggestions,
+    calendar: loadCalendar, guardrails: async () => { await loadGuardrails(); await resolveCurrent() }, suggestions: loadSuggestions,
   }
   loaders[activeTab.value]?.()
 }
@@ -277,14 +277,15 @@ onMounted(() => {
         <VSelect v-model="selectedContentType" label="نوع محتوا" :options="contentTypes" />
         <VSelect v-model="selectedSubtype" label="زیرنوع" :options="availableSubtypes.map(s => ({ label: (subtypeLabels[s] || s), value: s }))" />
         <div class="flex items-end gap-2">
-          <VButton @click="loadTabData" :loading="loading" variant="secondary" class="flex-1">بارگذاری</VButton>
+          <VButton :loading="loading" variant="secondary" class="flex-1" @click="loadTabData">بارگذاری</VButton>
         </div>
       </div>
     </VCard>
 
     <!-- Tabs -->
     <div class="mt-6 border-line flex gap-1 overflow-x-auto border-b">
-      <button v-for="tab in [{id:'performance',label:'📊 داشبورد عملکرد'},{id:'serp',label:'🔍 تحلیل SERP'},{id:'keywords',label:'🗺🏻 آبر کلیدوازه'},{id:'calendar',label:'📅 تقویم محتوایی'},{id:'guardrails',label:'🛡🏻 گاردرایل'},{id:'suggestions',label:'💡 پیشنهادها'}]"
+      <button
+v-for="tab in [{id:'performance',label:'📊 داشبورد عملکرد'},{id:'serp',label:'🔍 تحلیل SERP'},{id:'keywords',label:'🗺🏻 آبر کلیدوازه'},{id:'calendar',label:'📅 تقویم محتوایی'},{id:'guardrails',label:'🛡🏻 گاردرایل'},{id:'suggestions',label:'💡 پیشنهادها'}]"
         :key="tab.id" type="button"
         class="border-b-2 whitespace-nowrap px-5 py-3 text-sm font-medium transition-colors"
         :class="activeTab === tab.id ? 'border-brand-600 text-brand-700' : 'border-transparent text-ink-muted hover:text-ink-strong'"
@@ -294,7 +295,7 @@ onMounted(() => {
     <!-- TAB 1: Performance Hub -->
     <div v-if="activeTab === 'performance'" class="mt-6 space-y-6">
       <div class="flex items-center gap-3">
-        <VSelect v-model="perfDays" label="بزه تاریخ" :options="[{label:'7 روز',value:7},{label:'28 روز',value:28},{label:'90 روز',value:90}]" @change="loadPerformance" />
+        <VSelect v-model="perfDays" label="بزه تاریخ" :options="[{label:'7 روز',value:'7'},{label:'28 روز',value:'28'},{label:'90 روز',value:'90'}]" @change="loadPerformance" />
       </div>
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <VCard v-for="s in perfSummary" :key="s.content_type">
@@ -309,7 +310,7 @@ onMounted(() => {
           </div>
         </VCard>
       </div>
-      <VCard title="نمودار رشد" v-if="perfTrend.length">
+      <VCard v-if="perfTrend.length" title="نمودار رشد">
         <div class="max-h-64 overflow-auto">
           <table class="w-full text-xs">
             <thead><tr class="text-ink-muted border-b"><th class="p-2 text-right">تاریخ</th><th class="p-2 text-right">کلیک</th><th class="p-2 text-right">نمایش</th><th class="p-2 text-right">CTR</th></tr></thead>
@@ -317,7 +318,7 @@ onMounted(() => {
           </table>
         </div>
       </VCard>
-      <VCard title="صفحات برترین" v-if="perfTopPages.length">
+      <VCard v-if="perfTopPages.length" title="صفحات برترین">
         <div class="max-h-80 overflow-auto">
           <table class="w-full text-xs">
             <thead><tr class="text-ink-muted border-b"><th class="p-2 text-right">صفحه</th><th class="p-2 text-right">کلیک</th><th class="p-2 text-right">رتبه</th><th class="p-2 text-right">نوع</th></tr></thead>
@@ -334,7 +335,7 @@ onMounted(() => {
         <div class="grid gap-4 md:grid-cols-3">
           <input v-model="serpKeyword" placeholder="کلیدوازه هدف" class="border-line rounded-xl border px-4 py-2.5 text-sm" />
           <input v-model="serpTargetUrl" placeholder="آدرس هدف (اختیاری)" class="border-line rounded-xl border px-4 py-2.5 text-sm" />
-          <VButton @click="analyzeSerp" :loading="serpAnalyzing" variant="primary">تحلیل کن</VButton>
+          <VButton :loading="serpAnalyzing" variant="primary" @click="analyzeSerp">تحلیل کن</VButton>
         </div>
       </VCard>
       <VCard title="تاریخچه تحلیلها">
@@ -368,7 +369,7 @@ onMounted(() => {
     <div v-if="activeTab === 'calendar'" class="mt-6 space-y-6">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold text-ink-strong">تقویم محتوایی</h3>
-        <VButton @click="showCalendarForm = !showCalendarForm" variant="primary" size="sm">{{ showCalendarForm ? 'بستن' : '+ افزودن قطر' }}</VButton>
+        <VButton variant="primary" size="sm" @click="showCalendarForm = !showCalendarForm">{{ showCalendarForm ? 'بستن' : '+ افزودن قطر' }}</VButton>
       </div>
       <VCard v-if="showCalendarForm" title="قطره جدید">
         <div class="grid gap-4 md:grid-cols-2">
@@ -379,7 +380,7 @@ onMounted(() => {
           <div><label class="text-ink-strong text-sm font-semibold">اولویت</label><input v-model.number="calendarForm.priority_score" type="range" min="1" max="10" class="mt-2 w-full" /></div>
           <input v-model="calendarForm.notes" placeholder="یاداوشتها" class="border-line rounded-xl border px-4 py-2.5 text-sm" />
         </div>
-        <div class="mt-4"><VButton @click="addCalendarItem" :loading="saving" variant="primary">ذخیره</VButton></div>
+        <div class="mt-4"><VButton :loading="saving" variant="primary" @click="addCalendarItem">ذخیره</VButton></div>
       </VCard>
       <VCard title="قطرهای برنامه‌ریزی">
         <div v-if="calendarItems.length === 0" class="text-ink-muted py-8 text-center text-sm">هنوز قطره ای تعیین نشده است.</div>
@@ -402,7 +403,7 @@ onMounted(() => {
     <div v-if="activeTab === 'guardrails'" class="mt-6 space-y-6">
       <div class="flex items-center gap-3">
         <VBadge :tone="isDefault ? 'warning' : 'success'">{{ isDefault ? 'پیشدفت' : 'سفارشی' }}</VBadge>
-        <VButton @click="seedDefaults" variant="secondary" size="sm">🌱 پیشدفت اصلی</VButton>
+        <VButton variant="secondary" size="sm" @click="seedDefaults">🌱 پیشدفت اصلی</VButton>
       </div>
       <div class="grid gap-6 lg:grid-cols-2">
         <VCard title="📏 محدودیت ها">
@@ -416,7 +417,7 @@ onMounted(() => {
             <div>
               <label class="text-ink-strong text-sm font-semibold">تگ های HTML مجاز</label>
               <div class="mt-2 flex flex-wrap gap-1.5"><VBadge v-for="tag in guardrailForm.allowed_tags" :key="tag" tone="info" class="cursor-pointer" @click="removeAllowedTag(tag)">{{ tag }} ✕</VBadge></div>
-              <div class="mt-2 flex gap-2"><input v-model="newAllowedTag" placeholder="تگ جدید" class="border-line flex-1 rounded-xl border px-3 py-1.5 text-sm" @keyup.enter="addAllowedTag" /><VButton size="sm" @click="addAllowedTag" variant="secondary">+</VButton></div>
+              <div class="mt-2 flex gap-2"><input v-model="newAllowedTag" placeholder="تگ جدید" class="border-line flex-1 rounded-xl border px-3 py-1.5 text-sm" @keyup.enter="addAllowedTag" /><VButton size="sm" variant="secondary" @click="addAllowedTag">+</VButton></div>
             </div>
           </div>
         </VCard>
@@ -430,7 +431,7 @@ onMounted(() => {
             <div>
               <label class="text-ink-strong text-sm font-semibold">کلمات ممنوعه</label>
               <div class="mt-2 flex flex-wrap gap-1.5"><VBadge v-for="word in guardrailForm.forbidden_words" :key="word" tone="danger" class="cursor-pointer" @click="removeForbiddenWord(word)">{{ word }} ✕</VBadge></div>
-              <div class="mt-2 flex gap-2"><input v-model="newForbiddenWord" placeholder="کلمه ممنوعه" class="border-line flex-1 rounded-xl border px-3 py-1.5 text-sm" @keyup.enter="addForbiddenWord" /><VButton size="sm" @click="addForbiddenWord" variant="secondary">+</VButton></div>
+              <div class="mt-2 flex gap-2"><input v-model="newForbiddenWord" placeholder="کلمه ممنوعه" class="border-line flex-1 rounded-xl border px-3 py-1.5 text-sm" @keyup.enter="addForbiddenWord" /><VButton size="sm" variant="secondary" @click="addForbiddenWord">+</VButton></div>
             </div>
           </div>
         </VCard>
@@ -442,11 +443,11 @@ onMounted(() => {
         <textarea v-model="guardrailForm.user_prompt_template" rows="8" dir="auto" class="border-line w-full rounded-xl border p-4 text-sm leading-7 font-mono" placeholder="{title} {keyword} {siteName}" />
       </VCard>
       <div class="flex items-center gap-3">
-        <VButton @click="saveGuardrail" :loading="saving" variant="primary">💾 ذخیره</VButton>
-        <VButton @click="testGenerate" :loading="testingGeneration" variant="secondary">🧪 تست تولید</VButton>
+        <VButton :loading="saving" variant="primary" @click="saveGuardrail">💾 ذخیره</VButton>
+        <VButton :loading="testingGeneration" variant="secondary" @click="testGenerate">🧪 تست تولید</VButton>
         <VBadge v-if="testResult" :tone="testResult.includes('✅') ? 'success' : 'danger'" class="text-xs">{{ testResult }}</VBadge>
       </div>
-      <VCard title="گاردرایل های موجود" v-if="guardrails.length">
+      <VCard v-if="guardrails.length" title="گاردرایل های موجود">
         <div class="space-y-2">
           <div v-for="g in guardrails" :key="g.id ?? 'x'" class="border-line flex items-center justify-between rounded-xl border p-3 hover:bg-brand-50 cursor-pointer" @click="selectedContentType = g.content_type; selectedSubtype = g.subtype; resolveCurrent()">
             <div class="flex items-center gap-3"><VBadge :tone="g.site_id ? 'info' : 'warning'" size="sm">{{ g.site_id ? 'سایت' : 'سازمان' }}</VBadge><span class="text-sm font-medium">{{ g.content_type }} / {{ subtypeLabels[g.subtype] || g.subtype }}</span></div>

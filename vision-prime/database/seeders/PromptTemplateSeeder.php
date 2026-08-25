@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Domains\Content\Models\PromptTemplate;
+use Illuminate\Database\Seeder;
 
 class PromptTemplateSeeder extends Seeder
 {
@@ -73,7 +75,7 @@ class PromptTemplateSeeder extends Seeder
                 $tpl
             );
         }
-        
+
         $this->command->info('Prompt templates seeded successfully!');
     }
 }

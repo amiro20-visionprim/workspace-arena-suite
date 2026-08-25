@@ -11,14 +11,16 @@ import VSelect from '@/shared/ui/VSelect.vue'
 
 interface SiteOption { id: number; name: string; canonical_url: string }
 interface OutlineItem { heading: string; level: 2 | 3; note: string }
+interface DraftProfile { content_type?: string; subtype?: string; intent?: string; title?: string }
+interface ExpertAnalysis { summary?: string; strengths?: string[]; weaknesses?: string[]; recommendations?: string[] }
 interface SchemaItem { '@type': string; [key: string]: unknown }
-interface QualityResult { passed: boolean; score: number; failures: string[]; warnings: string[]; readability?: any }
+interface QualityResult { passed: boolean; score: number; failures: string[]; warnings: string[]; readability?: { score?: number } }
 interface LinkSuggestion { url: string; title: string; anchor: string; relevance_score: number }
 interface GeneratedResult {
   content: string; model: string; source: string;
   meta_title: string; meta_description: string;
   schemas: SchemaItem[]; links: LinkSuggestion[];
-  quality: QualityResult; profile: any; draft_id?: number; expert_analysis?: any
+  quality: QualityResult; profile: DraftProfile; draft_id?: number; expert_analysis?: ExpertAnalysis
 }
 interface PromptTemplate { id: number; title: string; content_type: string; tone: string; is_user_created: boolean; tags: string[]; usage_count: number; avg_quality_score: number; is_featured: boolean }
 interface SectionItem { heading: string; level: number; content: string; regenerating: boolean }
@@ -38,7 +40,6 @@ const title = ref('')
 const price = ref('')
 const salePrice = ref('')
 const stockStatus = ref('in_stock')
-const shortDesc = ref('')
 
 // Templates
 const templates = ref<PromptTemplate[]>([])
@@ -66,7 +67,8 @@ const draftSaved = ref(false)
 
 // Publish
 const publishing = ref(false)
-const publishResult = ref<any>(null)
+interface PublishResultData { success?: boolean; error?: string; post_url?: string }
+const publishResult = ref<PublishResultData | null>(null)
 const showPublishDialog = ref(false)
 const copyStatus = ref('')
 
@@ -91,7 +93,6 @@ const wordCount = computed(() => {
   return plain ? plain.split(/\s+/).filter((w: string) => w.length > 0).length : 0
 })
 const seoScore = computed(() => result.value?.quality?.score ?? 0)
-const readability = computed(() => result.value?.quality?.readability ?? null)
 
 const keywordDensity = computed(() => {
   const kw = keywordInput.value.trim()
@@ -126,7 +127,7 @@ async function fetchTemplates() {
       headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
     })
     if (res.ok) templates.value = await res.json()
-  } catch {}
+  } catch { /* نادیده گرفته شد */ }
   templatesLoading.value = false
 }
 fetchTemplates()
@@ -162,7 +163,7 @@ async function generateOutline() {
     outlineModel.value = data.model ?? ''
     if (outline.value.length === 0) { outlineError.value = 'Outline خالی برگشت'; outlineLoading.value = false; return }
     step.value = 'outline'
-  } catch (e: any) { outlineError.value = 'خطا: ' + e.message }
+  } catch (e) { outlineError.value = 'خطا: ' + (e instanceof Error ? e.message : String(e)) }
   outlineLoading.value = false
 }
 
@@ -179,7 +180,7 @@ async function generateFromOutline() {
     const d = await res.json()
     if (d.error) { errorMsg.value = d.error; step.value = 'input'; generatingLoading.value = false; return }
     result.value = d; currentDraftId.value = d.draft_id || null; activeResultTab.value = 'content'; step.value = 'result'; parseSections(d.content)
-  } catch (e: any) { errorMsg.value = 'خطا: ' + e.message; step.value = 'input' }
+  } catch (e) { errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e)); step.value = 'input' }
   generatingLoading.value = false
 }
 
@@ -196,7 +197,7 @@ async function quickGenerate() {
     const d = await res.json()
     if (d.error) { errorMsg.value = d.error; step.value = 'input'; generatingLoading.value = false; return }
     result.value = d; currentDraftId.value = d.draft_id || null; activeResultTab.value = 'content'; step.value = 'result'; parseSections(d.content)
-  } catch (e: any) { errorMsg.value = 'خطا: ' + e.message; step.value = 'input' }
+  } catch (e) { errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e)); step.value = 'input' }
   generatingLoading.value = false
 }
 
@@ -241,7 +242,7 @@ async function regenerateSection(i: number) {
     })
     const d = await res.json()
     if (d.content) { result.value!.content = d.content; parseSections(d.content) }
-  } catch {}
+  } catch { /* نادیده گرفته شد */ }
   s.regenerating = false
 }
 
@@ -254,17 +255,17 @@ async function saveCurrentDraft() {
       body: JSON.stringify({ draft_id: currentDraftId.value || undefined, site_id: Number(selectedSiteId.value), title: title.value, content: result.value.content, meta_title: result.value.meta_title, meta_description: result.value.meta_description, subtype: autoDetectedSubtype.value || 'short_desc', quality_score: result.value.quality?.score || 0 })
     })
     if (r.ok) { const d = await r.json(); currentDraftId.value = d.id; draftSaved.value = true }
-  } catch {}
+  } catch { /* نادیده گرفته شد */ }
 }
 
 async function copyHtml() {
   if (!result.value?.content) return
-  try { await navigator.clipboard.writeText(result.value.content); copyStatus.value = 'HTML'; setTimeout(() => copyStatus.value = '', 2000) } catch {}
+  try { await navigator.clipboard.writeText(result.value.content); copyStatus.value = 'HTML'; setTimeout(() => copyStatus.value = '', 2000) } catch { /* نادیده گرفته شد */ }
 }
 async function copyPlainText() {
   if (!result.value?.content) return
   const text = result.value.content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
-  try { await navigator.clipboard.writeText(text); copyStatus.value = 'TEXT'; setTimeout(() => copyStatus.value = '', 2000) } catch {}
+  try { await navigator.clipboard.writeText(text); copyStatus.value = 'TEXT'; setTimeout(() => copyStatus.value = '', 2000) } catch { /* نادیده گرفته شد */ }
 }
 
 async function publishToWordPress(status: string) {
@@ -281,7 +282,7 @@ async function publishToWordPress(status: string) {
       body: JSON.stringify({ draft_id: draftId, status })
     })
     publishResult.value = await res.json()
-  } catch (e: any) { publishResult.value = { success: false, error: e.message } }
+  } catch (e) { publishResult.value = { success: false, error: (e instanceof Error ? e.message : String(e)) } }
   publishing.value = false
 }
 
@@ -293,7 +294,7 @@ async function applySuggestions(suggestions: string[]) {
       body: JSON.stringify({ content: result.value.content, suggestions, title: title.value, keyword: title.value })
     })
     const d = await r.json(); if (d.content) { result.value.content = d.content; parseSections(d.content) }
-  } catch {}
+  } catch { /* نادیده گرفته شد */ }
   applyingSuggestions.value = false
 }
 </script>
@@ -358,7 +359,8 @@ async function applySuggestions(suggestions: string[]) {
             <label class="text-ink-strong text-sm font-semibold">قالب پرامپت (اختیاری)</label>
             <p class="text-ink-muted text-xs mb-2">یک قالب حرفه‌ای انتخاب کنید یا خودتان پرامپت بنویسید.</p>
             <div class="grid grid-cols-2 gap-2">
-              <button v-for="t in templates" :key="t.id" type="button"
+              <button
+v-for="t in templates" :key="t.id" type="button"
                 class="rounded-xl border p-3 text-right text-sm transition-all"
                 :class="selectedTemplateId === t.id ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-200' : 'border-surface-muted hover:border-brand-300'"
                 @click="selectTemplate(t)">
@@ -376,10 +378,10 @@ async function applySuggestions(suggestions: string[]) {
           </div>
 
           <div class="flex gap-2">
-            <VButton @click="quickGenerate" :loading="generatingLoading" :disabled="!selectedSiteId || !title.trim()" variant="primary" size="lg" class="flex-1">
+            <VButton :loading="generatingLoading" :disabled="!selectedSiteId || !title.trim()" variant="primary" size="lg" class="flex-1" @click="quickGenerate">
               {{ generatingLoading ? 'در حال تولید...' : '⚡ تولید سریع' }}
             </VButton>
-            <VButton @click="generateOutline" :loading="outlineLoading" :disabled="!selectedSiteId || !title.trim()" variant="secondary" size="lg" class="flex-1">
+            <VButton :loading="outlineLoading" :disabled="!selectedSiteId || !title.trim()" variant="secondary" size="lg" class="flex-1" @click="generateOutline">
               {{ outlineLoading ? 'در حال تحلیل...' : '📋 با Outline' }}
             </VButton>
           </div>
@@ -396,7 +398,8 @@ async function applySuggestions(suggestions: string[]) {
           <span>{{ outline.length }} بخش</span>
         </div>
         <div class="space-y-2">
-          <div v-for="(item, i) in outline" :key="i"
+          <div
+v-for="(item, i) in outline" :key="i"
             class="rounded-xl border border-surface-muted bg-surface p-3 transition-all hover:border-brand-300"
             :class="item.level === 3 ? 'me-6' : ''">
             <div class="flex items-center gap-2">
@@ -407,8 +410,8 @@ async function applySuggestions(suggestions: string[]) {
           </div>
         </div>
         <div class="mt-4 flex gap-2">
-          <VButton @click="generateFromOutline" :loading="generatingLoading" variant="primary" size="lg">🚀 تولید محتوا</VButton>
-          <VButton @click="goToOutline" variant="secondary">بازگشت</VButton>
+          <VButton :loading="generatingLoading" variant="primary" size="lg" @click="generateFromOutline">🚀 تولید محتوا</VButton>
+          <VButton variant="secondary" @click="goToOutline">بازگشت</VButton>
         </div>
       </VCard>
     </div>
@@ -438,8 +441,8 @@ async function applySuggestions(suggestions: string[]) {
           </div>
           <div class="flex items-center gap-2">
             <VBadge :tone="seoScore >= 70 ? 'success' : seoScore >= 40 ? 'warning' : 'danger'" size="lg">امتیاز: {{ seoScore }}/100</VBadge>
-            <VButton @click="goToOutline" variant="secondary">بازگشت</VButton>
-            <VButton @click="regenerate" variant="secondary">🔄 تولید مجدد</VButton>
+            <VButton variant="secondary" @click="goToOutline">بازگشت</VButton>
+            <VButton variant="secondary" @click="regenerate">🔄 تولید مجدد</VButton>
           </div>
         </div>
       </VCard>
@@ -452,6 +455,7 @@ async function applySuggestions(suggestions: string[]) {
 
           <!-- Content Tab -->
           <VCard v-if="activeResultTab === 'content'">
+            <!-- eslint-disable-next-line vue/no-v-html -- محتوا توسط موتور خودِ پلتفرم تولید شده (نه ورودی کاربر) و صرفاً پیش‌نمایش است -->
             <div class="prose prose-sm max-w-none" dir="auto" v-html="result.content" />
           </VCard>
 
@@ -519,7 +523,7 @@ async function applySuggestions(suggestions: string[]) {
                   </div>
                   <div class="flex items-center gap-1">
                     <button type="button" class="rounded p-1.5 text-ink-muted hover:bg-surface-muted text-xs" @click="editSection(i)">✏️</button>
-                    <button type="button" class="rounded p-1.5 text-ink-muted hover:bg-blue-100 hover:text-blue-600 text-xs" @click="regenerateSection(i)" :disabled="sec.regenerating">
+                    <button type="button" class="rounded p-1.5 text-ink-muted hover:bg-blue-100 hover:text-blue-600 text-xs" :disabled="sec.regenerating" @click="regenerateSection(i)">
                       <span v-if="sec.regenerating" class="animate-pulse">⏳</span><span v-else>🔄</span>
                     </button>
                   </div>

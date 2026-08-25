@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * تست جریان اتصال وردپرس به Vision Prime.
  *
@@ -15,12 +17,12 @@
 require __DIR__.'/../vendor/autoload.php';
 
 $app = require_once __DIR__.'/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
 
 echo "=== Vision Prime Connector Test ===\n\n";
 
@@ -196,6 +198,6 @@ echo "سایت: #{$siteId}\n";
 echo "اتصال: #{$pairResponse}\n";
 echo "Sync Run: #{$syncRunId}\n";
 echo "Command: #{$commandId}\n";
-echo "\nURL profiles: " . DB::table('url_profiles')->where('site_id', $siteId)->count() . "\n";
-echo "Connector events: " . DB::table('connector_events')->where('site_id', $siteId)->count() . "\n";
+echo "\nURL profiles: ".DB::table('url_profiles')->where('site_id', $siteId)->count()."\n";
+echo 'Connector events: '.DB::table('connector_events')->where('site_id', $siteId)->count()."\n";
 echo "\n✅ تمام تست‌ها با موفقیت انجام شد!\n";

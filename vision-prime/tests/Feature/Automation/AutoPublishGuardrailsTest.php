@@ -55,7 +55,9 @@ class AutoPublishGuardrailsTest extends TestCase
             'created_at' => now(), 'updated_at' => now(),
         ]);
         Http::fake(['*/wp-json/vision-prime/v1/commands' => Http::response(['ok' => true, 'result' => ['post_id' => 42, 'previous' => 'old', 'new' => 'new']])]);
-    }    private function articleCommand(string $body, string $status = 'pending_approval', string $risk = 'R2'): int
+    }
+
+    private function articleCommand(string $body, string $status = 'pending_approval', string $risk = 'R2'): int
     {
         return (int) \DB::table('commands')->insertGetId([
             'site_id' => $this->site->id, 'source_type' => 'test', 'type' => 'update_content',

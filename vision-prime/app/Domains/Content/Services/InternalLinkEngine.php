@@ -35,11 +35,10 @@ class InternalLinkEngine
     /**
      * پیشنهاد لینک‌های داخلی برای یک URL profile جدید.
      *
-     * @param  int     $siteId
-     * @param  string  $title        عنوان محتوای جدید
-     * @param  string  $keyword      کلیدواژه هدف
+     * @param  string  $title  عنوان محتوای جدید
+     * @param  string  $keyword  کلیدواژه هدف
      * @param  string  $contentType  نوع محتوا (article, product, ...)
-     * @param  string  $subtype      زیرنوع (tutorial, review, ...)
+     * @param  string  $subtype  زیرنوع (tutorial, review, ...)
      * @return array<int, array{url: string, title: string, anchor: string, relevance_score: float, source_url: string}>
      */
     public function suggest(int $siteId, string $title, string $keyword, string $contentType, string $subtype): array
@@ -107,7 +106,7 @@ class InternalLinkEngine
         }
 
         // مرتب‌سازی بر اساس امتیاز و محدود کردن
-        usort($scored, fn(array $a, array $b): int => $b['relevance_score'] <=> $a['relevance_score']);
+        usort($scored, fn (array $a, array $b): int => $b['relevance_score'] <=> $a['relevance_score']);
 
         return array_slice($scored, 0, self::MAX_SUGGESTIONS);
     }
@@ -116,10 +115,10 @@ class InternalLinkEngine
      * قرار دادن لینک‌های داخلی در HTML محتوا.
      * برای هر anchor پیشنهادی، اولین occurrence مناسب در محتوا را پیدا کرده و لینک می‌کند.
      *
-     * @param  string  $html       HTML محتوا
-     * @param  array   $suggestions خروجی suggest()
-     * @param  string  $baseUrl     آدرس ریشه سایت (مثلاً https://example.com)
-     * @return string  HTML با لینک‌های داخلی اضافه‌شده
+     * @param  string  $html  HTML محتوا
+     * @param  array  $suggestions  خروجی suggest()
+     * @param  string  $baseUrl  آدرس ریشه سایت (مثلاً https://example.com)
+     * @return string HTML با لینک‌های داخلی اضافه‌شده
      */
     public function injectLinks(string $html, array $suggestions, string $baseUrl = ''): string
     {
@@ -135,7 +134,7 @@ class InternalLinkEngine
 
             $url = $suggestion['url'];
             if ($baseUrl !== '' && ! str_starts_with($url, 'http')) {
-                $url = rtrim($baseUrl, '/') . '/' . ltrim($url, '/');
+                $url = rtrim($baseUrl, '/').'/'.ltrim($url, '/');
             }
 
             $anchorNormalized = ContentProfiler::normalizeFa($anchor);
@@ -144,10 +143,10 @@ class InternalLinkEngine
             // پیدا کردن anchor در محتوا (ساده — اولین match)
             if (str_contains($htmlNormalized, $anchorNormalized)) {
                 // anchor واقعی در HTML (با حفظ case اصلی)
-                if (preg_match('/' . preg_quote($anchor, '/') . '/iu', $html, $matches, PREG_OFFSET_CAPTURE)) {
+                if (preg_match('/'.preg_quote($anchor, '/').'/iu', $html, $matches, PREG_OFFSET_CAPTURE)) {
                     $match = $matches[0][0];
                     $offset = $matches[0][1];
-                    $link = '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" title="' . htmlspecialchars($suggestion['title'], ENT_QUOTES, 'UTF-8') . '">' . $match . '</a>';
+                    $link = '<a href="'.htmlspecialchars($url, ENT_QUOTES, 'UTF-8').'" title="'.htmlspecialchars($suggestion['title'], ENT_QUOTES, 'UTF-8').'">'.$match.'</a>';
                     $html = substr_replace($html, $link, $offset, mb_strlen($match, 'UTF-8'));
                 }
             }
@@ -196,8 +195,8 @@ class InternalLinkEngine
             }
         }
 
-        $magA = sqrt(array_sum(array_map(fn(int $c): int => $c * $c, $countA)));
-        $magB = sqrt(array_sum(array_map(fn(int $c): int => $c * $c, $countB)));
+        $magA = sqrt(array_sum(array_map(fn (int $c): int => $c * $c, $countA)));
+        $magB = sqrt(array_sum(array_map(fn (int $c): int => $c * $c, $countB)));
 
         if ($magA == 0 || $magB == 0) {
             return 0.0;

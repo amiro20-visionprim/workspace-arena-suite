@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Domains\Content\Services\WordPressPublisher;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Models\Site;
 use App\Http\Controllers\Controller;
@@ -34,7 +35,7 @@ class SiteConnectorController extends Controller
             'wpCredentials' => $wpCreds ? [
                 'wp_url' => $wpCreds['wp_url'] ?? '',
                 'wp_username' => $wpCreds['wp_username'] ?? '',
-                'has_password' => !empty($wpCreds['wp_app_password']),
+                'has_password' => ! empty($wpCreds['wp_app_password']),
                 'connected_at' => $wpCreds['connected_at'] ?? null,
             ] : null,
         ]);
@@ -58,13 +59,13 @@ class SiteConnectorController extends Controller
         $data['wp_url'] = rtrim($data['wp_url'], '/');
 
         // Test connection first
-        $publisher = app(\App\Domains\Content\Services\WordPressPublisher::class);
+        $publisher = app(WordPressPublisher::class);
         $test = $publisher->testConnection($data['wp_url'], $data['wp_username'], $data['wp_app_password']);
 
-        if (!$test['success']) {
+        if (! $test['success']) {
             return response()->json([
                 'success' => false,
-                'error' => 'اتصال به وردپرس ناموفق بود: ' . ($test['error'] ?? 'اطلاعات صحیح نیست'),
+                'error' => 'اتصال به وردپرس ناموفق بود: '.($test['error'] ?? 'اطلاعات صحیح نیست'),
             ], 422);
         }
 

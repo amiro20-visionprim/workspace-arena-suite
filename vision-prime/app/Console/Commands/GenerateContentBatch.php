@@ -35,10 +35,15 @@ class GenerateContentBatch extends Command
     protected $description = 'تولید دسته‌ای مقاله و محصول با رعایت تمام استانداردهای SEO';
 
     private StandardsKB $standards;
+
     private ContentProfiler $profiler;
+
     private ContentQualityGuard $guard;
+
     private InternalLinkEngine $linkEngine;
+
     private SchemaGenerator $schemaGen;
+
     private AiClient $aiClient;
 
     public function __construct(
@@ -69,12 +74,14 @@ class GenerateContentBatch extends Command
 
         if ($siteId === 0) {
             $this->error('--site الزامی است');
+
             return self::FAILURE;
         }
 
         $site = DB::table('sites')->where('id', $siteId)->first();
         if ($site === null) {
             $this->error("سایت #{$siteId} یافت نشد");
+
             return self::FAILURE;
         }
 
@@ -98,6 +105,7 @@ class GenerateContentBatch extends Command
 
         if ($profiles->isEmpty()) {
             $this->error('صفحه‌ای یافت نشد. ابتدا Content Sync را اجرا کنید.');
+
             return self::FAILURE;
         }
 
@@ -123,6 +131,7 @@ class GenerateContentBatch extends Command
 
             if ($keyword === '') {
                 $this->warn('  ⚠️ کلیدواژه‌ای موجود نیست — رد شد');
+
                 continue;
             }
 
@@ -145,18 +154,19 @@ class GenerateContentBatch extends Command
 
             // پیشنهاد لینک داخلی
             $links = $this->linkEngine->suggest($siteId, $existingTitle, $keyword, $profiled['content_type'], $profiled['subtype']);
-            $this->info("  🔗 " . count($links) . " لینک داخلی پیشنهاد شد");
+            $this->info('  🔗 '.count($links).' لینک داخلی پیشنهاد شد');
 
             if ($dryRun) {
-                $this->info("  🏃 Dry run — تولید نشد");
+                $this->info('  🏃 Dry run — تولید نشد');
                 foreach ($links as $link) {
                     $this->info("    → {$link['anchor']} → {$link['url']} (score: {$link['relevance_score']})");
                 }
+
                 continue;
             }
 
             // تولید محتوا با AI
-            $this->info("  🤖 در حال تولید محتوا...");
+            $this->info('  🤖 در حال تولید محتوا...');
 
             $context = [
                 'title' => $existingTitle,
@@ -180,7 +190,7 @@ class GenerateContentBatch extends Command
                 $content = $result['content'];
 
                 // تزریق لینک‌های داخلی
-                $baseUrl = parse_url((string) $profile->canonical_url, PHP_URL_SCHEME) . '://' . parse_url((string) $profile->canonical_url, PHP_URL_HOST);
+                $baseUrl = parse_url((string) $profile->canonical_url, PHP_URL_SCHEME).'://'.parse_url((string) $profile->canonical_url, PHP_URL_HOST);
                 $content = $this->linkEngine->injectLinks($content, $links, $baseUrl);
 
                 // تولید meta title/description
@@ -204,10 +214,10 @@ class GenerateContentBatch extends Command
                 $this->info("  ✅ تولید شد | امتیاز کیفیت: {$evaluation['score']}/100 | RankMath: {$evaluation['rankmath_score']}/100");
 
                 if ($evaluation['failures'] !== []) {
-                    $this->warn("  ⚠️ مشکلات: " . implode(', ', $evaluation['failures']));
+                    $this->warn('  ⚠️ مشکلات: '.implode(', ', $evaluation['failures']));
                 }
                 if ($evaluation['warnings'] !== []) {
-                    $this->warn("  💡 نکات: " . implode(', ', $evaluation['warnings']));
+                    $this->warn('  💡 نکات: '.implode(', ', $evaluation['warnings']));
                 }
 
                 // ذخیره در ai_generations
@@ -256,7 +266,7 @@ class GenerateContentBatch extends Command
         $metaTitle = "{$keyword} | {$siteName}";
 
         if (mb_strlen($metaTitle, 'UTF-8') > $maxLen) {
-            $metaTitle = mb_substr($keyword, 0, $maxLen - mb_strlen($siteName, 'UTF-8') - 3, 'UTF-8') . ' | ' . $siteName;
+            $metaTitle = mb_substr($keyword, 0, $maxLen - mb_strlen($siteName, 'UTF-8') - 3, 'UTF-8').' | '.$siteName;
         }
 
         return trim($metaTitle);

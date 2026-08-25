@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domains\Content\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Domains\Organization\Models\Organization;
 use App\Domains\Workspace\Models\Site;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Content Guardrails — control what the AI generates per subtype/site.

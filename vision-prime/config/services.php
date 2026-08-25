@@ -65,10 +65,12 @@ return [
         'model' => env('PLATFORM_AI_MODEL', 'gpt-4o-mini'),
     ],
 
-    'groq' => [
-        'api_key' => env('GROQ_API_KEY', ''),
-    ],
-
+    'groq' => [
+
+        'api_key' => env('GROQ_API_KEY', ''),
+
+    ],
+
     'openrouter' => [
         'key' => env('OPENROUTER_API_KEY', ''),
         'proxy' => env('OPENROUTER_HTTP_PROXY', ''),
