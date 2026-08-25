@@ -24,6 +24,20 @@ php artisan serve
 
 For local tests, SQLite is supported. Production should use PostgreSQL and Redis as documented in `.env.example`.
 
+## Demo environment (sales)
+
+```bash
+php artisan demo:seed --fresh
+```
+
+| Role | Email | Password |
+|---|---|---|
+| Agency admin | `demo@visionprime.test` | `DemoAdmin2024!Secure#` |
+| Marketing manager | `marketing@visionprime.test` | `Marketing2026!Secure#` |
+
+Seeds a full demo agency: site, GSC data, opportunities, review queue and leads.
+Covered by `tests/Feature/DemoEnvironmentSmokeTest.php`.
+
 ## Quality commands
 
 ```bash
