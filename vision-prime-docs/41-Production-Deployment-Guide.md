@@ -11,7 +11,7 @@
 | مورد | مقدار |
 |---|---|
 | سیستم عامل | Ubuntu 24.04 LTS (سرور ابری ویندوزی RDP پورت ۱۵۲۲۶ جداگانه) |
-| IP | 45.156.186.6 |
+| IP | [REDACTED] |
 | SSH | پورت 9011 — کاربر `root` |
 | رم | 3.8 GB (3.4 آزاد) |
 | دیسک | 30 GB (26 آزاد) |
@@ -25,7 +25,7 @@
 - **اپ:** `/var/www/workspace-arena-suite/vision-prime`
 - **سایت‌های استاتیک:** `/var/www/sites/<domain>/` (هر دامنه یک پوشه)
 - **الگوی vhost استاتیک:** `/etc/nginx/sites-available/static-template`
-- **vhost اصلی:** `/etc/nginx/sites-available/visionprime` (server_name: `45.156.186.6` + `visionprime-suite.ir` + `www.visionprime-suite.ir`)
+- **vhost اصلی:** `/etc/nginx/sites-available/visionprime` (server_name: `[REDACTED]` + `visionprime-suite.ir` + `www.visionprime-suite.ir`)
 
 ## ۳) سرویس‌ها
 
@@ -54,8 +54,8 @@
 
 | نوع | نام (Host) | مقدار | TTL |
 |---|---|---|---|
-| A | `visionprime-suite.ir` | `45.156.186.6` | 3600 (پیش‌فرض) |
-| A | `www` | `45.156.186.6` | 3600 (پیش‌فرض) |
+| A | `visionprime-suite.ir` | `[REDACTED]` | 3600 (پیش‌فرض) |
+| A | `www` | `[REDACTED]` | 3600 (پیش‌فرض) |
 
 نام‌سرورها (اگر در پنل ایرنیک نمایش داده شود): `ns1.irnic.ir` و `ns2.irnic.ir` (همان پیش‌فرض ثبت). انتشار DNS معمولاً ۱ تا ۲۴ ساعت طول می‌کشد.
 
@@ -67,7 +67,7 @@
 
 ## ۸) تأییدهای انجام‌شده
 
-- ✅ `http://45.156.186.6/` و `/login` → 200 (عمومی)
+- ✅ `http://[REDACTED]/` و `/login` → 200 (عمومی)
 - ✅ ورود سوپرادمین → 302 به داشبورد · `/platform/dashboard` → 200
 - ✅ صف: نوتیفیکیشن تستی dispatch شد → jobs remaining: 0 (کارگر صف پردازش کرد)
 - ✅ زمان‌بند: ۱۱ تسک در `schedule:list` (گزارش هفتگی جمعه، بکاپ، یادآوری‌ها، حلقهٔ یادگیری…)
@@ -84,12 +84,12 @@
 - ایرنیک فقط ثبتکننده است؛ رکورد A را نگه نمیدارد. برای دامنهٔ `.ir` باید نامسرور (host object) تعریف شود.
 - روی سرور **BIND 9.18** نصب شد (`apt install bind9`).
 - زون `visionprime-suite.ir` در `/etc/bind/zones/db.visionprime-suite.ir`:
-  - `@` و `www` → `45.156.186.6`
-  - NS: `ns1.visionprime-suite.ir` + `ns2.visionprime-suite.ir` (هر دو → `45.156.186.6`)
-- تأیید از بیرون: `nslookup visionprime-suite.ir 45.156.186.6` → `45.156.186.6` ✓ · پورت 53 TCP باز ✓
+  - `@` و `www` → `[REDACTED]`
+  - NS: `ns1.visionprime-suite.ir` + `ns2.visionprime-suite.ir` (هر دو → `[REDACTED]`)
+- تأیید از بیرون: `nslookup visionprime-suite.ir [REDACTED]` → `[REDACTED]` ✓ · پورت 53 TCP باز ✓
 - **اقدام کاربر در ایرنیک** (بخش «ویرایش ردیفهای کارگزاری نام و میزبانی دامنه»):
-  - ردیف ۱: نام کارگزار `ns1.visionprime-suite.ir` — آیپی `45.156.186.6`
-  - ردیف ۲: نام کارگزار `ns2.visionprime-suite.ir` — آیپی `45.156.186.6`
+  - ردیف ۱: نام کارگزار `ns1.visionprime-suite.ir` — آیپی `[REDACTED]`
+  - ردیف ۲: نام کارگزار `ns2.visionprime-suite.ir` — آیپی `[REDACTED]`
 - پس از انتشار (تا ۲۴ ساعت): نصب SSL و ریدایرکت HTTPS.
 - الگوی سایتهای استاتیک بعدی: زون جدید در bind9 + vhost nginx + همان دو ردیف NS با آیپی سرور (یا subdomain A).
 
@@ -100,7 +100,7 @@
 **کاربرد:**
 - افزودن دامنهٔ جدید: `add-site.sh add <domain> [webroot]`
   - پوشهٔ سایت (پیشفرض `/var/www/sites/<domain>`) + صفحهٔ placeholder میسازد (اگر خالی باشد)
-  - زون bind9 (`/etc/bind/zones/db.<domain>`) با A برای `@` و `www` → `45.156.186.6` و NS = ns1/ns2.visionprime-suite.ir
+  - زون bind9 (`/etc/bind/zones/db.<domain>`) با A برای `@` و `www` → `[REDACTED]` و NS = ns1/ns2.visionprime-suite.ir
   - vhost nginx با ریدایرکت www→root، کش استاتیک ۳۰ روزه، هدرهای امنیتی، gzip
   - هر دو سرویس ریلود + خروجی راهنمای IRNIC
   - اعتبارسنجی و rollback خودکار در صورت خطا
@@ -109,7 +109,7 @@
 
 **برای هر دامنهٔ جدید در ایرنیک:** نام کارگزار ۱ = `ns1.visionprime-suite.ir` و ۲ = `ns2.visionprime-suite.ir` (آیپی خالی — نامسرورها از قبل با آیپی سرور ثبت شدهاند).
 
-**تست انجامشده (2026-08-18):** add teststatic.ir → DNS پاسخ داد (45.156.186.6) · HTTP 200 با صفحهٔ placeholder · www → 301 · remove → پاکسازی کامل vhost/zone/conf.
+**تست انجامشده (2026-08-18):** add teststatic.ir → DNS پاسخ داد ([REDACTED]) · HTTP 200 با صفحهٔ placeholder · www → 301 · remove → پاکسازی کامل vhost/zone/conf.
 
 ## ۱۲) سرویس ایمیل دامنه (Postfix + Dovecot + Roundcube) — 2026-08-18
 
@@ -118,7 +118,7 @@
 - **سرور:** Postfix 3.8.6 (MTA) + Dovecot 2.3.21 (IMAP/POP3) — virtual mailboxes در `/var/mail/vhosts/visionprime-suite.ir/{info,admin}`، احراز passwd-file (`/etc/dovecot/users`، SHA512-CRYPT).
 - **صندوق‌ها:** `info@visionprime-suite.ir` و `admin@visionprime-suite.ir` (رمزها نزد مالک — خارج از گیت).
 - **ارسال:** submission 587 (STARTTLS) + smtps 465 (TLS wrappermode) با AUTH PLAIN؛ **DKIM** با opendkim (selector `mail`) — همهٔ ایمیل‌های خروجی امضا می‌شوند.
-- **DNS (در زون bind9):** MX 10 `mail.visionprime-suite.ir` · A `mail` → 45.156.186.6 · SPF `"v=spf1 mx ip4:45.156.186.6 ~all"` · DKIM TXT `mail._domainkey` · DMARC `_dmarc` (p=none).
+- **DNS (در زون bind9):** MX 10 `mail.visionprime-suite.ir` · A `mail` → [REDACTED] · SPF `"v=spf1 mx ip4:[REDACTED] ~all"` · DKIM TXT `mail._domainkey` · DMARC `_dmarc` (p=none).
 - **وبمیل:** Roundcube 1.6.6 (SQLite) با زبان فارسی در `http://mail.visionprime-suite.ir` — vhost در `/etc/nginx/sites-available/mail.visionprime-suite.ir`.
 - **تنظیمات کلاینت ایمیل (Outlook/Thunderbird):** IMAP `mail.visionprime-suite.ir:993` (SSL) · SMTP `mail.visionprime-suite.ir:587` (STARTTLS) · کاربر = آدرس کامل ایمیل.
 - **مهم:** TLS فعلی خودامضا است — بعد از انتشار NS دامنه در ایرنیک، گواهی Let's Encrypt جایگزین می‌شود و وبمیل HTTPS می‌گیرد. تا وقتی NS در ایرنیک ست نشود، ایمیل فقط به‌صورت محلی کار می‌کند (از بیرونِ سرور قابل‌دسترس نیست).
@@ -128,8 +128,8 @@
 
 سه راه استقرار (همگی از طریق `scripts/deploy-site.sh` در ریپو / `/usr/local/bin/deploy-site.sh` روی سرور):
 
-1. **کنسول وب:** `http://45.156.186.6/deploy/` — دامنه + توکن (`/etc/deploy-secret`) + آدرس گیت یا آپلود zip → دیپلوی فوری با خروجی.
-2. **وبهوک گیت‌هاب:** `http://45.156.186.6/deploy/?domain=<دامنه>&hook=1` — Content-Type `application/json`، سکرت `/etc/deploy-webhook-secret`، رویداد push. (در GitHub: Settings → Webhooks → Payload URL + Secret.)
+1. **کنسول وب:** `http://[REDACTED]/deploy/` — دامنه + توکن (`/etc/deploy-secret`) + آدرس گیت یا آپلود zip → دیپلوی فوری با خروجی.
+2. **وبهوک گیت‌هاب:** `http://[REDACTED]/deploy/?domain=<دامنه>&hook=1` — Content-Type `application/json`، سکرت `/etc/deploy-webhook-secret`، رویداد push. (در GitHub: Settings → Webhooks → Payload URL + Secret.)
 3. **CLI:** `deploy-site.sh <domain> <git-url|zip|dir>` (برای مدیر).
 
 - rsync با `--checksum` (مقایسهٔ محتوا، نه mtime) + `--delete`؛ لاگ `/var/log/deploy-site.log`؛ مالکیت نهایی www-data.

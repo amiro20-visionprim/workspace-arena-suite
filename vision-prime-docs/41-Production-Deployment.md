@@ -11,7 +11,7 @@
 | مورد | مقدار |
 |---|---|
 | سیستم عامل | Ubuntu 24.04 LTS (هسته 6.8) — VM `vm-255175` |
-| IP عمومی | `45.156.186.6` |
+| IP عمومی | `[REDACTED]` |
 | هاست‌نیم | `visionprime` |
 | SSH | پورت `9011`، کاربر `root` |
 | RDP ویندوز | پورت `15226` (VM ویندوز جداگانه — استفاده نشده) |
@@ -44,7 +44,7 @@ tar xzf vendor.tgz -C /var/www/workspace-arena-suite/vision-prime/
 composer dump-autoload -o
 
 # ۳) env (از .env.example با sed)
-APP_ENV=production · APP_DEBUG=false · APP_URL=http://45.156.186.6
+APP_ENV=production · APP_DEBUG=false · APP_URL=http://[REDACTED]
 DB_CONNECTION=sqlite · DB_DATABASE=database/database.sqlite
 QUEUE_CONNECTION=database · CACHE_STORE=database · SESSION_DRIVER=database
 
@@ -70,7 +70,7 @@ chown -R www-data:www-data storage bootstrap/cache public/build database
 
 ## تأیید (همگی سبز)
 
-- `http://45.156.186.6/` → 200 · `/login` → 200 · `/build/*` → 200 (از بیرون تست شد)
+- `http://[REDACTED]/` → 200 · `/login` → 200 · `/build/*` → 200 (از بیرون تست شد)
 - ورود `superadmin@visionprime.test` → 302 به `/app/dashboard` · `/platform/dashboard` → 200
 - داده‌ها منتقل شد: ۹ کاربر، ۱ سازمان، ۱ سایت، ۲۷ دستور تقویم، پرداخت‌ها، sms_logs
 - صف: ارسال نوتیفیکیشن تست → jobs remaining: 0 (worker پردازش کرد)
@@ -79,7 +79,7 @@ chown -R www-data:www-data storage bootstrap/cache public/build database
 ## به‌روزرسانی بعدی (دیپلوی جدید)
 
 ```bash
-ssh -p 9011 root@45.156.186.6
+ssh -p 9011 root@[REDACTED]
 cd /var/www/workspace-arena-suite && git pull origin new-branch
 cd vision-prime
 composer dump-autoload -o          # اگر وابستگی جدید هست، vendor را از سیستم توسعه آپلود کن

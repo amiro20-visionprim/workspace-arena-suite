@@ -501,7 +501,7 @@
 - **مستندات (D-020):** ۳۱ (این ورودی)، D-033 در سند ۰۴.
 - **قدم بعدی (پیشنهادی):** کلیدهای واقعی درگاهها (OWNER_PHONE/TELEGRAM/KAVENEGAR/ZARINPAL) در env تولید، MFA برای سایر نقشها، ارسال تستی گزارش هفتگی به ایمیل واقعی.
 
-## آپدیت #۴۶ — استقرار تولید روی سرور 45.156.186.6 + اتصال دامنه visionprime-suite.ir — ۲۰۲۶-۰۸-۱۷
+## آپدیت #۴۶ — استقرار تولید روی سرور [REDACTED] + اتصال دامنه visionprime-suite.ir — ۲۰۲۶-۰۸-۱۷
 
 - **استقرار کامل روی سرور ابری:** Ubuntu 24.04 — PHP 8.3.6-fpm + nginx 1.24 + Composer 2.7.1 (از apt — چون packagist/getcomposer روی سرور مسدود است، vendor از ماشین توسعه آپلود و با dump-autoload بازسازی شد) + فرانتاند buildشدهٔ محلی (public/build آپلود شد — سرور به Node نیاز ندارد).
 - **دادهها همراه منتقل شدند:** دیتابیس SQLite واقعی (کاربران کامل، سازمان، سایت، ۲۷ کامند تقویم، پرداختها، sms_logs) — اپ با همان دادهها بالا آمد. بدون نیاز به migrate (چیزی برای migrate نمانده بود).
@@ -513,7 +513,7 @@
 
 ## آپدیت #۴۷ — DNS خودمیزبان + اسکریپت add-site + سرویس ایمیل دامنه — ۲۰۲۶-۰۸-۱۸
 
-- **DNS خودمیزبان (bind9):** چون ایرنیک فقط ثبت‌کننده است و رکورد A ندارد، BIND 9.18 روی سرور نصب شد؛ زون `visionprime-suite.ir` با NS = `ns1/ns2.visionprime-suite.ir` (→ 45.156.186.6) + A برای `@`/`www`. تأیید از بیرون: nslookup روی 45.156.186.6 جواب داد. اقدام باقی‌ماندهٔ مالک در ایرنیک: دو ردیف NS (نام کارگزار ns1/ns2.visionprime-suite.ir + آیپی 45.156.186.6).
+- **DNS خودمیزبان (bind9):** چون ایرنیک فقط ثبت‌کننده است و رکورد A ندارد، BIND 9.18 روی سرور نصب شد؛ زون `visionprime-suite.ir` با NS = `ns1/ns2.visionprime-suite.ir` (→ [REDACTED]) + A برای `@`/`www`. تأیید از بیرون: nslookup روی [REDACTED] جواب داد. اقدام باقی‌ماندهٔ مالک در ایرنیک: دو ردیف NS (نام کارگزار ns1/ns2.visionprime-suite.ir + آیپی [REDACTED]).
 - **اسکریپت مدیریت دامنه‌های استاتیک `scripts/add-site.sh`:** `add <domain>` → پوشه + placeholder، زون bind9، vhost nginx (ریدایرکت www، کش ۳۰ روزه، هدرهای امنیتی، gzip)، ریلود سرویس‌ها، اعتبارسنجی + rollback خودکار، و خروجی راهنمای IRNIC. `remove <domain>` پاک‌سازی می‌کند. تست کامل با teststatic.ir (DNS + HTTP 200 + 301 www + حذف). یک باگ پیدا و رفع شد (سریال ۱۲ رقمی > حد DNS → ۱۰ رقم).
 - **سرویس ایمیل دامنه (برای اینماد):** Postfix 3.8.6 + Dovecot 2.3.21 (virtual mailboxes, passwd-file) + صندوق‌های `info@` و `admin@` + TLS خودامضا + submission 587 / smtps 465 (AUTH PLAIN) + **DKIM (opendkim, selector `mail`)** + رکوردهای **MX / SPF / DKIM / DMARC** در زون bind9 + **وبمیل فارسی Roundcube 1.6.6** در `mail.visionprime-suite.ir` (SQLite + nginx vhost).
 - **تأییدهای واقعی:** تحویل به صندوق ✓ · DKIM-Signature در هدر ✓ · ورود IMAP (993) با رمز ✓ · ارسال 587 با AUTH PLAIN → queued → تحویل ✓ · وبمیل HTTP 200 (فارسی) ✓ · پورت‌های 25/465/587/993/995 باز ✓.
@@ -524,8 +524,8 @@
 ## آپدیت #۴۸ — سیستم دیپلوی خودکار سایتهای استاتیک — ۲۰۲۶-۰۸-۱۸
 
 - **`scripts/deploy-site.sh` (روی سرور: `/usr/local/bin/deploy-site.sh`):** استقرار از **گیت** (clone/pull با `--depth 1`)، **zip** (بازکردن خودکار پوشهٔ ریشهٔ واحد)، یا **پوشه** — با `rsync -a --delete --checksum` (رفع باگ کلاسیک «هم‌اندازه/هم‌مهر → skip»)، لاگ در `/var/log/deploy-site.log`، مالکیت نهایی www-data.
-- **کنسول وب فارسی** در `http://45.156.186.6/deploy/` (`/var/www/deploy/index.php` + سیم‌لینک در public لاراول): فرم با «دامنه + توکن + آدرس گیت یا آپلود zip» — توکن از `/etc/deploy-secret` (root:www-data 640).
-- **وبهوک گیت‌هاب:** `http://45.156.186.6/deploy/?domain=X&hook=1` — تأیید `X-Hub-Signature-256` با سکرت `/etc/deploy-webhook-secret`؛ استخراج `repository.clone_url` و دیپلوی خودکار. (نیاز به `underscores_in_headers on;` در vhost — هدرهای دارای زیرخط را nginx پیش‌فرض حذف می‌کرد.)
+- **کنسول وب فارسی** در `http://[REDACTED]/deploy/` (`/var/www/deploy/index.php` + سیم‌لینک در public لاراول): فرم با «دامنه + توکن + آدرس گیت یا آپلود zip» — توکن از `/etc/deploy-secret` (root:www-data 640).
+- **وبهوک گیت‌هاب:** `http://[REDACTED]/deploy/?domain=X&hook=1` — تأیید `X-Hub-Signature-256` با سکرت `/etc/deploy-webhook-secret`؛ استخراج `repository.clone_url` و دیپلوی خودکار. (نیاز به `underscores_in_headers on;` در vhost — هدرهای دارای زیرخط را nginx پیش‌فرض حذف می‌کرد.)
 - **عملیات:** php-fpm (www-data) اسکریپت را اجرا می‌کند؛ HOME ثابت `/var/www/.deploy-home` (با safe.directory برای ریپوهای محلی).
 - **تأییدهای واقعی:** چرخهٔ zip V1→V2→V1 از کنسول ✓ · git clone و pull از CLI ✓ · وبهوک امضای درست → `{"ok":true}` + سایت به‌روز شد ✓ · امضای غلط → 403 ✓ · توکن غلط → رد ✓ · دامنهٔ نامعتبر → رد ✓ · کنسول از بیرون 200 ✓.
 - **مستندات (D-020):** ۴۱ (بخش ۱۳)، ۳۱ (این ورودی)، D-036 در سند ۰۴.
@@ -540,8 +540,8 @@
 ## آپدیت #۵۰ — SSL: مانع فنی کشف شد (فیلتر DNS از سمت LE) — ۲۰۲۶-۰۸-۱۸
 
 - **هدف:** گواهی Let's Encrypt برای visionprime-suite.ir + www + mail (نصب شده بود: certbot روی سرور + acme.sh محلی + چالش HTTP-01 استیتلس در nginx برای هر دو vhost — خود چالش 200 جواب میدهد).
-- **مانع:** سرویسهای اعتبارسنجی Let's Encrypt نمیتوانند دامنه را رزولوشن کنند — «DNS problem: query timed out looking up A». با querylog تأیید شد: کوئریهای LE اصلاً به bind9 ما (45.156.186.6:53) نمیرسند (فیلتر انتخابی شبکهٔ دیتاسنتر ایرانی برای برخی شبکههای خارجی؛ سرور از طریق HTTP از خارج در دسترس است و برخی رزولورهای خارجی هم جواب میگیرند).
-- **وضعیت delegation:** NS و glue در رجیستری .ir صحیح است (ns1/ns2.visionprime-suite.ir → 45.156.186.6)؛ bind9 درست جواب میدهد؛ IPv6 عمومی وجود ندارد.
+- **مانع:** سرویسهای اعتبارسنجی Let's Encrypt نمیتوانند دامنه را رزولوشن کنند — «DNS problem: query timed out looking up A». با querylog تأیید شد: کوئریهای LE اصلاً به bind9 ما ([REDACTED]:53) نمیرسند (فیلتر انتخابی شبکهٔ دیتاسنتر ایرانی برای برخی شبکههای خارجی؛ سرور از طریق HTTP از خارج در دسترس است و برخی رزولورهای خارجی هم جواب میگیرند).
+- **وضعیت delegation:** NS و glue در رجیستری .ir صحیح است (ns1/ns2.visionprime-suite.ir → [REDACTED])؛ bind9 درست جواب میدهد؛ IPv6 عمومی وجود ندارد.
 - **نتیجه:** بدون تغییر delegation (تا DNS از سمت LE قابل دسترسی شود) هیچ CA مبتنی بر ACME گواهی صادر نمیکند. دو مسیر: (A) انتقال DNS به آروانکلاود (anycast ایرانی + SSL لبهٔ رایگان + CDN) — پیشنهادی؛ (B) افزودن Secondary خارجی (مثل Hurricane Electric) به delegation و صدور LE با DNS-01. هر دو نیازمند یک اقدام کاربر در ایرنیک.
 
 ---

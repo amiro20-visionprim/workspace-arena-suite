@@ -8,3 +8,16 @@ vision-prime-deploy/
 
 # Local dev tooling (PHP/WordPress binaries) - never commit
 .tools/
+
+# ─── Repo hygiene (P0 cleanup 2026-08-25) ───
+# WordPress core/zips must never live in git (145MB bloat) — download on demand instead
+wordpress-local/
+*.zip
+
+# Env files with real keys must never be committed
+vision-prime/.env.local-backup
+vision-prime/.env.*.backup
+
+# One-off AI patch scripts are not part of the product
+fix_*.py
+vision-prime/fix*.py
