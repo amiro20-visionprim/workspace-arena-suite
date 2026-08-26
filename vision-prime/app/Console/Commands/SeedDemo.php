@@ -29,6 +29,12 @@ class SeedDemo extends Command
 
     public function handle(): int
     {
+        if (app()->environment('production')) {
+            $this->error('سید دمو در محیط production مجاز نیست (F1-08). برای محیط نمایشی جداگانه از staging استفاده کنید.');
+
+            return self::FAILURE;
+        }
+
         if ($this->option('fresh')) {
             if (! app()->environment(['local', 'testing', 'staging'])) {
                 $this->error('‌--fresh فقط در محیط local/testing/staging مجاز است.');

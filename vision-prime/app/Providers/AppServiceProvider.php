@@ -15,8 +15,11 @@ use App\Domains\Workspace\Policies\ClientPolicy;
 use App\Domains\Workspace\Policies\ProjectPolicy;
 use App\Domains\Workspace\Policies\SitePolicy;
 use App\Support\RequestContext;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -38,6 +41,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // سقف تولید محتوا به ازای هر سازمان در روز (F1-07: محافظت هزینهٔ AI)
+        // قابل تنظیم از config: vision-prime.ai_daily_per_org (پیش‌فرض ۵۰)
+        RateLimiter::for('ai-org', function (Request $request) {
+            $orgId = $request->session()->get('current_organization_id') ?? $request->user()?->id;
+
+            return Limit::perDay((int) config('vision-prime.ai_daily_per_org', 50))->by('ai-org:'.$orgId);
+        });
+
         Gate::policy(Client::class, ClientPolicy::class);
         Gate::policy(Project::class, ProjectPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);
