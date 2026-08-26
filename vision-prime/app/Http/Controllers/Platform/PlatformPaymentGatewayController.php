@@ -8,6 +8,8 @@ use App\Domains\Audit\Actions\RecordAuditLog;
 use App\Domains\Platform\Models\Payment;
 use App\Domains\Platform\Services\PaymentGatewayManager;
 use App\Domains\Platform\Services\PaymentService;
+use App\Domains\Platform\Services\PlatformSettingsService;
+use App\Domains\Platform\Services\SubscriptionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +20,9 @@ class PlatformPaymentGatewayController
     public function __construct(
         private readonly PaymentGatewayManager $gateways,
         private readonly PaymentService $payments,
+        private readonly SubscriptionService $subscriptions,
         private readonly RecordAuditLog $audit,
+        private readonly PlatformSettingsService $settings,
     ) {}
 
     /**
@@ -26,6 +30,12 @@ class PlatformPaymentGatewayController
      */
     public function pay(Request $request, Payment $payment, string $gateway): RedirectResponse
     {
+        // Feature-flag: پرداخت آنلاین تا تأیید کامل جریان سندباکس→پروd بسته است.
+        // روشن‌کردن: PlatformSettingsService::set('payments_enabled', true)
+        if (! $this->settings->bool('payments_enabled', false)) {
+            return back()->with('error', 'پرداخت آنلاین موقتاً غیرفعال است؛ با پشتیبانی هماهنگ کنید.');
+        }
+
         abort_if($payment->status !== Payment::STATUS_PENDING, 422, 'این پرداخت قابل ادامه نیست.');
 
         $driver = $this->gateways->get($gateway);
@@ -88,6 +98,13 @@ class PlatformPaymentGatewayController
 
         if ($ok) {
             $this->payments->markPaid($payment);
+
+            // پول آمد → سرویس هم باید فعال شود: تمدید/فعال‌سازی اشتراک همین لحظه.
+            // (پیش از این پرداخت فقط paid می‌شد و اشتراک trialing می‌ماند!)
+            if ($payment->subscription_id !== null) {
+                $this->subscriptions->renew($payment->subscription()->firstOrFail());
+            }
+
             $this->audit->handle(
                 action: 'platform.payment.verified',
                 subject: $payment,
