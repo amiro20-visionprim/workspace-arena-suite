@@ -31,6 +31,16 @@ class DecideReviewItem
     {
         $item = \DB::table('review_items')->where('id', $reviewId)->firstOrFail();
         abort_unless($item->assigned_to === null || $item->assigned_to === $reviewer->id, 403);
+
+        // ایزولاسیون چند-مستأجری (F3-06): تصمیم‌گیرنده باید عضو فعالِ سازمانِ مالکِ سایتِ آیتم باشد.
+        // پیش از این هر آژانسی می‌توانست review آژانس دیگر را تأیید کند!
+        $ownerOrgId = \DB::table('sites')->where('id', $item->site_id)->value('organization_id');
+        $isMember = \DB::table('memberships')
+            ->where('memberships.user_id', $reviewer->id)
+            ->where('memberships.organization_id', $ownerOrgId)
+            ->where('memberships.status', 'active')
+            ->exists();
+        abort_unless($isMember, 403);
         abort_unless(in_array($decision, ['approved', 'rejected', 'changes_requested'], true), 422);
         \DB::transaction(function () use ($item, $reviewer, $decision, $note) {
             \DB::table('review_decisions')->insert(['review_item_id' => $item->id, 'decision' => $decision, 'note' => $note, 'decided_by' => $reviewer->id, 'decided_at' => now()]);
