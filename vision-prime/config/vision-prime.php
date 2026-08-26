@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    // نسخهٔ محصول (SemVer) — با هر ریلیز به‌روز شود؛ CHANGELOG.md ریشه را ببینید
+    'version' => '1.0.0-rc1',
     'default_locale' => env('VISION_PRIME_DEFAULT_LOCALE', 'fa'),
     'default_timezone' => env('VISION_PRIME_DEFAULT_TIMEZONE', 'Asia/Tehran'),
 
