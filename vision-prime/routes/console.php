@@ -88,3 +88,6 @@ Schedule::job(new SendWeeklyReport)
     ->weeklyOn(5, '09:30')
     ->timezone('Asia/Tehran')
     ->onOneServer();
+
+// ─── پایش سلامت روزانه (F1/F3) ───
+Schedule::command('app:health')->dailyAt('08:00')->name('daily-health')->withoutOverlapping();
