@@ -186,7 +186,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
 
     Route::get('/app/sites', [SiteController::class, 'index'])->name('app.sites.index');
     Route::get('/app/sites/create', [SiteController::class, 'create'])->name('app.sites.create');
-    Route::post('/app/sites', [SiteController::class, 'store'])->name('app.sites.store');
+    Route::post('/app/sites', [SiteController::class, 'store'])->name('app.sites.store')->middleware('plan.limits:sites');
     Route::get('/app/sites/{site}', [SiteController::class, 'show'])->name('app.sites.show');
     Route::get('/app/sites/{site}/connector', [SiteConnectorController::class, 'show'])->name('app.sites.connector');
     Route::post('/app/sites/{site}/connector/pairing-token', [SiteConnectorTokenController::class, 'store'])->name('app.sites.connector.pairing-token');
@@ -256,7 +256,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
 
     Route::get('/app/clients', [ClientController::class, 'index'])->name('app.clients.index');
     Route::get('/app/clients/create', [ClientController::class, 'create'])->name('app.clients.create');
-    Route::post('/app/clients', [ClientController::class, 'store'])->name('app.clients.store');
+    Route::post('/app/clients', [ClientController::class, 'store'])->name('app.clients.store')->middleware('plan.limits:clients');
     Route::get('/app/clients/{client}', [ClientController::class, 'show'])->name('app.clients.show');
     Route::get('/app/clients/{client}/edit', [ClientController::class, 'edit'])->name('app.clients.edit');
     Route::put('/app/clients/{client}', [ClientController::class, 'update'])->name('app.clients.update');
@@ -273,11 +273,11 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::delete('/app/settings/ai-provider/{provider}', [AiSettingsController::class, 'destroy'])->name('app.settings.ai-provider.destroy')->middleware('impersonation.readonly');
     Route::get('/app/settings/audit-log', [AuditLogSettingsController::class, 'index'])->name('app.settings.audit-log');
 
-    Route::post('/app/ai-drafts', [AiDraftController::class, 'store'])->name('app.ai-drafts.store')->middleware('throttle:10,1');
+    Route::post('/app/ai-drafts', [AiDraftController::class, 'store'])->name('app.ai-drafts.store')->middleware('throttle:10,1', 'plan.limits:ai', 'throttle:ai-org');
     Route::get('/app/ai-drafts/article/create', [AiDraftController::class, 'createArticle'])->name('app.ai-drafts.article.create');
-    Route::post('/app/ai-drafts/article', [AiDraftController::class, 'storeArticle'])->name('app.ai-drafts.article')->middleware('throttle:10,1');
+    Route::post('/app/ai-drafts/article', [AiDraftController::class, 'storeArticle'])->name('app.ai-drafts.article')->middleware('throttle:10,1', 'plan.limits:ai', 'throttle:ai-org');
     Route::get('/app/ai-drafts/product/create', [AiDraftController::class, 'createProduct'])->name('app.ai-drafts.product.create');
-    Route::post('/app/ai-drafts/product', [AiDraftController::class, 'storeProduct'])->name('app.ai-drafts.product')->middleware('throttle:10,1');
+    Route::post('/app/ai-drafts/product', [AiDraftController::class, 'storeProduct'])->name('app.ai-drafts.product')->middleware('throttle:10,1', 'plan.limits:ai', 'throttle:ai-org');
     Route::get('/app/ai-drafts', [AiDraftController::class, 'index'])->name('app.ai-drafts.index');
     Route::get('/app/ai-drafts/{id}/edit', [AiDraftController::class, 'edit'])->name('app.ai-drafts.edit');
     Route::put('/app/ai-drafts/{id}', [AiDraftController::class, 'update'])->name('app.ai-drafts.update');
@@ -289,7 +289,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::post('/api/content/schema', [ContentSeoController::class, 'schema'])->name('api.content.schema')->middleware('throttle:30,1');
     Route::post('/api/content/serp-analysis', [ContentResearchController::class, 'serpAnalysis'])->name('api.content.serp-analysis')->middleware('throttle:10,1');
     Route::post('/api/content/outline', [ContentResearchController::class, 'outline'])->name('api.content.outline')->middleware('throttle:10,1');
-    Route::post('/api/content/generate', [ContentGenerateController::class, 'generate'])->name('api.content.generate')->middleware('throttle:5,1');
+    Route::post('/api/content/generate', [ContentGenerateController::class, 'generate'])->name('api.content.generate')->middleware('throttle:5,1', 'plan.limits:ai', 'throttle:ai-org');
     Route::get('/api/content/gsc-context', [ContentResearchController::class, 'gscContext'])->name('api.content.gsc-context');
     Route::get('/api/content/providers', [ContentAiProviderController::class, 'providers'])->name('api.content.providers');
     Route::post('/api/content/test-provider', [ContentAiProviderController::class, 'testProvider'])->name('api.content.test-provider')->middleware('throttle:5,1');

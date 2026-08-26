@@ -7,10 +7,13 @@ namespace Tests\Feature\Workspace;
 use App\Domains\Identity\Models\Role;
 use App\Domains\Organization\Models\Membership;
 use App\Domains\Organization\Models\Organization;
+use App\Domains\Platform\Models\Plan;
+use App\Domains\Platform\Models\Subscription;
 use App\Domains\Workspace\Models\Client;
 use App\Domains\Workspace\Models\Project;
 use App\Domains\Workspace\Models\Site;
 use App\Models\User;
+use Database\Seeders\PlatformBillingSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -46,6 +49,14 @@ class SiteCrudTest extends TestCase
         $organization = Organization::query()->create(['public_id' => (string) Str::ulid(), 'name' => 'A', 'slug' => 'duplicate-'.Str::random(4), 'status' => 'active']);
         $admin = User::factory()->create();
         Membership::query()->create(['organization_id' => $organization->id, 'user_id' => $admin->id, 'role_id' => Role::query()->where('key', 'agency-admin')->valueOrFail('id'), 'status' => 'active']);
+        // این تست دربارهٔ اعتبارسنجی URL تکراری است، نه سقف پلن — پس پلن چندسایتی می‌دهیم
+        // تا گیرِ plan.limits وسط راه intent اصلی را نپوشاند.
+        $this->seed(PlatformBillingSeeder::class);
+        Subscription::query()->create([
+            'organization_id' => $organization->id,
+            'plan_id' => Plan::query()->where('key', 'growth')->valueOrFail('id'),
+            'status' => 'active', 'starts_at' => now()->subDay(), 'current_period_end' => now()->addMonth(),
+        ]);
         $client = Client::query()->create(['organization_id' => $organization->id, 'public_id' => (string) Str::ulid(), 'name' => 'C', 'status' => 'active']);
         $project = Project::query()->create(['organization_id' => $organization->id, 'client_id' => $client->id, 'public_id' => (string) Str::ulid(), 'name' => 'P', 'status' => 'active']);
         Site::query()->create(['organization_id' => $organization->id, 'project_id' => $project->id, 'public_id' => (string) Str::ulid(), 'name' => 'Existing', 'canonical_url' => 'https://example.ir', 'status' => 'active']);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Middleware\AssignRequestId;
 use App\Http\Middleware\BlockSensitiveWhileImpersonating;
+use App\Http\Middleware\EnforcePlanLimits;
 use App\Http\Middleware\EnsureClientPortalAccess;
 use App\Http\Middleware\EnsureCurrentOrganization;
 use App\Http\Middleware\EnsureMfaVerified;
@@ -46,6 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'platform.only' => EnsurePlatformAccess::class,
             'impersonation.readonly' => BlockSensitiveWhileImpersonating::class,
             'platform.mfa' => EnsureMfaVerified::class,
+            'plan.limits' => EnforcePlanLimits::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
