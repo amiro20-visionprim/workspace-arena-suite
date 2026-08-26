@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Automation;
 
 use App\Domains\Ai\Actions\DecideReviewItem;
+use App\Domains\Identity\Models\Role;
 use App\Domains\Organization\Models\Organization;
 use App\Domains\Workspace\Models\Client;
 use App\Domains\Workspace\Models\Project;
@@ -33,6 +34,7 @@ class ArticlePublishPipelineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed(RolePermissionSeeder::class);
         $this->seed(ContentStandardsSeeder::class);
         $o = Organization::create(['public_id' => (string) Str::ulid(), 'name' => 'O', 'slug' => 'o', 'status' => 'active']);
         $c = Client::create(['organization_id' => $o->id, 'public_id' => (string) Str::ulid(), 'name' => 'C', 'status' => 'active']);
@@ -127,6 +129,8 @@ class ArticlePublishPipelineTest extends TestCase
         $review = $this->approvedArticleDraft();
         $user = User::factory()->create();
 
+        $this->makeMember($user, $this->site->organization->id);
+
         $result = app(DecideReviewItem::class)->handle($review, $user, 'approved', 'ok');
 
         $this->assertSame('approved', $result['status']);
@@ -160,6 +164,8 @@ class ArticlePublishPipelineTest extends TestCase
         $this->warmup(2); // گرمایش ناقص برای article (نیاز ۵)
         $review = $this->approvedArticleDraft();
         $user = User::factory()->create();
+
+        $this->makeMember($user, $this->site->organization->id);
 
         $result = app(DecideReviewItem::class)->handle($review, $user, 'approved');
 
@@ -248,6 +254,9 @@ class ArticlePublishPipelineTest extends TestCase
         $this->productWarmup(); // گرمایش ۳ از نوع product
         $review = $this->approvedProductDraft();
         $user = User::factory()->create();
+        $this->makeMember($user, $this->site->organization->id);
+
+        $this->makeMember($user, $this->site->organization->id);
 
         $result = app(DecideReviewItem::class)->handle($review, $user, 'approved', 'ok');
 
@@ -284,6 +293,9 @@ class ArticlePublishPipelineTest extends TestCase
         $this->productWarmup(1); // گرمایش ناقص برای product (نیاز ۳)
         $review = $this->approvedProductDraft();
         $user = User::factory()->create();
+        $this->makeMember($user, $this->site->organization->id);
+
+        $this->makeMember($user, $this->site->organization->id);
 
         $result = app(DecideReviewItem::class)->handle($review, $user, 'approved');
 
@@ -302,18 +314,12 @@ class ArticlePublishPipelineTest extends TestCase
         $review = $this->approvedArticleDraft();
         $user = User::factory()->create();
 
+        $this->makeMember($user, $this->site->organization->id);
+
         $result = app(DecideReviewItem::class)->handle($review, $user, 'approved', 'ok');
         $this->assertSame('auto_publish', $result['auto_publish_decision']);
 
         $org = $this->site->organization;
-        \DB::table('memberships')->insert([
-            'organization_id' => $org->id,
-            'user_id' => $user->id,
-            'role_id' => \DB::table('roles')->where('key', 'agency-admin')->value('id'),
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
         $response = $this->actingAs($user)->withSession(['current_organization_id' => $org->id])
             ->get('/app/commands');
         $response->assertOk();
@@ -341,6 +347,8 @@ class ArticlePublishPipelineTest extends TestCase
         $review = $this->approvedArticleDraft();
         $user = User::factory()->create();
 
+        $this->makeMember($user, $this->site->organization->id);
+
         $result = app(DecideReviewItem::class)->handle($review, $user, 'approved', 'ok');
         $this->assertSame('auto_publish', $result['auto_publish_decision']);
 
@@ -354,14 +362,6 @@ class ArticlePublishPipelineTest extends TestCase
         }
 
         $org = $this->site->organization;
-        \DB::table('memberships')->insert([
-            'organization_id' => $org->id,
-            'user_id' => $user->id,
-            'role_id' => \DB::table('roles')->where('key', 'agency-admin')->value('id'),
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
         $response = $this->actingAs($user)->withSession(['current_organization_id' => $org->id])
             ->get('/app/reviews/'.$review);
 
@@ -388,6 +388,7 @@ class ArticlePublishPipelineTest extends TestCase
         $this->productWarmup();
         $review = $this->approvedProductDraft();
         $user = User::factory()->create();
+        $this->makeMember($user, $this->site->organization->id);
 
         // کانکتور ووکامرس: پاسخ واقعی قیمت/موجودی
         Http::fake([
@@ -408,14 +409,6 @@ class ArticlePublishPipelineTest extends TestCase
         ]);
 
         $org = $this->site->organization;
-        \DB::table('memberships')->insert([
-            'organization_id' => $org->id,
-            'user_id' => $user->id,
-            'role_id' => \DB::table('roles')->where('key', 'agency-admin')->value('id'),
-            'status' => 'active',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
         $response = $this->actingAs($user)->withSession(['current_organization_id' => $org->id])
             ->get('/app/reviews/'.$review);
 
@@ -436,10 +429,21 @@ class ArticlePublishPipelineTest extends TestCase
         $review = $this->approvedArticleDraft();
         $user = User::factory()->create();
 
+        $this->makeMember($user, $this->site->organization->id);
+
         $result = app(DecideReviewItem::class)->handle($review, $user, 'rejected', 'poor quality');
 
         $this->assertSame('rejected', $result['status']);
         $this->assertArrayNotHasKey('command_id', $result);
         $this->assertDatabaseMissing('commands', ['site_id' => $this->site->id, 'type' => 'publish_new_article']);
+    }
+
+    /** F3-06: تصمیم‌گیرنده باید عضو سازمانِ مالک سایت باشد (ایزولاسیون). */
+    private function makeMember(User $user, int $organizationId): void
+    {
+        \DB::table('memberships')->updateOrInsert(
+            ['organization_id' => $organizationId, 'user_id' => $user->id],
+            ['role_id' => Role::query()->where('key', 'agency-admin')->value('id'), 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
+        );
     }
 }
