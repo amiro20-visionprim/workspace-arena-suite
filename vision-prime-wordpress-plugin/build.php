@@ -145,7 +145,7 @@ if (class_exists('ZipArchive')) {
     echo "WARN ZipArchive unavailable — zip skipped.\n";
 }
 
-echo "OK  build complete (" . ($readable ? "readable" : "obfuscated") . ", version 1.2.0)\n";
+echo "OK  build complete (" . ($readable ? "readable" : "obfuscated") . ", version 1.3.1)\n";
 
 /* --------------------------------------------------------------------------
  * Encoder

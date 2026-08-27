@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Domains\Connector\Actions\PublishDraftThroughConnector;
 use App\Domains\Content\Models\ContentDraft;
 use App\Domains\Content\Services\WordPressPublisher;
 use App\Domains\Organization\Contracts\CurrentOrganization;
@@ -140,6 +141,15 @@ class ContentWordPressController extends Controller
 
         $draft = ContentDraft::findOrFail($data['draft_id']);
         $site = Site::findOrFail($draft->site_id);
+
+        // مسیر اصلی و امن: کانکتور امضاشده (بدون هیچ رمز وردپرسی).
+        // مسیر REST تنها fallback برای سایت‌های قدیمی با اعتبار ذخیره‌شده است.
+        $connectorResult = app(PublishDraftThroughConnector::class)
+            ->handle($draft, $data['status'] ?? 'publish');
+        if ($connectorResult['success'] === true || ($connectorResult['needs_setup'] ?? false) === true) {
+            return response()->json($connectorResult + ['via' => 'connector']);
+        }
+
         $settings = (array) $site->settings;
 
         // 1. Try site->settings->wordpress (stored credentials)

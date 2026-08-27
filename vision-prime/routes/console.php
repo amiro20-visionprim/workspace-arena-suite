@@ -11,6 +11,7 @@ use App\Domains\Platform\Jobs\CollectPlatformEvents;
 use App\Domains\Platform\Jobs\DunningJob;
 use App\Domains\Platform\Jobs\SendDailyBriefing;
 use App\Domains\Platform\Jobs\SendWeeklyReport;
+use App\Domains\Platform\Services\PlatformSettingsService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -91,3 +92,8 @@ Schedule::job(new SendWeeklyReport)
 
 // ─── پایش سلامت روزانه (F1/F3) ───
 Schedule::command('app:health')->dailyAt('08:00')->name('daily-health')->withoutOverlapping();
+
+// ─── بکاپ روزانه (قابل کنترل از پنل سوپرادمین) ───
+Schedule::command('backup:run')->dailyAt('03:00')
+    ->name('daily-backup')->withoutOverlapping()
+    ->when(fn (): bool => app(PlatformSettingsService::class)->bool('backup_enabled', true));

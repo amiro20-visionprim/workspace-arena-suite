@@ -24,4 +24,22 @@ class SignedConnectorClient implements ConnectorContentClient
 
         return $response->json();
     }
+
+    /** درخواست امضاشدهٔ POST به پلاگین (مثلاً فرمان‌های لحظه‌ای). */
+    public function post(object $connection, string $path, array $payload = []): array
+    {
+        $timestamp = (string) now()->timestamp;
+        $nonce = (string) Str::uuid();
+        $body = (string) json_encode($payload, JSON_UNESCAPED_UNICODE);
+        $payloadStr = "POST\n{$path}\n{$timestamp}\n{$nonce}\n".hash('sha256', $body);
+        $signature = hash_hmac('sha256', $payloadStr, Crypt::decryptString($connection->secret_ciphertext));
+        $response = Http::timeout(60)->acceptJson()->withHeaders([
+            'X-VP-Timestamp' => $timestamp,
+            'X-VP-Nonce' => $nonce,
+            'X-VP-Signature' => $signature,
+        ])->withBody($body, 'application/json')->post(rtrim($connection->platform_url, '/').'/wp-json'.$path);
+        $response->throw();
+
+        return $response->json();
+    }
 }

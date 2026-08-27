@@ -70,6 +70,7 @@ use App\Http\Controllers\Connector\HealthCheckController;
 use App\Http\Controllers\Connector\PairSiteController;
 use App\Http\Controllers\Marketing\AssistantController;
 use App\Http\Controllers\Marketing\LeadController;
+use App\Http\Controllers\Platform\PlatformBackupController;
 use App\Http\Controllers\Platform\PlatformBillingController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformDecisionController;
@@ -191,6 +192,8 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::get('/app/sites/{site}/connector', [SiteConnectorController::class, 'show'])->name('app.sites.connector');
     Route::post('/app/sites/{site}/connector/pairing-token', [SiteConnectorTokenController::class, 'store'])->name('app.sites.connector.pairing-token');
     Route::post('/app/sites/{site}/connector/disconnect', SiteDisconnectController::class)->name('app.sites.connector.disconnect');
+    Route::post('/app/sites/{site}/connector/check', [SiteConnectorController::class, 'check'])->name('app.sites.connector.check')->middleware('throttle:10,1');
+    Route::get('/app/sites/{site}/connector/plugin', [SiteConnectorController::class, 'plugin'])->name('app.sites.connector.plugin');
     Route::post('/app/sites/{site}/connector/wp-credentials', [SiteConnectorController::class, 'saveWpCredentials'])->name('app.sites.connector.wp-credentials');
     Route::delete('/app/sites/{site}/connector/wp-credentials', [SiteConnectorController::class, 'removeWpCredentials'])->name('app.sites.connector.wp-credentials.remove');
     Route::get('/app/sites/{site}/sync', [SiteSyncStatusController::class, 'show'])->name('app.sites.sync.show');
@@ -336,6 +339,10 @@ Route::middleware(['auth'])->prefix('platform/mfa')->group(function (): void {
 
 // ─── اتاق فرماندهی پلتفرم (Super Admin) — بالای سازمان‌ها ───
 Route::middleware(['auth', 'platform.only', 'platform.mfa'])->prefix('platform')->group(function (): void {
+    Route::get('/backups', [PlatformBackupController::class, 'index'])->name('platform.backups');
+    Route::post('/backups/settings', [PlatformBackupController::class, 'update'])->name('platform.backups.settings')->middleware('throttle:10,1');
+    Route::post('/backups/run', [PlatformBackupController::class, 'runNow'])->name('platform.backups.run')->middleware('throttle:3,1');
+    Route::get('/backups/download/{file}', [PlatformBackupController::class, 'download'])->name('platform.backups.download')->where('file', '[A-Za-z0-9._-]+');
     Route::get('/dashboard', PlatformDashboardController::class)->name('platform.dashboard');
     Route::post('/events/{event}/resolve', [PlatformDecisionController::class, 'resolve'])->name('platform.events.resolve')->middleware('throttle:20,1');
     Route::get('/organizations', [PlatformOrganizationController::class, 'index'])->name('platform.organizations.index');

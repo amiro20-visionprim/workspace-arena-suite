@@ -2,13 +2,13 @@
 /**
  * Plugin Name: Vision Prime Connector
  * Description: Secure connection between WordPress and Vision Prime.
- * Version: 1.2.0
+ * Version: 1.3.1
  * Requires PHP: 8.2
  */
 
 defined('ABSPATH') || exit;
 
-define('VISION_PRIME_CONNECTOR_VERSION', '1.2.0');
+define('VISION_PRIME_CONNECTOR_VERSION', '1.3.1');
 define('VISION_PRIME_OPTION', 'vision_prime_connector');
 
 require_once __DIR__ . '/includes/class-vp-guard.php';
@@ -424,9 +424,12 @@ final class Vision_Prime_Connector {
                 // پیش‌نویس محصول → پست ووکامرس (post_type=product)؛ مقاله → پست معمولی
                 $content_type = (string) ($payload['content_type'] ?? 'article');
                 $post_type = $content_type === 'product' ? 'product' : 'post';
+                // وضعیت پست از فرمان می‌آید (publish|draft|pending) — پیش‌فرض publish
+                $requested_status = sanitize_key((string) ($payload['status'] ?? 'publish'));
+                $post_status = in_array($requested_status, ['publish', 'draft', 'pending'], true) ? $requested_status : 'publish';
                 $post_id = wp_insert_post([
                     'post_type' => $post_type,
-                    'post_status' => 'publish',
+                    'post_status' => $post_status,
                     'post_title' => $title,
                     'post_content' => wp_kses_post($content),
                     'post_name' => $slug !== '' ? $slug : null,

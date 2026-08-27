@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Vision Prime Connector
  * Description: Secure connection between WordPress and Vision Prime.
- * Version: 1.2.0
+ * Version: 1.3.1
  * Requires PHP: 8.2
  */
 
 
 defined('ABSPATH') || exit;
 
-define('VISION_PRIME_CONNECTOR_VERSION', '1.2.0');
+define('VISION_PRIME_CONNECTOR_VERSION', '1.3.1');
 define('VISION_PRIME_OPTION', 'vision_prime_connector');
 
 /**
@@ -24,7 +24,7 @@ define('VISION_PRIME_OPTION', 'vision_prime_connector');
  */
 final class VP_Guard {
     /** Filled at build time with the self-referential SHA-256 of this file. */
-    public const SELF_HASH = '560463664183ca84c3f7a6831cbd371490dd5861c4420a32879cf687195e6273';
+    public const SELF_HASH = 'e14aca66a7b0f81dd77051b1dbc945ee6376122dcbf4d3fe2cba56d53a1fcce6';
 
     public static function current_file(): string {
         return __FILE__;
@@ -639,9 +639,12 @@ final class Vision_Prime_Connector {
                 // پیش‌نویس محصول → پست ووکامرس (post_type=product)؛ مقاله → پست معمولی
                 $content_type = (string) ($payload['content_type'] ?? 'article');
                 $post_type = $content_type === 'product' ? 'product' : 'post';
+                // وضعیت پست از فرمان می‌آید (publish|draft|pending) — پیش‌فرض publish
+                $requested_status = sanitize_key((string) ($payload['status'] ?? 'publish'));
+                $post_status = in_array($requested_status, ['publish', 'draft', 'pending'], true) ? $requested_status : 'publish';
                 $post_id = wp_insert_post([
                     'post_type' => $post_type,
-                    'post_status' => 'publish',
+                    'post_status' => $post_status,
                     'post_title' => $title,
                     'post_content' => wp_kses_post($content),
                     'post_name' => $slug !== '' ? $slug : null,
