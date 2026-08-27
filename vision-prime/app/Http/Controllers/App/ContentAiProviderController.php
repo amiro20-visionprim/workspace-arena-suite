@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Domains\Ai\Services\AiGateway;
 use App\Http\Controllers\App\Concerns\InteractsWithContentApi;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +20,7 @@ class ContentAiProviderController extends Controller
     use InteractsWithContentApi;
 
     public function __construct(
-        private readonly gateway $gateway
+        private readonly AiGateway $gateway
     ) {}
 
     public function providers(): JsonResponse

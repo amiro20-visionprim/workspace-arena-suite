@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App\Concerns;
 
+use App\Domains\Organization\Contracts\CurrentOrganization;
+use App\Domains\Workspace\Services\OrganizationPermission;
+
 /**
  * هلپرهای مشترک کنترلرهای API محتوا (پیش از این در ContentApiController ۱۴۱۴خطی بودند).
  */
@@ -14,8 +17,25 @@ trait InteractsWithContentApi
      */
     private function authorizeSuperAdmin(): void
     {
-        if (! (request()->user()?->isSuperAdmin())) {
-            abort(403, 'فقط مدیر سیستم اجازه استفاده از هوش مصنوعی را دارد.');
+        // RBAC یکدست با AiSettingsController (P0): ادمین سازمانِ دارای مجوز
+        // ai.provider.manage.organization یا سوپرادمین پلتفرم.
+        // پاسخ 403 همیشه JSON است تا فرانت «خطا: undefined» نشان ندهد.
+        $user = request()->user();
+        if ($user !== null && $user->isSuperAdmin()) {
+            return;
+        }
+
+        $org = app(CurrentOrganization::class);
+        $allowed = $user !== null
+            && $org->has()
+            && app(OrganizationPermission::class)
+                ->allows($user, $org->get(), 'ai.provider.manage.organization');
+
+        if (! $allowed) {
+            abort(response()->json([
+                'success' => false,
+                'error' => 'برای مدیریت و تست سرویس‌های هوش مصنوعی دسترسی ندارید.',
+            ], 403));
         }
     }
 

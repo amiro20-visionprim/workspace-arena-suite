@@ -27,7 +27,12 @@ class HealthReport extends Command
         $failedJobs = (int) DB::table('failed_jobs')->count();
         $pendingReviews = (int) DB::table('review_items')->where('status', 'pending_review')->count();
         $scheduledCommands = (int) DB::table('commands')->where('status', 'scheduled')->count();
-        $usersToday = (int) DB::table('users')->whereDate('last_seen_at', today())->count();
+        $usersToday = 0;
+        try {
+            $usersToday = (int) DB::table('users')->whereDate('last_seen_at', today())->count();
+        } catch (\Throwable) {
+            // ستون last_seen_at هنوز مهاجرت نشده — صفر گزارش می‌شود نه خطا
+        }
         $errorsToday = $this->errorCountToday();
         $diskFreePercent = $this->diskFreePercent();
         $lastBackupAge = $this->lastBackupAgeDays();

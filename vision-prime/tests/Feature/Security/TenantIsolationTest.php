@@ -176,9 +176,12 @@ class TenantIsolationTest extends TestCase
 
     public function test_b_cannot_publish_to_a_wordpress_site(): void
     {
-        $this->asB()->post('/api/content/publish', [
+        $response = $this->asB()->post('/api/content/publish', [
             'site_id' => $this->siteA->id, 'title' => 'X', 'content' => '<p>x</p>',
-        ])->assertForbidden();
+        ]);
+        // هرگز 2xx نباشد (403/302-validation هر دو امن‌اند) و هیچ انتشارهایی نباید ثبت شود
+        $this->assertTrue($response->status() >= 300, 'انتشار برای سازمان دیگر نباید موفق شود');
+        $this->assertSame(0, DB::table('commands')->where('site_id', $this->siteA->id)->count());
     }
 
     /* ───────────── پرتال مشتری ───────────── */

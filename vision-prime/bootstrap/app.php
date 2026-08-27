@@ -10,6 +10,7 @@ use App\Http\Middleware\EnsureCurrentOrganization;
 use App\Http\Middleware\EnsureMfaVerified;
 use App\Http\Middleware\EnsurePlatformAccess;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\StampLastSeen;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             AssignRequestId::class,
             HandleInertiaRequests::class,
+            StampLastSeen::class,
         ]);
 
         // The WordPress connector calls these routes server-to-server without a session;

@@ -214,10 +214,15 @@ async function testConnection(): Promise<void> {
         model: aiForm.model || undefined,
       }),
     })
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}) as Record<string, unknown>)
+    if (!res.ok) {
+      testResult.value = { success: false, message: `خطا: ${(data as { error?: string; message?: string }).error || (data as { message?: string }).message || res.status}` }
+      testing.value = false
+      return
+    }
     testResult.value = {
       success: data.success,
-      message: data.success ? `اتصال موفق — مدل: ${data.model}` : `خطا: ${data.error}`,
+      message: data.success ? `اتصال موفق — مدل: ${data.model}` : `خطا: ${data.error || data.message || 'نامشخص'}`
     }
   } catch {
     testResult.value = { success: false, message: 'خطا در تست اتصال' }
