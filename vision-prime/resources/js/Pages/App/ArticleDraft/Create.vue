@@ -840,7 +840,12 @@ async function publishToWordPress(status: string) {
     const res = await fetch('/api/content/publish-stored', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ draft_id: draftId, status }),
+      body: JSON.stringify({
+        draft_id: draftId,
+        status,
+        categories: selectedCategoryIds.value.length ? selectedCategoryIds.value : undefined,
+        tags: selectedTagNames.value.length ? selectedTagNames.value : undefined,
+      }),
     })
     publishResult.value = await res.json()
   } catch (e) {

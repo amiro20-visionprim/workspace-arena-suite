@@ -33,7 +33,10 @@ class PublishDraftThroughConnector
      * @param  string  $status  publish|draft|pending — وضعیت پست در وردپرس
      * @return array{success: bool, command_id?: int, error?: string}
      */
-    public function handle(ContentDraft $draft, string $status = 'publish'): array
+    /**
+     * @param  array{categories?: array<int|string>, tags?: array<int|string>}  $terms  دسته/برچسب انتخاب‌شدهٔ کاربر (id یا نام)
+     */
+    public function handle(ContentDraft $draft, string $status = 'publish', array $terms = []): array
     {
         $connection = DB::table('site_connections')
             ->where('site_id', $draft->site_id)
@@ -60,6 +63,8 @@ class PublishDraftThroughConnector
                 'content_type' => $draft->subtype === 'product' ? 'product' : 'article',
                 'meta_title' => $draft->meta_title,
                 'meta_description' => $draft->meta_description,
+                'categories' => array_values($terms['categories'] ?? []),
+                'tags' => array_values($terms['tags'] ?? []),
             ],
         ];
 

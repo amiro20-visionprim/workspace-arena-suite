@@ -302,6 +302,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::post('/api/content/test-provider', [ContentAiProviderController::class, 'testProvider'])->name('api.content.test-provider')->middleware('throttle:5,1');
     Route::get('/api/content/image-provider', [ContentImageController::class, 'providers'])->name('api.content.image-providers');
     Route::post('/api/content/brief', [ContentBriefController::class, 'build'])->name('api.content.brief')->middleware('throttle:20,1');
+    Route::post('/api/content/woo-info', [ContentBriefController::class, 'wooInfo'])->name('api.content.woo-info')->middleware('throttle:20,1');
     Route::post('/api/content/image-provider', [ContentImageController::class, 'store'])->name('api.content.image-provider.store')->middleware('throttle:20,1');
     Route::post('/api/content/image-provider/test', [ContentImageController::class, 'test'])->name('api.content.image-provider.test')->middleware('throttle:5,1');
     Route::get('/api/content/images/search', [ContentImageController::class, 'search'])->name('api.content.images.search')->middleware('throttle:30,1');

@@ -88,7 +88,124 @@ const p = defineProps<{
 
 const page = usePage<{ flash?: { status?: string; error?: string } }>()
 
-const step = ref<'input' | 'outline' | 'generating' | 'result'>('input')
+const studioMode = ref<'quick' | 'pro'>('quick') // استودیوی محصول v2
+const step = ref<'input' | 'brief' | 'outline' | 'generating' | 'result'>('input')
+
+// ─── بریف محصول (حالت حرفه‌ای) ───
+interface ProductBrief {
+  title: string
+  target_query: string
+  content_type: string
+  subtype: string
+  intent: string
+  audience: string
+  tone: string
+  word_range: number[]
+  required_elements: string[]
+  gsc_queries: { query: string; impressions: number }[]
+  internal_link_candidates: { url: string; title: string }[]
+  woo: null | {
+    title: string
+    price: string | null
+    regular_price: string | null
+    sale_price: string | null
+    currency: string | null
+    stock_quantity: number | null
+    stock_status: string | null
+    in_stock: boolean | null
+    url: string | null
+  }
+  notes: string
+}
+const brief = ref<ProductBrief | null>(null)
+const briefLoading = ref(false)
+const briefError = ref('')
+const productUrl = ref('')
+const customInstructions = ref('')
+
+async function buildBrief(): Promise<void> {
+  if (!selectedSiteId.value || !title.value.trim()) return
+  briefLoading.value = true
+  briefError.value = ''
+  try {
+    const res = await fetch('/api/content/brief', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({
+        site_id: Number(selectedSiteId.value),
+        title: title.value,
+        content_type: 'product',
+        product_url: productUrl.value || undefined,
+      }),
+    })
+    const data = (await res.json()) as { success: boolean; brief?: ProductBrief; error?: string }
+    if (data.success && data.brief) {
+      brief.value = data.brief
+      step.value = 'brief'
+    } else {
+      briefError.value = data.error ?? 'ساخت بریف ناموفق بود.'
+    }
+  } catch {
+    briefError.value = 'خطای شبکه'
+  } finally {
+    briefLoading.value = false
+  }
+}
+
+// ─── دسته/برچسب محصول وردپرس ───
+interface WpTerm {
+  id: number
+  name: string
+  count?: number
+}
+const wpProductCats = ref<WpTerm[]>([])
+const wpProductTags = ref<WpTerm[]>([])
+const selectedCategoryIds = ref<number[]>([])
+const selectedTagNames = ref<string[]>([])
+const taxonomiesLoaded = ref(false)
+const taxonomiesError = ref('')
+
+async function loadTaxonomies(): Promise<void> {
+  if (!selectedSiteId.value || taxonomiesLoaded.value) return
+  taxonomiesError.value = ''
+  try {
+    const res = await fetch(`/app/sites/${selectedSiteId.value}/taxonomies?type=product`, {
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    const data = (await res.json()) as {
+      success: boolean
+      connected?: boolean
+      product_cats?: WpTerm[]
+      product_tags?: WpTerm[]
+      error?: string
+    }
+    if (data.success) {
+      wpProductCats.value = data.product_cats ?? []
+      wpProductTags.value = data.product_tags ?? []
+      taxonomiesLoaded.value = true
+    } else {
+      taxonomiesError.value = data.error ?? ''
+    }
+  } catch {
+    taxonomiesError.value = 'خطای شبکه در دریافت دسته‌های محصول'
+  }
+}
+
+function toggleCategory(id: number): void {
+  const i = selectedCategoryIds.value.indexOf(id)
+  if (i === -1) selectedCategoryIds.value.push(id)
+  else selectedCategoryIds.value.splice(i, 1)
+}
+
+function toggleTag(name: string): void {
+  const i = selectedTagNames.value.indexOf(name)
+  if (i === -1) selectedTagNames.value.push(name)
+  else selectedTagNames.value.splice(i, 1)
+}
 const selectedSiteId = ref('')
 const title = ref('')
 const price = ref('')
@@ -253,6 +370,19 @@ watch(title, (v) => {
 })
 
 // Generate Outline
+/** استودیو v2 — دو حالته: quick = مستقیم، pro = بریف. */
+async function fetchOutline(mode: 'quick' | 'pro'): Promise<void> {
+  if (mode === 'pro') {
+    if (brief.value === null) {
+      await buildBrief()
+      return
+    }
+    await generateOutline()
+    return
+  }
+  await generateOutline()
+}
+
 async function generateOutline() {
   if (!selectedSiteId.value || !title.value.trim()) return
   outlineLoading.value = true
@@ -514,7 +644,12 @@ async function publishToWordPress(status: string) {
     const res = await fetch('/api/content/publish-stored', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify({ draft_id: draftId, status }),
+      body: JSON.stringify({
+        draft_id: draftId,
+        status,
+        categories: selectedCategoryIds.value.length ? selectedCategoryIds.value : undefined,
+        tags: selectedTagNames.value.length ? selectedTagNames.value : undefined,
+      }),
     })
     publishResult.value = await res.json()
   } catch (e) {
@@ -575,6 +710,49 @@ async function applySuggestions(suggestions: string[]) {
 
     <!-- STEP 1: INPUT -->
     <div v-if="step === 'input'" class="mx-auto mt-6 max-w-2xl">
+      <!-- ═══ استودیوی محصول v2: انتخاب حالت ═══ -->
+      <VCard v-if="step === 'input'" class="mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-ink-strong text-sm font-bold">حالت تولید محصول را انتخاب کنید</p>
+            <p class="text-ink-muted mt-1 text-xs leading-6">
+              ⚡ <b>سرعتی:</b> فقط نام محصول. &nbsp;·&nbsp; 🎯 <b>حرفه‌ای:</b> بریف + قیمت/موجودی
+              واقعی ووکامرس + دسته‌بندی محصول.
+            </p>
+          </div>
+          <div class="bg-surface-muted flex rounded-xl p-1">
+            <button
+              type="button"
+              class="rounded-lg px-4 py-2 text-xs font-bold transition"
+              :class="studioMode === 'quick' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
+              @click="studioMode = 'quick'"
+            >
+              ⚡ سرعتی
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-4 py-2 text-xs font-bold transition"
+              :class="studioMode === 'pro' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
+              @click="studioMode = 'pro'"
+            >
+              🎯 حرفه‌ای
+            </button>
+          </div>
+        </div>
+        <!-- URL محصول برای بافت ووکامرس (حالت حرفه‌ای) -->
+        <div v-if="studioMode === 'pro'" class="border-line mt-4 border-t pt-4">
+          <label class="text-ink-muted mb-1 block text-xs font-medium"
+            >نشانی محصول در وردپرس (اختیاری — برای خواندن قیمت/موجودی واقعی)</label
+          >
+          <input
+            v-model="productUrl"
+            dir="ltr"
+            placeholder="https://shop.ir/product/serum/"
+            class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+          />
+        </div>
+      </VCard>
+
       <VCard title="مشخصات محصول را وارد کنید">
         <div class="space-y-4">
           <VSelect
@@ -1172,5 +1350,170 @@ async function applySuggestions(suggestions: string[]) {
         </div>
       </div>
     </div>
+    <!-- ═══ گام بریف محصول (حرفه‌ای) ═══ -->
+    <VCard v-if="step === 'brief' && brief" title="📋 بریف محصول — بازبینی و ویرایش">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="space-y-3">
+          <div>
+            <label class="text-ink-muted mb-1 block text-xs font-medium">نام محصول</label>
+            <input
+              v-model="brief.title"
+              class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+            />
+          </div>
+          <div>
+            <label class="text-ink-muted mb-1 block text-xs font-medium">کلیدواژهٔ هدف</label>
+            <input
+              v-model="brief.target_query"
+              class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-ink-muted mb-1 block text-xs font-medium">مخاطب</label>
+              <input
+                v-model="brief.audience"
+                class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label class="text-ink-muted mb-1 block text-xs font-medium">لحن</label>
+              <input
+                v-model="brief.tone"
+                class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="text-ink-muted mb-1 block text-xs font-medium"
+              >دستورالعمل سفارشی (اختیاری)</label
+            >
+            <textarea
+              v-model="customInstructions"
+              rows="3"
+              placeholder="ویژگی‌های کلیدی، مزیت‌ها، الزامات برند…"
+              class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+            />
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="bg-surface-muted rounded-xl p-3 text-xs leading-6">
+            <p class="text-ink-strong mb-1 font-bold">سیستم پیشنهاد می‌دهد</p>
+            <p
+              >· زیرنوع: <b>{{ brief.subtype }}</b> · قصد: <b>{{ brief.intent }}</b></p
+            >
+            <p
+              >· طول هدف:
+              <b dir="ltr">{{ brief.word_range[0] }}–{{ brief.word_range[1] }}</b> کلمه</p
+            >
+            <p
+              >· عناصر الزامی: <b>{{ brief.required_elements.join(' + ') }}</b></p
+            >
+          </div>
+          <!-- پنل ووکامرس: دادهٔ واقعی -->
+          <div
+            v-if="brief.woo"
+            class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-6"
+          >
+            <p class="mb-1 font-bold text-emerald-800">🛒 دادهٔ واقعی ووکامرس</p>
+            <p>
+              قیمت:
+              <b dir="ltr"
+                >{{ brief.woo.sale_price ?? brief.woo.price }} {{ brief.woo.currency }}</b
+              >
+              <span
+                v-if="brief.woo.regular_price && brief.woo.sale_price"
+                class="line-through opacity-60"
+                dir="ltr"
+              >
+                {{ brief.woo.regular_price }}</span
+              >
+            </p>
+            <p>
+              موجودی:
+              <b>{{ brief.woo.in_stock ? 'موجود' : 'ناموجود' }}</b>
+              <span v-if="brief.woo.stock_quantity !== null">
+                ({{ brief.woo.stock_quantity }})
+              </span>
+            </p>
+            <p class="opacity-70">توضیحات با قیمت/موجودی واقعی هماهنگ تولید می‌شود.</p>
+          </div>
+          <p v-else class="text-ink-muted text-[11px] leading-5">
+            💡 برای هماهنگی توضیحات با قیمت واقعی، URL محصول را در گام قبل وارد کنید (اتصال پلاگین
+            لازم است).
+          </p>
+        </div>
+      </div>
+
+      <!-- دسته/برچسب محصول -->
+      <div class="border-line mt-5 border-t pt-4">
+        <div class="mb-2 flex items-center justify-between">
+          <p class="text-ink-strong text-xs font-bold">🗂️ دسته و برچسب محصول (ووکامرس)</p>
+          <button
+            class="text-brand-700 text-[11px] underline"
+            type="button"
+            @click="loadTaxonomies"
+          >
+            دریافت از فروشگاه
+          </button>
+        </div>
+        <p v-if="taxonomiesError" class="text-warning-700 text-[11px]">{{ taxonomiesError }}</p>
+        <template v-else-if="taxonomiesLoaded">
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="c in wpProductCats"
+              :key="c.id"
+              type="button"
+              class="rounded-full border px-3 py-1 text-[11px] font-medium transition"
+              :class="
+                selectedCategoryIds.includes(c.id)
+                  ? 'border-brand-600 bg-brand-50 text-brand-700'
+                  : 'border-line text-ink-muted hover:border-brand-400'
+              "
+              @click="toggleCategory(c.id)"
+            >
+              {{ c.name }} <span class="opacity-60">({{ c.count }})</span>
+            </button>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <button
+              v-for="t in wpProductTags"
+              :key="t.id"
+              type="button"
+              class="rounded-full border px-3 py-1 text-[11px] transition"
+              :class="
+                selectedTagNames.includes(t.name)
+                  ? 'border-success-600 bg-success-50 text-success-700'
+                  : 'border-line text-ink-muted'
+              "
+              @click="toggleTag(t.name)"
+            >
+              #{{ t.name }}
+            </button>
+          </div>
+        </template>
+        <p v-else class="text-ink-muted text-[11px]">
+          دسته‌های محصول را از ووکامرس بگیرید تا محصول در جای درست فروشگاه قرار بگیرد.
+        </p>
+      </div>
+
+      <div class="border-line mt-5 flex flex-wrap gap-2 border-t pt-4">
+        <button
+          class="rounded-lg border px-4 py-2 text-xs font-medium"
+          type="button"
+          @click="step = 'input'"
+        >
+          → بازگشت
+        </button>
+        <button
+          class="bg-brand-600 hover:bg-brand-700 rounded-lg px-4 py-2 text-xs font-bold text-white"
+          type="button"
+          :disabled="outlineLoading"
+          @click="fetchOutline('pro')"
+        >
+          ادامه — ساخت پیش‌نویس ساختار ▶
+        </button>
+      </div>
+    </VCard>
   </AppLayout>
 </template>

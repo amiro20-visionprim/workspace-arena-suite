@@ -137,6 +137,10 @@ class ContentWordPressController extends Controller
         $data = $request->validate([
             'draft_id' => 'required|integer|exists:content_drafts,id',
             'status' => 'nullable|string|in:publish,draft,pending',
+            'categories' => ['nullable', 'array', 'max:20'],
+            'categories.*' => [],
+            'tags' => ['nullable', 'array', 'max:30'],
+            'tags.*' => [],
         ]);
 
         $draft = ContentDraft::findOrFail($data['draft_id']);
@@ -145,7 +149,10 @@ class ContentWordPressController extends Controller
         // مسیر اصلی و امن: کانکتور امضاشده (بدون هیچ رمز وردپرسی).
         // مسیر REST تنها fallback برای سایت‌های قدیمی با اعتبار ذخیره‌شده است.
         $connectorResult = app(PublishDraftThroughConnector::class)
-            ->handle($draft, $data['status'] ?? 'publish');
+            ->handle($draft, $data['status'] ?? 'publish', [
+                'categories' => array_map(fn ($v) => is_array($v) ? ($v['id'] ?? 0) : (is_numeric($v) ? (int) $v : (string) $v), $data['categories'] ?? []),
+                'tags' => array_map(fn ($v) => is_array($v) ? (string) ($v['name'] ?? '') : (string) $v, $data['tags'] ?? []),
+            ]);
         if ($connectorResult['success'] === true || ($connectorResult['needs_setup'] ?? false) === true) {
             return response()->json($connectorResult + ['via' => 'connector']);
         }

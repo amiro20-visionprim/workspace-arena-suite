@@ -2,13 +2,13 @@
 /**
  * Plugin Name: Vision Prime Connector
  * Description: Secure connection between WordPress and Vision Prime.
- * Version: 1.4.0
+ * Version: 1.4.1
  * Requires PHP: 8.2
  */
 
 defined('ABSPATH') || exit;
 
-define('VISION_PRIME_CONNECTOR_VERSION', '1.4.0');
+define('VISION_PRIME_CONNECTOR_VERSION', '1.4.1');
 define('VISION_PRIME_OPTION', 'vision_prime_connector');
 
 require_once __DIR__ . '/includes/class-vp-guard.php';
@@ -443,12 +443,15 @@ final class Vision_Prime_Connector {
                 update_post_meta((int) $post_id, '_vp_created_by', 'vision-prime');
 
                 // v1.4: دسته‌ها و برچسب‌ها (id یا نام — ساخت خودکار) + تصویر شاخص/گالری
+                // v1.4.1: برای محصول، تاکسونومی ووکامرس (product_cat/product_tag) استفاده می‌شود
                 $categories = is_array($payload['categories'] ?? null) ? $payload['categories'] : [];
                 $tags = is_array($payload['tags'] ?? null) ? $payload['tags'] : [];
-                $cat_ids = self::resolve_terms($categories, 'category');
-                $tag_ids = self::resolve_terms($tags, 'post_tag');
-                if ($cat_ids !== []) wp_set_object_terms($post_id, $cat_ids, 'category', true);
-                if ($tag_ids !== []) wp_set_object_terms($post_id, $tag_ids, 'post_tag', true);
+                $cat_tax = ($post_type === 'product' && self::woo_active()) ? 'product_cat' : 'category';
+                $tag_tax = ($post_type === 'product' && self::woo_active()) ? 'product_tag' : 'post_tag';
+                $cat_ids = self::resolve_terms($categories, $cat_tax);
+                $tag_ids = self::resolve_terms($tags, $tag_tax);
+                if ($cat_ids !== []) wp_set_object_terms($post_id, $cat_ids, $cat_tax, true);
+                if ($tag_ids !== []) wp_set_object_terms($post_id, $tag_ids, $tag_tax, true);
 
                 $featured = absint($payload['featured_media_id'] ?? 0);
                 if ($featured > 0) set_post_thumbnail($post_id, $featured);
@@ -490,10 +493,16 @@ final class Vision_Prime_Connector {
             }
             return $out;
         };
-        return new WP_REST_Response([
+        $data = [
             'categories' => $map_terms(get_categories(['hide_empty' => false, 'number' => 200])),
             'tags' => $map_terms(get_terms(['taxonomy' => 'post_tag', 'hide_empty' => false, 'number' => 200])),
-        ]);
+        ];
+        // ووکامرس: دسته/برچسب محصول (برای استودیوی محصول)
+        if (self::woo_active()) {
+            $data['product_cats'] = $map_terms(get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false, 'number' => 200]));
+            $data['product_tags'] = $map_terms(get_terms(['taxonomy' => 'product_tag', 'hide_empty' => false, 'number' => 200]));
+        }
+        return new WP_REST_Response($data);
     }
 
     /**
@@ -544,6 +553,12 @@ final class Vision_Prime_Connector {
         } catch (Throwable $e) {
             return new WP_REST_Response(['error' => $e->getMessage()], 422);
         }
+    }
+
+
+    /** آیا ووکامرس فعال است؟ */
+    private static function woo_active(): bool {
+        return class_exists("WooCommerce");
     }
 
     /** تبدیل ورودی دسته/برچسب (id یا نام) به term_id — با ساخت خودکار. */

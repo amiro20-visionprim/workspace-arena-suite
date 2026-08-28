@@ -255,6 +255,12 @@ function wp_get_attachment_url(int $id): string { return 'http://example.test/wp
 function download_url(string $url, int $timeout = 300) { return is_string($url) && str_starts_with($url, 'http') ? '/tmp/dl.tmp' : new WP_Error('bad', 'bad url'); }
 function media_handle_sideload(array $file, int $post = 0, string $desc = '') { return 88; }
 
+
+/* ── v1.4.1 stubs: WooCommerce ── */
+class WooCommerce {}
+$GLOBALS['vp_terms']['product_cat'] = [new VP_Term(21, 'مراقبت پوست', 'skin-care', 6)];
+$GLOBALS['vp_terms']['product_tag'] = [new VP_Term(22, 'سرم', 'serum', 3)];
+function is_plugin_active(string $p): bool { return true; }
 $GLOBALS['vp_tests'] = ['pass' => 0, 'fail' => 0, 'failures' => []];
 
 function check(string $name, bool $cond, string $detail = ''): void
@@ -521,5 +527,22 @@ if ($t['fail'] > 0) {
 }
 
 /* ───────────── v1.4: taxonomies / media / publish terms ───────────── */
+
+
+/* ── v1.4.1: product taxonomies + publish product terms ── */
+(function () use ($connector, $secret) {
+    $tax = $connector->taxonomies(v14_req('GET', '/vision-prime/v1/taxonomies', [], $secret));
+    check('v141 taxonomies include product_cats when woo active', ($tax->data['product_cats'][0]['slug'] ?? '') === 'skin-care');
+
+    $pub = ['idempotency_key' => 'v141-' . uniqid(), 'site_id' => 5, 'type' => 'publish_new_article', 'payload' => [
+        'title' => 'سرم شب', 'content' => '<p>توضیح کامل محصول</p>', 'content_type' => 'product',
+        'categories' => ['مراقبت پوست'], 'tags' => ['سرم'],
+    ]];
+    $resp = $connector->commands(v14_req('POST', '/vision-prime/v1/commands', $pub, $secret));
+    $pid = (int) ($GLOBALS['vp_last_post_id'] ?? 0);
+    check('v141 product publish resolves product_cat by name', isset($GLOBALS['vp_set_terms'][$pid]['product_cat']) && $GLOBALS['vp_set_terms'][$pid]['product_cat'] === [21]);
+    check('v141 product publish resolves product_tag', ($GLOBALS['vp_set_terms'][$pid]['product_tag'] ?? null) === [22]);
+})();
+
 
 echo "ALL PLUGIN TESTS GREEN\n";

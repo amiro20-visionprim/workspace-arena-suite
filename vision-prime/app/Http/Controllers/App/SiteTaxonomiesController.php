@@ -54,14 +54,18 @@ class SiteTaxonomiesController extends Controller
             ]);
         }
 
+        $map = fn (array $rows): array => array_values(array_map(fn ($c): array => [
+            'id' => (int) $c['id'], 'name' => (string) $c['name'], 'slug' => (string) $c['slug'], 'count' => (int) ($c['count'] ?? 0),
+        ], $rows));
+
         $payload = [
-            'categories' => array_values(array_map(fn ($c): array => [
-                'id' => (int) $c['id'], 'name' => (string) $c['name'], 'slug' => (string) $c['slug'], 'count' => (int) ($c['count'] ?? 0),
-            ], (array) ($data['categories'] ?? []))),
-            'tags' => array_values(array_map(fn ($t): array => [
-                'id' => (int) $t['id'], 'name' => (string) $t['name'], 'count' => (int) ($t['count'] ?? 0),
-            ], (array) ($data['tags'] ?? []))),
+            'categories' => $map((array) ($data['categories'] ?? [])),
+            'tags' => $map((array) ($data['tags'] ?? [])),
         ];
+        if (($request->query('type') === 'product')) {
+            $payload['product_cats'] = $map((array) ($data['product_cats'] ?? []));
+            $payload['product_tags'] = $map((array) ($data['product_tags'] ?? []));
+        }
 
         Cache::put($cacheKey, $payload, now()->addMinutes(10));
 

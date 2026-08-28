@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\App;
 
 use App\Domains\Ai\Services\AiGateway;
+use App\Domains\Connector\Actions\FetchWooProductInfo;
 use App\Domains\Content\Services\ContentProfiler;
 use App\Domains\Content\Services\StandardsKB;
 use App\Domains\Organization\Contracts\CurrentOrganization;
@@ -31,6 +32,8 @@ class ContentBriefController extends Controller
             'site_id' => ['required', 'integer'],
             'title' => ['required', 'string', 'max:200'],
             'target_query' => ['nullable', 'string', 'max:200'],
+            'content_type' => ['nullable', 'string', 'in:article,product'],
+            'product_url' => ['nullable', 'string', 'max:500'],
         ]);
 
         $site = Site::query()
@@ -55,11 +58,12 @@ class ContentBriefController extends Controller
             ->take(8)
             ->all();
 
-        // قالب محتوا و استاندارد مؤثر
+        // قالب محتوا و استاندارد مؤثر (مقاله یا محصول)
+        $contentType = (string) ($data['content_type'] ?? 'article');
         $profiled = app(ContentProfiler::class)->profile([
             'title' => $title,
             'target_query' => $targetQuery,
-            'content_type' => 'article',
+            'content_type' => $contentType,
             'subtype' => '',
         ]);
         $standard = app(StandardsKB::class)->standardFor($profiled, (int) $site->id);
@@ -69,11 +73,25 @@ class ContentBriefController extends Controller
         $audience = (string) ($settings['audience'] ?? '');
         $tone = (string) ($settings['tone'] ?? '');
 
+        // بافت ووکامرس: قیمت/موجودی واقعی محصول (در صورت اتصال پلاگین و ارائهٔ URL)
+        $wooContext = null;
+        if ($contentType === 'product' && ($data['product_url'] ?? '') !== '') {
+            try {
+                $slug = trim((string) preg_replace('#^.*/#', '', rtrim((string) $data['product_url'], '/')));
+                $info = app(FetchWooProductInfo::class)->handle((int) $site->id, null, $slug);
+                if (($info['is_product'] ?? false) === true) {
+                    $wooContext = $info;
+                }
+            } catch (\Throwable) {
+                // بدون اتصال/یافت نشد — بریف بدون بافت ووکامرس ادامه می‌یابد
+            }
+        }
+
         $brief = [
             'title' => $title,
             'target_query' => $targetQuery !== '' ? $targetQuery : ($gscQueries[0]['query'] ?? $title),
             'suggested_title' => $title,
-            'content_type' => 'article',
+            'content_type' => $contentType,
             'subtype' => $profiled['subtype'] ?? 'guide',
             'intent' => $profiled['intent'] ?? 'informational',
             'audience' => $audience !== '' ? $audience : 'کاربران فارسی‌زبان جستجوکنندهٔ این موضوع',
@@ -82,6 +100,7 @@ class ContentBriefController extends Controller
             'required_elements' => $standard['required_elements'] ?? ['faq', 'cta'],
             'gsc_queries' => $gscQueries,
             'internal_link_candidates' => $this->internalLinkCandidates($site->id, $targetQuery ?: $title),
+            'woo' => $wooContext,
             'notes' => '',
         ];
 
@@ -104,5 +123,37 @@ class ContentBriefController extends Controller
             ->take(5)
             ->values()
             ->all();
+    }
+
+    /** قیمت/موجودی واقعی محصول از وردپرس (پنل ووکامرس استودیوی محصول). */
+    public function wooInfo(Request $request, CurrentOrganization $org): JsonResponse
+    {
+        $data = $request->validate([
+            'site_id' => ['required', 'integer'],
+            'slug' => ['nullable', 'string', 'max:200'],
+            'url' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $site = Site::query()->where('organization_id', $org->id())->findOrFail((int) $data['site_id']);
+
+        $slug = trim((string) ($data['slug'] ?? ''));
+        if ($slug === '' && ($data['url'] ?? '') !== '') {
+            $slug = trim((string) preg_replace('#^.*/#', '', rtrim((string) $data['url'], '/')));
+        }
+        if ($slug === '') {
+            return response()->json(['success' => false, 'error' => 'اسلاگ یا URL محصول لازم است.'], 422);
+        }
+
+        try {
+            $info = app(FetchWooProductInfo::class)->handle((int) $site->id, null, $slug);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'error' => 'اتصال وردپرس برقرار نیست: '.mb_substr($e->getMessage(), 0, 150)]);
+        }
+
+        if (($info['is_product'] ?? false) !== true) {
+            return response()->json(['success' => false, 'error' => 'محصولی با این اسلاگ در ووکامرس یافت نشد.']);
+        }
+
+        return response()->json(['success' => true, 'product' => $info]);
     }
 }
