@@ -46,7 +46,7 @@ class PlanLimits
             'max_clients' => max(1, (int) ($raw['max_clients'] ?? 1)),
             'max_ai_tokens_monthly' => max(0, (int) ($raw['max_ai_tokens_monthly'] ?? 0)),
             'max_profiles' => max(1, (int) ($raw['max_profiles'] ?? 1)),
-            'max_images_monthly' => max(0, (int) ($raw['max_images_monthly'] ?? (int) config('vision-prime.images_monthly_default', 10))),
+            'max_images_weekly' => max(0, (int) ($raw['max_images_weekly'] ?? (int) config('vision-prime.images_weekly_default', 15))),
             'plan_key' => $plan?->key ?? 'trial',
         ];
     }
@@ -99,13 +99,13 @@ class PlanLimits
         return $limits['max_ai_tokens_monthly'] - $this->aiTokensUsedThisMonth($organization);
     }
 
-    /** تصاویر تولیدشده با AI در این ماه (استوک و پیشنهاد محاسبه نمی‌شوند). */
-    public function aiImagesUsedThisMonth(Organization $organization): int
+    /** تصاویر تولیدشده با AI در این هفته (استوک و پیشنهاد محاسبه نمی‌شوند). */
+    public function aiImagesUsedThisWeek(Organization $organization): int
     {
         return (int) \DB::table('media_assets')
             ->where('organization_id', $organization->getKey())
             ->where('source', 'ai')
-            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
             ->count();
     }
 
@@ -114,13 +114,13 @@ class PlanLimits
     {
         $limits = $this->limitsFor($organization);
 
-        if ($limits['max_images_monthly'] <= 0) {
+        if ($limits['max_images_weekly'] <= 0) {
             return 'تولید تصویر با هوش مصنوعی در پلن فعلی فعال نیست؛ جستجوی استوک در دسترس است.';
         }
 
-        return $this->aiImagesUsedThisMonth($organization) < $limits['max_images_monthly']
+        return $this->aiImagesUsedThisWeek($organization) < $limits['max_images_weekly']
             ? null
-            : "سهمیهٔ ماهانهٔ {$limits['max_images_monthly']} تصویر AI پلن «{$limits['plan_key']}» به پایان رسید. جستجوی استوک همچنان فعال است.";
+            : "سهمیهٔ {$limits['max_images_weekly']} تصویر AI در این هفته به پایان رسید. جستجوی استوک همچنان فعال است و ابتدای هفتهٔ بعد سهمیه تمدید می‌شود.";
     }
 
     /** پیام خطای سقف AI یا null اگر مجاز است. */

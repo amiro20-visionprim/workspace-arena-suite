@@ -12,7 +12,6 @@ use App\Http\Controllers\App\CommandDispatchController;
 use App\Http\Controllers\App\ContentAiProviderController;
 use App\Http\Controllers\App\ContentBriefController;
 use App\Http\Controllers\App\ContentCalendarController;
-use App\Http\Controllers\App\ContentCommandCenterController;
 use App\Http\Controllers\App\ContentDraftController;
 use App\Http\Controllers\App\ContentGenerateController;
 use App\Http\Controllers\App\ContentGuardrailController;
@@ -166,16 +165,6 @@ Route::middleware(['auth', 'current.organization', 'client.portal'])->prefix('cl
 Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::get('/app/dashboard', DashboardController::class)->name('app.dashboard');
     // Content Command Center v2
-    Route::get('/app/content-command-center', [ContentCommandCenterController::class, 'index'])->name('app.content-command-center');
-    Route::get('/api/command-center/performance', [ContentCommandCenterController::class, 'performance'])->name('api.command-center.performance');
-    Route::get('/api/command-center/serp', [ContentCommandCenterController::class, 'serpResults'])->name('api.command-center.serp');
-    Route::post('/api/command-center/serp/analyze', [ContentCommandCenterController::class, 'serpAnalyze'])->name('api.command-center.serp.analyze');
-    Route::get('/api/command-center/keywords', [ContentCommandCenterController::class, 'keywords'])->name('api.command-center.keywords');
-    Route::get('/api/command-center/calendar', [ContentCommandCenterController::class, 'calendar'])->name('api.command-center.calendar');
-    Route::post('/api/command-center/calendar', [ContentCommandCenterController::class, 'calendarStore'])->name('api.command-center.calendar.store');
-    Route::get('/api/command-center/experiments', [ContentCommandCenterController::class, 'experiments'])->name('api.command-center.experiments');
-    Route::get('/api/command-center/suggestions', [ContentCommandCenterController::class, 'suggestions'])->name('api.command-center.suggestions');
-    Route::post('/api/command-center/suggestions/{id}/action', [ContentCommandCenterController::class, 'suggestionAction'])->name('api.command-center.suggestions.action');
     Route::get('/app/training', [TrainingController::class, 'agency'])->name('app.training');
 
     Route::get('/app/notifications', [NotificationController::class, 'index'])->name('app.notifications.index');

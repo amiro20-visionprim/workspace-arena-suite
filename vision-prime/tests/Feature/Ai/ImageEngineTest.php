@@ -114,7 +114,7 @@ class ImageEngineTest extends TestCase
         $this->assertDatabaseHas('media_assets', ['organization_id' => $this->org->id, 'source' => 'ai', 'alt' => 'کاور سئو']);
     }
 
-    public function test_generate_blocked_when_plan_quota_exhausted(): void
+    public function test_generate_blocked_when_weekly_quota_exhausted(): void
     {
         $this->seed(PlatformBillingSeeder::class);
         DB::table('subscriptions')->insert([
@@ -122,10 +122,12 @@ class ImageEngineTest extends TestCase
             'plan_id' => DB::table('plans')->where('key', 'starter')->value('id'),
             'status' => 'active', 'starts_at' => now()->subDay(), 'current_period_end' => now()->addMonth(),
         ]);
-        // پر کردن سهمیه: starter = ۱۰ تصویر
-        for ($i = 0; $i < 10; $i++) {
+        // سهمیهٔ هفتگی = ۱۵ (تصمیم موقت مالک) — ۱۵ تولید در این هفته
+        for ($i = 0; $i < 15; $i++) {
             DB::table('media_assets')->insert(['organization_id' => $this->org->id, 'source' => 'ai', 'created_at' => now(), 'updated_at' => now()]);
         }
+        // هفتهٔ گذشته شمرده نمی‌شود
+        DB::table('media_assets')->insert(['organization_id' => $this->org->id, 'source' => 'ai', 'created_at' => now()->subWeek()->subDay(), 'updated_at' => now()]);
 
         $this->asAdmin()->postJson('/api/content/images/generate', ['prompt' => 'x'])
             ->assertStatus(422)->assertJsonValidationErrors('plan_limit');
