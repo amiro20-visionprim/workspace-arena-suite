@@ -108,7 +108,20 @@ function wp_generate_uuid4(): string
 }
 function get_bloginfo(string $f = ''): string { return '6.7'; }
 function home_url(string $p = ''): string { return 'http://example.test' . $p; }
+function wp_parse_url(string $u, int $component = -1): mixed { return parse_url($u, $component); }
 function esc_url_raw(string $u): string { return $u; }
+function wp_kses_post(string $h): string { return $h; }
+function sanitize_title(string $t): string { return trim(preg_replace('/[^a-z0-9\\p{Arabic}]+/u', '-', strtolower($t)) ?? '', '-'); }
+function wp_insert_post(array $args, bool $wp_error = false) {
+    $GLOBALS['vp_insert_post_args'] = $args;
+    $p = new WP_Post();
+    $p->ID = 500 + count($GLOBALS['vp_set_terms'] ?? []); // شناسهٔ یکتا کافی
+    $p->post_name = $args['post_name'] ?? 'vp-post';
+    $p->post_content = $args['post_content'] ?? '';
+    vp_store()['posts'][] = $p;
+    $GLOBALS['vp_last_post_id'] = $p->ID;
+    return $p->ID;
+}
 function esc_url(string $u): string { return $u; }
 function esc_attr(string $s): string { return htmlspecialchars($s, ENT_QUOTES); }
 function esc_html(string $s): string { return htmlspecialchars($s); }
@@ -214,6 +227,33 @@ function get_page_by_path(string $path, string $output = OBJECT, array $types = 
 }
 
 /* ============================ test runner ============================ */
+
+
+/* ───────────── v1.4 stubs: taxonomies / media / terms ───────────── */
+class VP_Term { public int $term_id; public string $name; public string $slug; public int $parent = 0; public int $count = 0;
+    public function __construct(int $id, string $name, string $slug, int $count = 0) { $this->term_id = $id; $this->name = $name; $this->slug = $slug; $this->count = $count; } }
+$GLOBALS['vp_terms'] = ['category' => [new VP_Term(5, 'سئو', 'seo', 4), new VP_Term(9, 'فروش', 'sales', 2)], 'post_tag' => [new VP_Term(11, 'راهنما', 'guide', 7)]];
+$GLOBALS['vp_set_terms'] = [];
+$GLOBALS['vp_thumbnail'] = [];
+function get_categories(array $a = []): array { return $GLOBALS['vp_terms']['category']; }
+function get_terms(array $a = []): array { return $GLOBALS['vp_terms'][$a['taxonomy'] ?? 'post_tag'] ?? []; }
+function get_term_by(string $field, string $value, string $tax): VP_Term|false {
+    foreach ($GLOBALS['vp_terms'][$tax] ?? [] as $t) {
+        if (($field === 'name' && $t->name === $value) || ($field === 'slug' && $t->slug === $value)) return $t;
+    }
+    return false;
+}
+function wp_insert_term(string $name, string $tax): array { $GLOBALS['vp_terms'][$tax][] = new VP_Term(100 + count($GLOBALS['vp_terms'][$tax]), $name, 'slug-' . md5($name)); return ['term_id' => 100 + count($GLOBALS['vp_terms'][$tax])]; }
+function wp_set_object_terms(int $post, array $ids, string $tax, bool $append = false): void { $GLOBALS['vp_set_terms'][$post][$tax] = $ids; }
+function set_post_thumbnail(int $post, int $thumb): bool { $GLOBALS['vp_thumbnail'][$post] = $thumb; return true; }
+function wp_generate_password(int $len = 12, bool $special = true): string { return substr(str_repeat('ab12', 8), 0, $len); }
+function wp_upload_bits(string $name, mixed $type, string $data): array { $GLOBALS['vp_uploaded'] = $data; return ['file' => '/tmp/' . $name, 'url' => 'http://example.test/uploads/' . $name, 'error' => false]; }
+function wp_insert_attachment(array $attr, string $file) { $GLOBALS['vp_attachment'] = $attr; return 77; }
+function wp_generate_attachment_metadata(int $id, string $file): array { return ['width' => 10, 'height' => 10]; }
+function wp_update_attachment_metadata(int $id, array $m): void {}
+function wp_get_attachment_url(int $id): string { return 'http://example.test/wp-uploads/' . $id . '.png'; }
+function download_url(string $url, int $timeout = 300) { return is_string($url) && str_starts_with($url, 'http') ? '/tmp/dl.tmp' : new WP_Error('bad', 'bad url'); }
+function media_handle_sideload(array $file, int $post = 0, string $desc = '') { return 88; }
 
 $GLOBALS['vp_tests'] = ['pass' => 0, 'fail' => 0, 'failures' => []];
 
@@ -424,6 +464,49 @@ check('rank math + yoast active: meta writes to both engines', $bothOut === 'OK'
 
 putenv('VP_ENGINE');
 
+
+/* ============================ v1.4: taxonomies / media / publish terms ============================ */
+
+reset_wp();
+$secret = 'sk_v14_' . bin2hex(random_bytes(8));
+update_option('vision_prime_connector', ['platform_url' => 'https://app.example.test', 'site_id' => 5, 'secret' => VP_Secret::encrypt($secret)]);
+
+function v14_req(string $method, string $path, array $json, string $secret): WP_REST_Request {
+    $body = wp_json_encode($json);
+    $ts = (string) time();
+    $nonce = 'v14-' . bin2hex(random_bytes(5));
+    $sig = hash_hmac('sha256', $method . "\n" . $path . "\n" . $ts . "\n" . $nonce . "\n" . hash('sha256', (string) $body), $secret);
+    return new WP_REST_Request($method, $path, (string) $body, ['x-vp-timestamp' => $ts, 'x-vp-nonce' => $nonce, 'x-vp-signature' => $sig], $json);
+}
+
+$connector = new Vision_Prime_Connector();
+
+// taxonomies
+$tax = $connector->taxonomies(v14_req('GET', '/vision-prime/v1/taxonomies', [], $secret));
+check('v14 taxonomies returns categories+tags', is_array($tax->data['categories'] ?? null) && $tax->data['categories'][0]['slug'] === 'seo' && ($tax->data['tags'][0]['count'] ?? 0) === 7);
+
+// media b64
+$b64 = base64_encode(str_repeat('x', 200));
+$media = $connector->media(v14_req('POST', '/vision-prime/v1/media', ['file_b64' => $b64, 'alt' => 'کاور سئو'], $secret));
+check('v14 media b64 upload returns media_id+url', (int) ($media->data['media_id'] ?? 0) > 0 && str_contains((string) ($media->data['url'] ?? ''), 'wp-uploads'));
+check('v14 media stores alt on attachment', get_post_meta((int) $media->data['media_id'], '_wp_attachment_image_alt', true) === 'کاور سئو');
+
+// media download_url
+$media2 = $connector->media(v14_req('POST', '/vision-prime/v1/media', ['download_url' => 'https://img.test/p.jpg'], $secret));
+check('v14 media download_url sideload', (int) ($media2->data['media_id'] ?? 0) > 0, wp_json_encode($media2->data));
+
+// publish با دسته/برچسب/کاور
+$pubPayload = ['idempotency_key' => 'v14-' . uniqid(), 'site_id' => 5, 'type' => 'publish_new_article', 'payload' => [
+    'title' => 'مقاله با دسته', 'content' => '<p>محتوای کامل</p>',
+    'categories' => [5, 'گوشی موبایل'], 'tags' => ['راهنما'], 'featured_media_id' => 77,
+]];
+$pub = $connector->commands(v14_req('POST', '/vision-prime/v1/commands', $pubPayload, $secret));
+$postId = (int) ($GLOBALS['vp_last_post_id'] ?? 0);
+check('v14 publish executes', $pub->status === 200 && ($pub->data['status'] ?? '') === 'ack' && $postId > 0);
+check('v14 publish sets categories (id + created-by-name)', isset($GLOBALS['vp_set_terms'][$postId]['category']) && in_array(5, $GLOBALS['vp_set_terms'][$postId]['category'], true) && count($GLOBALS['vp_set_terms'][$postId]['category']) === 2);
+check('v14 publish sets tags by name', ($GLOBALS['vp_set_terms'][$postId]['post_tag'] ?? null) === [11]);
+check('v14 publish sets featured thumbnail', (int) ($GLOBALS['vp_thumbnail'][$postId] ?? 0) === 77);
+
 /* ============================ summary ============================ */
 
 echo "\n" . str_repeat('=', 60) . "\n";
@@ -436,4 +519,7 @@ if ($t['fail'] > 0) {
     }
     exit(1);
 }
+
+/* ───────────── v1.4: taxonomies / media / publish terms ───────────── */
+
 echo "ALL PLUGIN TESTS GREEN\n";

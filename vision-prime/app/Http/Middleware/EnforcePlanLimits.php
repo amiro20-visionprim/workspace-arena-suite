@@ -41,6 +41,7 @@ class EnforcePlanLimits
             'sites' => $this->limits->canCreate($organization, 'sites'),
             'clients' => $this->limits->canCreate($organization, 'clients'),
             'ai' => $this->limits->aiQuotaError($organization),
+            'images' => $this->limits->imageQuotaError($organization),
             default => null,
         };
 

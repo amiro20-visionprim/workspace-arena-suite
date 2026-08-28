@@ -124,6 +124,75 @@ const freeModels = [
   },
 ]
 
+// ─── سرویس تصویر (Image Engine) ───
+const imageProviders: { key: string; label: string }[] = [
+  { key: 'pexels', label: 'Pexels (استوک — رایگان)' },
+  { key: 'unsplash', label: 'Unsplash (استوک — رایگان)' },
+  { key: 'openai-image', label: 'OpenAI Image (تولید اختصاصی)' },
+]
+const imageForm = useForm({ provider: 'pexels', api_key: '' })
+const imageSaving = ref(false)
+const imageTest = ref<null | { success: boolean; message: string }>(null)
+
+async function saveImageProvider(): Promise<void> {
+  if (!imageForm.provider || !imageForm.api_key) return
+  imageSaving.value = true
+  imageTest.value = null
+  try {
+    const res = await fetch('/api/content/image-provider', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({ provider: imageForm.provider, api_key: imageForm.api_key }),
+    })
+    const data = (await res.json().catch(() => ({}))) as {
+      success?: boolean
+      message?: string
+      error?: string
+    }
+    if (!res.ok) {
+      imageTest.value = {
+        success: false,
+        message: `خطا: ${data.error || data.message || res.status}`,
+      }
+    } else {
+      imageTest.value = { success: true, message: data.message || 'ذخیره شد.' }
+      imageForm.reset('api_key')
+    }
+  } catch {
+    imageTest.value = { success: false, message: 'خطای شبکه' }
+  } finally {
+    imageSaving.value = false
+  }
+}
+
+async function testImageProvider(): Promise<void> {
+  if (!imageForm.provider || !imageForm.api_key) return
+  imageSaving.value = true
+  imageTest.value = null
+  try {
+    const res = await fetch('/api/content/image-provider/test', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({ provider: imageForm.provider, api_key: imageForm.api_key }),
+    })
+    const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
+    imageTest.value = {
+      success: data.success === true,
+      message: data.success ? '✅ اتصال برقرار است.' : `❌ ${data.error || 'ناموفق'}`,
+    }
+  } catch {
+    imageTest.value = { success: false, message: 'خطای شبکه' }
+  } finally {
+    imageSaving.value = false
+  }
+}
+
 const aiForm = useForm({
   provider: 'deepseek',
   api_key: '',
@@ -333,6 +402,45 @@ async function testConnection(): Promise<void> {
 
       <!-- AI Gateway — فقط سوپر ادمین -->
       <template v-if="isSuperAdmin">
+        <!-- ═══ سرویس تصویر (Image Engine) ═══ -->
+        <VCard title="🖼️ سرویس تصویر (استوک + تولید AI)">
+          <p class="text-ink-muted text-xs leading-6">
+            تصاویر مقالات و محصولات از سه منبع هوشمند تأمین می‌شوند: جستجوی استوک حرفه‌ای (رایگان)،
+            تولید اختصاصی با هوش مصنوعی (با کلید OpenAI) و پیشنهاد جای‌نگهدار. کلید استوک Pexels را
+            رایگان از pexels.com/api بگیرید — پیشنهاد می‌شود همین را فعال کنید.
+          </p>
+          <form
+            class="border-line mt-5 grid gap-4 border-t pt-5 sm:grid-cols-3"
+            @submit.prevent="saveImageProvider"
+          >
+            <VSelect
+              v-model="imageForm.provider"
+              label="سرویس"
+              :options="imageProviders.map((p) => ({ label: p.label, value: p.key }))"
+            />
+            <VInput
+              v-model="imageForm.api_key"
+              label="کلید API"
+              type="password"
+              dir="ltr"
+              placeholder="کلید را اینجا بچسبانید"
+            />
+            <div class="flex items-end gap-2">
+              <VButton type="submit" :loading="imageSaving">💾 ذخیره</VButton>
+              <VButton
+                type="button"
+                variant="secondary"
+                :loading="imageSaving"
+                @click="testImageProvider"
+              >
+                🔌 تست
+              </VButton>
+            </div>
+          </form>
+          <VAlert v-if="imageTest" :tone="imageTest.success ? 'success' : 'danger'" class="mt-3">
+            {{ imageTest.message }}
+          </VAlert>
+        </VCard>
         <VCard
           class="lg:col-span-2"
           title=" هوش مصنوعی — Gateway"

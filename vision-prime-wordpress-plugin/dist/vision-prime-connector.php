@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Vision Prime Connector
  * Description: Secure connection between WordPress and Vision Prime.
- * Version: 1.3.1
+ * Version: 1.4.0
  * Requires PHP: 8.2
  */
 
 
 defined('ABSPATH') || exit;
 
-define('VISION_PRIME_CONNECTOR_VERSION', '1.3.1');
+define('VISION_PRIME_CONNECTOR_VERSION', '1.4.0');
 define('VISION_PRIME_OPTION', 'vision_prime_connector');
 
 /**
@@ -24,7 +24,7 @@ define('VISION_PRIME_OPTION', 'vision_prime_connector');
  */
 final class VP_Guard {
     /** Filled at build time with the self-referential SHA-256 of this file. */
-    public const SELF_HASH = 'e14aca66a7b0f81dd77051b1dbc945ee6376122dcbf4d3fe2cba56d53a1fcce6';
+    public const SELF_HASH = 'f5d130cce04c48b965bb1c2c0c6574c55f865c5ddc57b8525109cd14362c481e';
 
     public static function current_file(): string {
         return __FILE__;
@@ -392,6 +392,8 @@ final class Vision_Prime_Connector {
         register_rest_route('vision-prime/v1', '/commands', ['methods' => 'POST', 'callback' => [$this, 'commands'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
         register_rest_route('vision-prime/v1', '/rollback', ['methods' => 'POST', 'callback' => [$this, 'rollback'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
         register_rest_route('vision-prime/v1', '/product-info', ['methods' => 'POST', 'callback' => [$this, 'product_info'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
+        register_rest_route('vision-prime/v1', '/taxonomies', ['methods' => 'GET', 'callback' => [$this, 'taxonomies'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
+        register_rest_route('vision-prime/v1', '/media', ['methods' => 'POST', 'callback' => [$this, 'media'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
     }
 
     public function health(): WP_REST_Response {
@@ -654,6 +656,19 @@ final class Vision_Prime_Connector {
                 }
                 // علامت امنیت: پست‌هایی که VP ساخته — rollback فقط همین‌ها را حذف می‌کند.
                 update_post_meta((int) $post_id, '_vp_created_by', 'vision-prime');
+
+                // v1.4: دسته‌ها و برچسب‌ها (id یا نام — ساخت خودکار) + تصویر شاخص/گالری
+                $categories = is_array($payload['categories'] ?? null) ? $payload['categories'] : [];
+                $tags = is_array($payload['tags'] ?? null) ? $payload['tags'] : [];
+                $cat_ids = self::resolve_terms($categories, 'category');
+                $tag_ids = self::resolve_terms($tags, 'post_tag');
+                if ($cat_ids !== []) wp_set_object_terms($post_id, $cat_ids, 'category', true);
+                if ($tag_ids !== []) wp_set_object_terms($post_id, $tag_ids, 'post_tag', true);
+
+                $featured = absint($payload['featured_media_id'] ?? 0);
+                if ($featured > 0) set_post_thumbnail($post_id, $featured);
+                $gallery = array_filter(array_map('absint', is_array($payload['gallery_media_ids'] ?? null) ? $payload['gallery_media_ids'] : []));
+                if ($gallery !== [] && $post_type === 'product') update_post_meta((int) $post_id, '_product_image_gallery', implode(',', $gallery));
                 // Meta SEO (title/description) را روی پست جدید می‌نویسیم تا همانجا دیده شود.
                 $meta_title = sanitize_text_field((string) ($payload['meta_title'] ?? ''));
                 if ($meta_title !== '') {
@@ -678,6 +693,93 @@ final class Vision_Prime_Connector {
      * Payload: { post_id } or { slug } (WP post id or product slug).
      * Responds synchronously (no async callback) with the product data.
      */
+    /**
+     * فهرست دسته‌ها و برچسب‌ها (امضاشده) — جایگزین REST عمومی در همگام‌سازی.
+     */
+    public function taxonomies(WP_REST_Request $request): WP_REST_Response {
+        $map_terms = static function (array $terms): array {
+            $out = [];
+            foreach ($terms as $t) {
+                if (!is_object($t)) continue;
+                $out[] = ['id' => (int) $t->term_id, 'name' => (string) $t->name, 'slug' => (string) $t->slug, 'parent' => (int) $t->parent, 'count' => (int) $t->count];
+            }
+            return $out;
+        };
+        return new WP_REST_Response([
+            'categories' => $map_terms(get_categories(['hide_empty' => false, 'number' => 200])),
+            'tags' => $map_terms(get_terms(['taxonomy' => 'post_tag', 'hide_empty' => false, 'number' => 200])),
+        ]);
+    }
+
+    /**
+     * آپلود رسانه (امضاشده): file_b64 یا download_url + alt → media_id + url.
+     */
+    public function media(WP_REST_Request $request): WP_REST_Response {
+        $params = $request->get_json_params();
+        $alt = sanitize_text_field((string) ($params['alt'] ?? ''));
+        $b64 = (string) ($params['file_b64'] ?? '');
+        $download_url = esc_url_raw((string) ($params['download_url'] ?? ''));
+
+        // در وردپرس واقعی فایل‌های ادمین لود می‌شوند؛ اگر توابع از قبل تعریف باشند (محیط تست) رد می‌شویم.
+        if (! function_exists('wp_upload_bits')) { require_once ABSPATH . 'wp-admin/includes/file.php'; }
+        if (! function_exists('media_handle_sideload')) { require_once ABSPATH . 'wp-admin/includes/media.php'; }
+        if (! function_exists('wp_generate_attachment_metadata')) { require_once ABSPATH . 'wp-admin/includes/image.php'; }
+
+        try {
+            if ($b64 !== '') {
+                $raw = base64_decode($b64, true);
+                if ($raw === false || strlen($raw) < 64) throw new RuntimeException('file_b64 نامعتبر است.');
+                $filename = 'vp-' . gmdate('Ymd-His') . '-' . wp_generate_password(8, false) . '.png';
+                $upload = wp_upload_bits($filename, null, $raw);
+                if (!empty($upload['error'])) throw new RuntimeException('آپلود ناموفق: ' . $upload['error']);
+                $file = $upload['file'];
+                $attachment_id = wp_insert_attachment([
+                    'post_mime_type' => 'image/png',
+                    'post_title' => ($alt !== '' ? $alt : 'vision-prime-image'),
+                    'post_status' => 'inherit',
+                ], $file);
+                if (is_wp_error($attachment_id) || (int) $attachment_id === 0) throw new RuntimeException('ثبت پیوست ناموفق.');
+                wp_update_attachment_metadata((int) $attachment_id, wp_generate_attachment_metadata((int) $attachment_id, $file));
+            } elseif ($download_url !== '') {
+                $tmp = download_url($download_url, 120);
+                if (is_wp_error($tmp)) throw new RuntimeException('دانلود ناموفق: ' . $tmp->get_error_message());
+                $ext = strtolower(pathinfo((string) wp_parse_url($download_url, PHP_URL_PATH), PATHINFO_EXTENSION));
+                if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) $ext = 'jpg';
+                $file_array = ['name' => 'vp-' . gmdate('Ymd-His') . '.' . $ext, 'tmp_name' => $tmp];
+                $id = media_handle_sideload($file_array, 0, $alt);
+                if (is_wp_error($id)) { @unlink($tmp); throw new RuntimeException('sideload ناموفق: ' . $id->get_error_message()); }
+                $attachment_id = $id;
+            } else {
+                throw new RuntimeException('file_b64 یا download_url لازم است.');
+            }
+
+            if ($alt !== '') update_post_meta((int) $attachment_id, '_wp_attachment_image_alt', $alt);
+
+            return new WP_REST_Response(['media_id' => (int) $attachment_id, 'url' => (string) wp_get_attachment_url((int) $attachment_id)], 200);
+        } catch (Throwable $e) {
+            return new WP_REST_Response(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /** تبدیل ورودی دسته/برچسب (id یا نام) به term_id — با ساخت خودکار. */
+    private static function resolve_terms(array $input, string $taxonomy): array {
+        $ids = [];
+        foreach ($input as $item) {
+            if (is_int($item) || ctype_digit((string) $item)) { $ids[] = (int) $item; continue; }
+            $name = sanitize_text_field((string) $item);
+            if ($name === '') continue;
+            $term = get_term_by('name', $name, $taxonomy);
+            if ($term === false) $term = get_term_by('slug', sanitize_title($name), $taxonomy);
+            if ($term === false) {
+                $created = wp_insert_term($name, $taxonomy);
+                $ids[] = is_wp_error($created) ? 0 : (int) $created['term_id'];
+            } else {
+                $ids[] = (int) $term->term_id;
+            }
+        }
+        return array_values(array_filter($ids));
+    }
+
     public function product_info(WP_REST_Request $request): WP_REST_Response {
         if (VP_Guard::tampered()) {
             return new WP_REST_Response(['error' => 'integrity check failed'], 403);

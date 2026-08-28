@@ -61,7 +61,7 @@ foreach ($includes as $inc) {
         1
     );
 }
-if (str_contains($main, 'require_once')) {
+if (str_contains($main, 'require_once __DIR__')) {
     fwrite(STDERR, "Failed to inline one or more requires.\n");
     exit(1);
 }
@@ -145,7 +145,7 @@ if (class_exists('ZipArchive')) {
     echo "WARN ZipArchive unavailable — zip skipped.\n";
 }
 
-echo "OK  build complete (" . ($readable ? "readable" : "obfuscated") . ", version 1.3.1)\n";
+echo "OK  build complete (" . ($readable ? "readable" : "obfuscated") . ", version 1.4.0)\n";
 
 /* --------------------------------------------------------------------------
  * Encoder

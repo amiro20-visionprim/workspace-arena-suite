@@ -9,6 +9,9 @@ return [
     'default_timezone' => env('VISION_PRIME_DEFAULT_TIMEZONE', 'Asia/Tehran'),
 
     /* سقف‌های دورهٔ بدون اشتراک (trial پیش‌فرض) */
+    /* سقف پیش‌فرض تصاویر AI در ماه وقتی پلن مقدار ندارد */
+    'images_monthly_default' => env('IMAGES_MONTHLY_DEFAULT', 10),
+
     /* سقف روزانهٔ درخواست تولید AI به ازای هر سازمان (محافظت هزینه) */
     'ai_daily_per_org' => env('AI_DAILY_PER_ORG', 50),
 

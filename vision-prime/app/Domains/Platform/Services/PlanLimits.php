@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
  */
 class PlanLimits
 {
-    public const LIMIT_KEYS = ['max_sites', 'max_clients', 'max_ai_tokens_monthly', 'max_profiles'];
+    public const LIMIT_KEYS = ['max_sites', 'max_clients', 'max_ai_tokens_monthly', 'max_profiles', 'max_images_monthly'];
 
     /**
      * سقف‌های مؤثر سازمان.
@@ -46,6 +46,7 @@ class PlanLimits
             'max_clients' => max(1, (int) ($raw['max_clients'] ?? 1)),
             'max_ai_tokens_monthly' => max(0, (int) ($raw['max_ai_tokens_monthly'] ?? 0)),
             'max_profiles' => max(1, (int) ($raw['max_profiles'] ?? 1)),
+            'max_images_monthly' => max(0, (int) ($raw['max_images_monthly'] ?? (int) config('vision-prime.images_monthly_default', 10))),
             'plan_key' => $plan?->key ?? 'trial',
         ];
     }
@@ -96,6 +97,30 @@ class PlanLimits
         $limits = $this->limitsFor($organization);
 
         return $limits['max_ai_tokens_monthly'] - $this->aiTokensUsedThisMonth($organization);
+    }
+
+    /** تصاویر تولیدشده با AI در این ماه (استوک و پیشنهاد محاسبه نمی‌شوند). */
+    public function aiImagesUsedThisMonth(Organization $organization): int
+    {
+        return (int) \DB::table('media_assets')
+            ->where('organization_id', $organization->getKey())
+            ->where('source', 'ai')
+            ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+            ->count();
+    }
+
+    /** پیام خطای سقف تولید تصویر AI یا null اگر مجاز است. */
+    public function imageQuotaError(Organization $organization): ?string
+    {
+        $limits = $this->limitsFor($organization);
+
+        if ($limits['max_images_monthly'] <= 0) {
+            return 'تولید تصویر با هوش مصنوعی در پلن فعلی فعال نیست؛ جستجوی استوک در دسترس است.';
+        }
+
+        return $this->aiImagesUsedThisMonth($organization) < $limits['max_images_monthly']
+            ? null
+            : "سهمیهٔ ماهانهٔ {$limits['max_images_monthly']} تصویر AI پلن «{$limits['plan_key']}» به پایان رسید. جستجوی استوک همچنان فعال است.";
     }
 
     /** پیام خطای سقف AI یا null اگر مجاز است. */
