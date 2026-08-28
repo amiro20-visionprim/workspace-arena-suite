@@ -14,6 +14,7 @@ use App\Domains\Gsc\Actions\UpsertGscMetric;
 use App\Domains\Identity\Models\Role;
 use App\Domains\Organization\Models\Membership;
 use App\Domains\Organization\Models\Organization;
+use App\Domains\Platform\Services\PlatformSettingsService;
 use App\Domains\Workspace\Models\Client;
 use App\Domains\Workspace\Models\Project;
 use App\Domains\Workspace\Models\Site;
@@ -47,6 +48,8 @@ class ContentCalendarTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // تستِ این pipeline بدون کاور است؛ گیت کاور (فاز D) جداگانه در AutoCoverPipelineTest پوشش داده شده.
+        app(PlatformSettingsService::class)->set('require_cover', 'false');
         $this->seed(RolePermissionSeeder::class);
 
         $this->organization = $this->makeOrg('O');

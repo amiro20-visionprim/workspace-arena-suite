@@ -33,6 +33,21 @@ class HealthReport extends Command
         } catch (\Throwable) {
             // ستون last_seen_at هنوز مهاجرت نشده — صفر گزارش می‌شود نه خطا
         }
+
+        // فاز D: مصرف و هزینهٔ تخمینی تصاویر این ماه
+        $imagesThisMonth = 0;
+        $imageCost = 0.0;
+        try {
+            $imagesThisMonth = (int) DB::table('media_assets')
+                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                ->count();
+            $imageCost = (float) DB::table('media_assets')
+                ->where('source', 'ai')
+                ->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()])
+                ->sum('cost_estimate');
+        } catch (\Throwable) {
+            // جداول تصویر هنوز مهاجرت نشده‌اند
+        }
         $errorsToday = $this->errorCountToday();
         $diskFreePercent = $this->diskFreePercent();
         $lastBackupAge = $this->lastBackupAgeDays();
@@ -51,6 +66,8 @@ class HealthReport extends Command
             ['🚨 خطاهای امروز (log)', (string) $errorsToday, $errorsToday >= 50 ? '⚠️ نرمال نیست' : 'سالم'],
             ['💾 فضای آزاد دیسک', $diskFreePercent === null ? 'نامشخص' : $diskFreePercent.'%', $diskFreePercent !== null && $diskFreePercent < 10 ? '🔴 بحرانی' : 'سالم'],
             ['📦 آخرین بکاپ', $lastBackupAge === null ? 'هرگز!' : $lastBackupAge.' روز پیش', ($lastBackupAge === null || $lastBackupAge > 1) ? '⚠️ قدیمی/ناموجود' : 'سالم'],
+            ['🖼️ تصاویر این ماه', (string) $imagesThisMonth, 'اطلاعاتی'],
+            ['💵 هزینهٔ تخمینی AI تصویر', '$'.number_format($imageCost, 2), 'اطلاعاتی'],
         ];
 
         $this->table(['شاخص', 'مقدار', 'وضعیت'], $rows);

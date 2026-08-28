@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Automation\Actions;
 
+use App\Domains\Ai\Services\AutoCoverService;
 use App\Domains\Audit\Actions\RecordAuditLog;
 use App\Domains\Automation\Services\ConfidenceScorer;
 use App\Domains\Workspace\Models\Site;
@@ -63,6 +64,18 @@ class CreateArticlePublishCommand
 
         $confidence = $this->assessConfidence($site, $output);
 
+        // فاز D: کاور خودکار — دارایی متصل کاربر یا استوک یا AI؛ آپلود امضاشده به رسانهٔ وردپرس.
+        $connection = DB::table('site_connections')
+            ->where('site_id', $site->id)
+            ->where('status', 'connected')
+            ->first();
+        try {
+            $cover = app(AutoCoverService::class)
+                ->provisionCover($site->organization, $connection, $title, (string) ($input['target_query'] ?? ''), $generationId, (int) $site->id);
+        } catch (\Throwable $e) {
+            $cover = ['skipped_reason' => 'error'];
+        }
+
         $commandId = DB::table('commands')->insertGetId([
             'site_id' => $site->id,
             'source_type' => 'ai_generation',
@@ -78,6 +91,10 @@ class CreateArticlePublishCommand
                 'meta_title' => mb_substr($title, 0, 60, 'UTF-8'),
                 'schema' => $output['schema'] ?? [],
                 'featured_image' => $output['featured_image'] ?? null,
+                'featured_media_id' => $cover['cover_media_id'] ?? null,
+                'cover_url' => $cover['cover_url'] ?? null,
+                'cover_alt' => $cover['cover_alt'] ?? null,
+                'cover_source' => $cover['source'] ?? null,
                 'content_type' => $contentType,
                 // استاندارد مؤثر پیش‌نویس — گیت کیفیت دقیقاً با همین استاندارد ارزیابی می‌شود
                 'standard' => $output['standard'] ?? [],
@@ -92,6 +109,12 @@ class CreateArticlePublishCommand
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        $this->audit->handle(
+            action: 'command.cover_provisioned',
+            subject: $site,
+            after: ['generation_id' => $generationId, 'source' => $cover['source'] ?? null, 'media_id' => $cover['cover_media_id'] ?? null, 'skipped' => $cover['skipped_reason'] ?? null],
+        );
 
         $this->audit->handle(
             action: 'command.created_from_ai_generation',

@@ -9,6 +9,7 @@ use App\Domains\Automation\Services\PolicyEvaluator;
 use App\Domains\Content\Services\ContentProfiler;
 use App\Domains\Content\Services\ContentQualityGuard;
 use App\Domains\Content\Services\StandardsKB;
+use App\Domains\Platform\Services\PlatformSettingsService;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -56,6 +57,23 @@ class AutoPublish
         $payload = json_decode((string) ($command->payload ?? '{}'), true) ?? [];
         $quality = $this->quality($command, $payload);
         $warmup = $this->warmup((int) $command->site_id, (string) ($command->content_type ?? $this->contentTypeFor($command->type)));
+
+        // فاز D — گیت کاور: انتشار خودکارِ مقاله بدون کاور، طبق سیاست سازمان بسته می‌شود.
+        // require_cover (platform_settings، پیش‌فرض true): بدون کاور → تأیید انسانی.
+        $requireCover = app(PlatformSettingsService::class)
+            ->bool('require_cover', true);
+        $needsCover = $command->type === 'publish_new_article'
+            && in_array($command->content_type ?? 'article', ['article', 'product'], true);
+        $hasCover = ($payload['featured_media_id'] ?? null) !== null || ($payload['cover_url'] ?? null) !== null;
+        if ($requireCover && $needsCover && ! $hasCover && $command->status !== 'executed') {
+            DB::table('commands')->where('id', $command->id)->update(['status' => 'pending_approval', 'updated_at' => now()]);
+
+            return [
+                'decision' => 'pending_approval',
+                'command_id' => (int) $command->id,
+                'reason' => 'بدون کاور: تصویر شاخص تهیه نشد — برای انتشار خودکار، کاور لازم است (سیاست require_cover).',
+            ];
+        }
 
         $decision = $this->evaluator->evaluate([
             'policy' => $policy,

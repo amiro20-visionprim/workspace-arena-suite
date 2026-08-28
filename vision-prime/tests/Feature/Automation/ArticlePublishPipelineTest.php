@@ -7,6 +7,7 @@ namespace Tests\Feature\Automation;
 use App\Domains\Ai\Actions\DecideReviewItem;
 use App\Domains\Identity\Models\Role;
 use App\Domains\Organization\Models\Organization;
+use App\Domains\Platform\Services\PlatformSettingsService;
 use App\Domains\Workspace\Models\Client;
 use App\Domains\Workspace\Models\Project;
 use App\Domains\Workspace\Models\Site;
@@ -34,6 +35,8 @@ class ArticlePublishPipelineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // تستِ این pipeline بدون کاور است؛ گیت کاور (فاز D) جداگانه در AutoCoverPipelineTest پوشش داده شده.
+        app(PlatformSettingsService::class)->set('require_cover', 'false');
         $this->seed(RolePermissionSeeder::class);
         $this->seed(ContentStandardsSeeder::class);
         $o = Organization::create(['public_id' => (string) Str::ulid(), 'name' => 'O', 'slug' => 'o', 'status' => 'active']);

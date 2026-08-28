@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\E2E;
 
+use App\Domains\Platform\Services\PlatformSettingsService;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
@@ -31,6 +32,8 @@ class MoneyPathTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // تستِ این pipeline بدون کاور است؛ گیت کاور (فاز D) جداگانه در AutoCoverPipelineTest پوشش داده شده.
+        app(PlatformSettingsService::class)->set('require_cover', 'false');
         $this->seed(RolePermissionSeeder::class);
 
         // ۱) پاسخ سرویس AI (مقالهٔ کاملِ پاس‌کنندهٔ گیت‌های کیفیت)
