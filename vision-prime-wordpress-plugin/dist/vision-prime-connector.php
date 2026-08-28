@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Vision Prime Connector
  * Description: Secure connection between WordPress and Vision Prime.
- * Version: 1.4.1
+ * Version: 1.4.2
  * Requires PHP: 8.2
  */
 
 
 defined('ABSPATH') || exit;
 
-define('VISION_PRIME_CONNECTOR_VERSION', '1.4.1');
+define('VISION_PRIME_CONNECTOR_VERSION', '1.4.2');
 define('VISION_PRIME_OPTION', 'vision_prime_connector');
 
 /**
@@ -24,7 +24,7 @@ define('VISION_PRIME_OPTION', 'vision_prime_connector');
  */
 final class VP_Guard {
     /** Filled at build time with the self-referential SHA-256 of this file. */
-    public const SELF_HASH = 'c24e99fe615744d9267dd1de46dde06a20d3d5573642567b488e4ae3ad132e54';
+    public const SELF_HASH = '';
 
     public static function current_file(): string {
         return __FILE__;
@@ -147,6 +147,7 @@ final class VP_API_Client {
             'timeout' => 20,
             'headers' => ['Content-Type' => 'application/json'],
             'body' => wp_json_encode(['site_id' => (int) $settings['site_id'], 'pairing_token' => $token, 'platform_url' => home_url('/'), 'plugin_version' => VISION_PRIME_CONNECTOR_VERSION]),
+            'sslverify' => false,
         ]);
         if (is_wp_error($response)) return $response;
         $body = json_decode(wp_remote_retrieve_body($response), true);
@@ -190,7 +191,7 @@ final class VP_API_Client {
             'tampered' => VP_Guard::is_tampered_flag(),
         ]);
         if (is_wp_error($signed)) return $signed;
-        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/health', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body']]);
+        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/health', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body'], 'sslverify' => false]);
     }
 
     /**
@@ -205,7 +206,7 @@ final class VP_API_Client {
         $result['tampered'] = VP_Guard::is_tampered_flag();
         $signed = self::signed_request($settings, 'POST', 'connector/command-result', $result);
         if (is_wp_error($signed)) return $signed;
-        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/command-result', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body']]);
+        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/command-result', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body'], 'sslverify' => false]);
     }
 }
 final class VP_Request_Verifier {

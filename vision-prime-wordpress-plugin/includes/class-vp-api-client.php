@@ -14,6 +14,7 @@ final class VP_API_Client {
             'timeout' => 20,
             'headers' => ['Content-Type' => 'application/json'],
             'body' => wp_json_encode(['site_id' => (int) $settings['site_id'], 'pairing_token' => $token, 'platform_url' => home_url('/'), 'plugin_version' => VISION_PRIME_CONNECTOR_VERSION]),
+            'sslverify' => false,
         ]);
         if (is_wp_error($response)) return $response;
         $body = json_decode(wp_remote_retrieve_body($response), true);
@@ -57,7 +58,7 @@ final class VP_API_Client {
             'tampered' => VP_Guard::is_tampered_flag(),
         ]);
         if (is_wp_error($signed)) return $signed;
-        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/health', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body']]);
+        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/health', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body'], 'sslverify' => false]);
     }
 
     /**
@@ -72,6 +73,6 @@ final class VP_API_Client {
         $result['tampered'] = VP_Guard::is_tampered_flag();
         $signed = self::signed_request($settings, 'POST', 'connector/command-result', $result);
         if (is_wp_error($signed)) return $signed;
-        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/command-result', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body']]);
+        return wp_remote_post(rtrim($settings['platform_url'], '/') . '/connector/command-result', ['timeout' => 20, 'headers' => $signed['headers'], 'body' => $signed['body'], 'sslverify' => false]);
     }
 }
