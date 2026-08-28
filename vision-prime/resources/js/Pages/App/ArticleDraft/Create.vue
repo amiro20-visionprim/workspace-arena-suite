@@ -102,7 +102,110 @@ const p = defineProps<{
 
 const page = usePage<{ flash?: { status?: string; error?: string } }>()
 
-const step = ref<'input' | 'outline' | 'generating' | 'result'>('input')
+const studioMode = ref<'quick' | 'pro'>('quick') // استودیو v2: سرعتی | حرفه‌ای
+const step = ref<'input' | 'brief' | 'outline' | 'generating' | 'result'>('input')
+
+// ─── بریف محتوا (حالت حرفه‌ای) ───
+interface BriefData {
+  title: string
+  target_query: string
+  suggested_title: string
+  subtype: string
+  intent: string
+  audience: string
+  tone: string
+  word_range: number[]
+  required_elements: string[]
+  gsc_queries: { query: string; impressions: number }[]
+  internal_link_candidates: { url: string; title: string }[]
+  notes: string
+}
+const brief = ref<BriefData | null>(null)
+const briefLoading = ref(false)
+const briefError = ref('')
+const customInstructions = ref('')
+const userWordCount = ref(0)
+const userTone = ref('')
+
+async function buildBrief(): Promise<void> {
+  if (!selectedSiteId.value || !title.value.trim()) return
+  briefLoading.value = true
+  briefError.value = ''
+  try {
+    const res = await fetch('/api/content/brief', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({ site_id: Number(selectedSiteId.value), title: title.value }),
+    })
+    const data = (await res.json()) as { success: boolean; brief?: BriefData; error?: string }
+    if (data.success && data.brief) {
+      brief.value = data.brief
+      subtype.value = data.brief.subtype
+      step.value = 'brief'
+    } else {
+      briefError.value = data.error ?? 'ساخت بریف ناموفق بود.'
+    }
+  } catch {
+    briefError.value = 'خطای شبکه'
+  } finally {
+    briefLoading.value = false
+  }
+}
+
+// ─── دسته/برچسب وردپرس ───
+interface WpTerm {
+  id: number
+  name: string
+  count?: number
+}
+const wpCategories = ref<WpTerm[]>([])
+const wpTags = ref<WpTerm[]>([])
+const selectedCategoryIds = ref<number[]>([])
+const selectedTagNames = ref<string[]>([])
+const taxonomiesLoaded = ref(false)
+const taxonomiesError = ref('')
+
+async function loadTaxonomies(): Promise<void> {
+  if (!selectedSiteId.value || taxonomiesLoaded.value) return
+  taxonomiesError.value = ''
+  try {
+    const res = await fetch(`/app/sites/${selectedSiteId.value}/taxonomies`, {
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    const data = (await res.json()) as {
+      success: boolean
+      connected?: boolean
+      categories?: WpTerm[]
+      tags?: WpTerm[]
+      error?: string
+    }
+    if (data.success) {
+      wpCategories.value = data.categories ?? []
+      wpTags.value = data.tags ?? []
+      taxonomiesLoaded.value = true
+    } else {
+      taxonomiesError.value = data.error ?? ''
+    }
+  } catch {
+    taxonomiesError.value = 'خطای شبکه در دریافت دسته‌ها'
+  }
+}
+
+function toggleCategory(id: number): void {
+  const i = selectedCategoryIds.value.indexOf(id)
+  if (i === -1) selectedCategoryIds.value.push(id)
+  else selectedCategoryIds.value.splice(i, 1)
+}
+
+function toggleTag(name: string): void {
+  const i = selectedTagNames.value.indexOf(name)
+  if (i === -1) selectedTagNames.value.push(name)
+  else selectedTagNames.value.splice(i, 1)
+}
 
 const selectedSiteId = ref('')
 const title = ref('')
@@ -436,6 +539,19 @@ async function applySuggestions(suggestions: string[]) {
     /* نادیده گرفته شد */
   }
   applyingSuggestions.value = false
+}
+
+/** استودیو v2 — ورودی دوحالته: quick = تولید مستقیم، pro = مسیر بریف. */
+async function fetchOutline(mode: 'quick' | 'pro'): Promise<void> {
+  if (mode === 'pro') {
+    if (brief.value === null) {
+      await buildBrief() // بریف می‌سازد و به گام brief می‌رود
+      return
+    }
+    await generateOutline()
+    return
+  }
+  await generateOutline()
 }
 
 async function generateOutline() {
@@ -794,6 +910,37 @@ watch(title, (v) => {
 
     <!-- STEP 1: INPUT -->
     <div v-if="step === 'input'" class="mx-auto mt-6 max-w-2xl">
+      <!-- ═══ استودیو v2: انتخاب حالت ═══ -->
+      <VCard v-if="step === 'input'" class="mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p class="text-ink-strong text-sm font-bold">حالت تولید را انتخاب کنید</p>
+            <p class="text-ink-muted mt-1 text-xs leading-6">
+              ⚡ <b>سرعتی:</b> فقط عنوان — سیستم همه‌چیز را خودکار می‌سازد. &nbsp;·&nbsp; 🎯
+              <b>حرفه‌ای:</b> بریف محتوایی قابل ویرایش + دسته‌بندی وردپرس + کنترل کامل.
+            </p>
+          </div>
+          <div class="bg-surface-muted flex rounded-xl p-1">
+            <button
+              type="button"
+              class="rounded-lg px-4 py-2 text-xs font-bold transition"
+              :class="studioMode === 'quick' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
+              @click="studioMode = 'quick'"
+            >
+              ⚡ سرعتی
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-4 py-2 text-xs font-bold transition"
+              :class="studioMode === 'pro' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
+              @click="studioMode = 'pro'"
+            >
+              🎯 حرفه‌ای
+            </button>
+          </div>
+        </div>
+      </VCard>
+
       <VCard title="عنوان مقاله را وارد کنید">
         <div class="space-y-4">
           <VSelect
@@ -993,7 +1140,7 @@ watch(title, (v) => {
               variant="secondary"
               size="lg"
               class="flex-1"
-              @click="generateOutline"
+              @click="fetchOutline(studioMode)"
             >
               {{ outlineLoading ? 'در حال تحلیل...' : '📋 با Outline' }}
             </VButton>
@@ -1005,7 +1152,7 @@ watch(title, (v) => {
             variant="primary"
             size="lg"
             class="w-full"
-            @click="generateOutline"
+            @click="fetchOutline(studioMode)"
           >
             <span v-if="!outlineLoading">تولید Outline</span>
             <span v-else>در حال تحلیل...</span>
@@ -1714,5 +1861,161 @@ watch(title, (v) => {
         </div>
       </div>
     </div>
+
+    <!-- ═══ گام بریف (حالت حرفه‌ای) ═══ -->
+    <VCard v-if="step === 'brief' && brief" title="📋 بریف محتوایی — بازبینی و ویرایش">
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="space-y-3">
+          <div>
+            <label class="text-ink-muted mb-1 block text-xs font-medium">عنوان</label>
+            <input
+              v-model="brief.title"
+              class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+            />
+          </div>
+          <div>
+            <label class="text-ink-muted mb-1 block text-xs font-medium">کلیدواژهٔ هدف</label>
+            <input
+              v-model="brief.target_query"
+              dir="rtl"
+              class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+            />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-ink-muted mb-1 block text-xs font-medium"
+                >طول هدف (کلمه — ۰ = استاندارد)</label
+              >
+              <input
+                v-model.number="userWordCount"
+                type="number"
+                dir="ltr"
+                class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label class="text-ink-muted mb-1 block text-xs font-medium">مخاطب</label>
+              <input
+                v-model="brief.audience"
+                class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label class="text-ink-muted mb-1 block text-xs font-medium">لحن</label>
+              <input
+                v-model="brief.tone"
+                class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              />
+              <label class="text-ink-muted mt-2 block text-xs font-medium"
+                >لحن سفارشی (اختیاری — بازنویسی)</label
+              >
+              <input
+                v-model="userTone"
+                class="border-line focus:border-brand-600 mt-1 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+              />
+            </div>
+          </div>
+          <div>
+            <label class="text-ink-muted mb-1 block text-xs font-medium"
+              >دستورالعمل سفارشی (اختیاری)</label
+            >
+            <textarea
+              v-model="customInstructions"
+              rows="3"
+              placeholder="نکات خاص، منابع، الزامات مشتری…"
+              class="border-line focus:border-brand-600 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+            />
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div class="bg-surface-muted rounded-xl p-3 text-xs leading-6">
+            <p class="text-ink-strong mb-1 font-bold">سيستم پیشنهاد می‌دهد</p>
+            <p
+              >· زیرنوع: <b>{{ brief.subtype }}</b> · قصد جستجو: <b>{{ brief.intent }}</b></p
+            >
+            <p
+              >· طول هدف:
+              <b dir="ltr">{{ brief.word_range[0] }}–{{ brief.word_range[1] }}</b> کلمه</p
+            >
+            <p
+              >· عناصر الزامی: <b>{{ brief.required_elements.join(' + ') }}</b></p
+            >
+            <p v-if="brief.gsc_queries.length" class="mt-1">
+              · کوئری‌های GSC:
+              <span
+                v-for="q in brief.gsc_queries.slice(0, 5)"
+                :key="q.query"
+                class="text-ink-muted"
+              >
+                «{{ q.query }}» ({{ q.impressions }})
+              </span>
+            </p>
+          </div>
+          <div v-if="brief.internal_link_candidates.length" class="text-xs leading-6">
+            <p class="text-ink-strong font-bold">کاندیدهای لینک داخلی:</p>
+            <p
+              v-for="c in brief.internal_link_candidates"
+              :key="c.url"
+              class="text-ink-muted truncate"
+            >
+              · <a :href="c.url" target="_blank" class="text-brand-700 underline">{{ c.title }}</a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- دسته/برچسب وردپرس -->
+      <div class="border-line mt-5 border-t pt-4">
+        <div class="mb-2 flex items-center justify-between">
+          <p class="text-ink-strong text-xs font-bold">🗂️ دسته و برچسب وردپرس (اختیاری)</p>
+          <VButton size="sm" variant="ghost" @click="loadTaxonomies">دریافت از سایت</VButton>
+        </div>
+        <p v-if="taxonomiesError" class="text-warning-700 text-[11px]">{{ taxonomiesError }}</p>
+        <template v-else-if="taxonomiesLoaded">
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="c in wpCategories"
+              :key="c.id"
+              type="button"
+              class="rounded-full border px-3 py-1 text-[11px] font-medium transition"
+              :class="
+                selectedCategoryIds.includes(c.id)
+                  ? 'border-brand-600 bg-brand-50 text-brand-700'
+                  : 'border-line text-ink-muted hover:border-brand-400'
+              "
+              @click="toggleCategory(c.id)"
+            >
+              {{ c.name }} <span class="opacity-60">({{ c.count }})</span>
+            </button>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2">
+            <button
+              v-for="t in wpTags"
+              :key="t.id"
+              type="button"
+              class="rounded-full border px-3 py-1 text-[11px] transition"
+              :class="
+                selectedTagNames.includes(t.name)
+                  ? 'border-success-600 bg-success-50 text-success-700'
+                  : 'border-line text-ink-muted'
+              "
+              @click="toggleTag(t.name)"
+            >
+              #{{ t.name }}
+            </button>
+          </div>
+        </template>
+        <p v-else class="text-ink-muted text-[11px]">
+          برای چیدن مقاله در جای درست سایت، دسته‌ها را از وردپرس بگیرید (اتصال پلاگین لازم است).
+        </p>
+      </div>
+
+      <div class="border-line mt-5 flex flex-wrap gap-2 border-t pt-4">
+        <VButton variant="secondary" @click="step = 'input'">→ بازگشت</VButton>
+        <VButton :loading="outlineLoading" @click="fetchOutline('pro')"
+          >ادامه — ساخت پیش‌نویس ساختار ▶</VButton
+        >
+      </div>
+    </VCard>
   </AppLayout>
 </template>
