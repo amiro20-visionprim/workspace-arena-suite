@@ -297,6 +297,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::get('/api/content/images/search', [ContentImageController::class, 'search'])->name('api.content.images.search')->middleware('throttle:30,1');
     Route::post('/api/content/images/generate', [ContentImageController::class, 'generate'])->name('api.content.images.generate')->middleware('throttle:10,1', 'plan.limits:images');
     Route::post('/api/content/images/attach', [ContentImageController::class, 'attach'])->name('api.content.images.attach')->middleware('throttle:30,1');
+    Route::post('/api/content/images/attach-stock', [ContentImageController::class, 'attachStock'])->name('api.content.images.attach-stock')->middleware('throttle:30,1');
     Route::get('/api/content/images/suggest', [ContentImageController::class, 'suggest'])->name('api.content.images.suggest');
     Route::post('/api/content/detect-models', [AiModelDetectionController::class, 'detectModels'])->name('api.content.detect-models')->middleware('throttle:10,1');
     Route::post('/api/content/provider-usage', [AiModelDetectionController::class, 'getUsage'])->name('api.content.provider-usage')->middleware('throttle:10,1');

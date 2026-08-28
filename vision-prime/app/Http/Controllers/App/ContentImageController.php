@@ -166,4 +166,32 @@ class ContentImageController extends Controller
 
         return response()->json(['success' => true, 'suggestions' => $this->images->suggestions((string) $data['title'], (string) ($data['section'] ?? ''))]);
     }
+
+    /** انتخاب عکس استوک → ثبت دارایی + نصب به‌عنوان کاور پیش‌نویس. */
+    public function attachStock(Request $request, CurrentOrganization $org): JsonResponse
+    {
+        $data = $request->validate([
+            'photo' => ['required', 'array'],
+            'photo.url' => ['required', 'url', 'max:1000'],
+            'photo.alt' => ['nullable', 'string', 'max:300'],
+            'photo.credit' => ['nullable', 'string', 'max:200'],
+            'photo.provider' => ['nullable', 'string', 'max:30'],
+            'draft_id' => ['required', 'integer'],
+            'slot' => ['nullable', 'string', 'in:cover,section,gallery'],
+        ]);
+
+        $draft = ContentDraft::query()
+            ->whereHas('site', fn ($q) => $q->where('organization_id', $org->id()))
+            ->findOrFail((int) $data['draft_id']);
+
+        $assetId = $this->images->registerStockAsset(
+            $org->get(),
+            $data['photo'],
+            $draft->id,
+            $data['slot'] ?? 'cover',
+        );
+        DB::table('media_assets')->where('id', $assetId)->update(['site_id' => $draft->site_id]);
+
+        return response()->json(['success' => true, 'asset_id' => $assetId]);
+    }
 }

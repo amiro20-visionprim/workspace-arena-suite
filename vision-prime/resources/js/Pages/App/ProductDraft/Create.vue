@@ -6,6 +6,7 @@ import VAlert from '@/shared/ui/VAlert.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import CoverPicker from '@/Pages/App/ContentStudio/CoverPicker.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
 
@@ -400,14 +401,30 @@ async function generateOutline() {
         tone: autoDetectedTone.value || undefined,
       }),
     })
-    const data = await res.json()
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (data.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (data.error as string) ?? undefined
+      const msgText = (data.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
+      step.value = 'input'
+      return
+    }
     if (data.error) {
-      outlineError.value = data.error
+      outlineError.value = String(data.error)
       outlineLoading.value = false
       return
     }
-    outline.value = data.outline ?? []
-    outlineModel.value = data.model ?? ''
+    outline.value = (data.outline ?? []) as typeof outline.value
+    outlineModel.value = String(data.model ?? '')
     if (outline.value.length === 0) {
       outlineError.value = 'Outline خالی برگشت'
       outlineLoading.value = false
@@ -440,18 +457,34 @@ async function generateFromOutline() {
         tone: autoDetectedTone.value || undefined,
       }),
     })
-    const d = await res.json()
+    const d = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (d.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (d.error as string) ?? undefined
+      const msgText = (d.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
+      step.value = 'input'
+      return
+    }
     if (d.error) {
-      errorMsg.value = d.error
+      errorMsg.value = String(d.error)
       step.value = 'input'
       generatingLoading.value = false
       return
     }
-    result.value = d
-    currentDraftId.value = d.draft_id || null
+    result.value = d as unknown as typeof result.value
+    currentDraftId.value = (d.draft_id as number | undefined) ?? null
     activeResultTab.value = 'content'
     step.value = 'result'
-    parseSections(d.content)
+    parseSections(d.content as string)
   } catch (e) {
     errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e))
     step.value = 'input'
@@ -479,18 +512,34 @@ async function quickGenerate() {
         tone: autoDetectedTone.value || undefined,
       }),
     })
-    const d = await res.json()
+    const d = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (d.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (d.error as string) ?? undefined
+      const msgText = (d.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
+      step.value = 'input'
+      return
+    }
     if (d.error) {
-      errorMsg.value = d.error
+      errorMsg.value = String(d.error)
       step.value = 'input'
       generatingLoading.value = false
       return
     }
-    result.value = d
-    currentDraftId.value = d.draft_id || null
+    result.value = d as unknown as typeof result.value
+    currentDraftId.value = (d.draft_id as number | undefined) ?? null
     activeResultTab.value = 'content'
     step.value = 'result'
-    parseSections(d.content)
+    parseSections(d.content as string)
   } catch (e) {
     errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e))
     step.value = 'input'
@@ -563,7 +612,7 @@ async function regenerateSection(i: number) {
     const d = await res.json()
     if (d.content) {
       result.value!.content = d.content
-      parseSections(d.content)
+      parseSections(d.content as string)
     }
   } catch {
     /* نادیده گرفته شد */
@@ -675,7 +724,7 @@ async function applySuggestions(suggestions: string[]) {
     const d = await r.json()
     if (d.content) {
       result.value.content = d.content
-      parseSections(d.content)
+      parseSections(d.content as string)
     }
   } catch {
     /* نادیده گرفته شد */
@@ -988,6 +1037,8 @@ async function applySuggestions(suggestions: string[]) {
           <VCard v-if="activeResultTab === 'content'">
             <!-- eslint-disable-next-line vue/no-v-html -- محتوا توسط موتور خودِ پلتفرم تولید شده (نه ورودی کاربر) و صرفاً پیش‌نمایش است -->
             <div class="prose prose-sm max-w-none" dir="auto" v-html="result.content" />
+
+            <CoverPicker :draft-id="currentDraftId" :title="title" class="mt-4" />
           </VCard>
 
           <!-- Meta Tab -->

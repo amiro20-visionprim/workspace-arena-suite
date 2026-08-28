@@ -6,6 +6,7 @@ import VAlert from '@/shared/ui/VAlert.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import CoverPicker from '@/Pages/App/ContentStudio/CoverPicker.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
 
@@ -386,7 +387,6 @@ async function fetchTemplates() {
   }
   templatesLoading.value = false
 }
-
 async function checkDuplicate() {
   if (!title.value.trim() || !selectedSiteId.value) return
   duplicateLoading.value = true
@@ -405,12 +405,61 @@ async function checkDuplicate() {
       showDuplicates.value = false
     }
   } catch {
-    /* ignore */
+    /* نادیده گرفته شد */
   }
   duplicateLoading.value = false
 }
 
-fetchTemplates()
+// ─── مدیریت کتابخانهٔ پرامپت (ویرایش/حذف قالب‌های کاربر) ───
+const deletingTemplateId = ref<number | null>(null)
+
+async function deleteTemplate(id: number): Promise<void> {
+  if (!confirm('این قالب حذف شود؟')) return
+  deletingTemplateId.value = id
+  try {
+    const res = await fetch(`/api/content/prompt-templates/${id}`, {
+      method: 'DELETE',
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    if (res.ok) {
+      templates.value = templates.value.filter((t) => t.id !== id)
+      if (selectedTemplateId.value === id) selectedTemplateId.value = null
+    }
+  } catch {
+    /* نادیده گرفته شد */
+  } finally {
+    deletingTemplateId.value = null
+  }
+}
+
+function editTemplate(id: number): void {
+  const t = templates.value.find((x) => x.id === id)
+  if (!t) return
+  const name = prompt('عنوان قالب:', t.title)
+  if (name === null) return
+  const body = prompt(
+    'متن پرامپت (از {title} برای جای عنوان استفاده کنید):',
+    t.user_prompt_template || '',
+  )
+  if (body === null) return
+  void (async () => {
+    const res = await fetch(`/api/content/prompt-templates/${id}`, {
+      method: 'PUT',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({
+        title: name || t.title,
+        user_prompt_template: body,
+        content_type: t.content_type,
+        tone: t.tone,
+      }),
+    })
+    if (res.ok) await fetchTemplates()
+  })()
+}
 
 function dismissDuplicates() {
   showDuplicates.value = false
@@ -436,17 +485,33 @@ async function quickGenerate() {
         word_count: wordCount.value || undefined,
       }),
     })
-    const d = await res.json()
-    if (d.error) {
-      errorMsg.value = d.error
+    const d = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (d.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (d.error as string) ?? undefined
+      const msgText = (d.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
       step.value = 'input'
       return
     }
-    result.value = d
-    currentDraftId.value = d.draft_id || null
+    if (d.error) {
+      errorMsg.value = String(d.error)
+      step.value = 'input'
+      return
+    }
+    result.value = d as unknown as typeof result.value
+    currentDraftId.value = (d.draft_id as number | undefined) ?? null
     activeResultTab.value = 'content'
     step.value = 'result'
-    parseSections(d.content)
+    parseSections(d.content as string)
   } catch (e) {
     errorMsg.value = 'خطا: ' + (e instanceof Error ? e.message : String(e))
     step.value = 'input'
@@ -533,7 +598,7 @@ async function applySuggestions(suggestions: string[]) {
     const d = await r.json()
     if (d.content) {
       result.value.content = d.content
-      parseSections(d.content)
+      parseSections(d.content as string)
     }
   } catch {
     /* نادیده گرفته شد */
@@ -573,13 +638,29 @@ async function generateOutline() {
         subtype: subtype.value || undefined,
       }),
     })
-    const data = await res.json()
-    if (data.error) {
-      outlineError.value = data.error
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (data.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (data.error as string) ?? undefined
+      const msgText = (data.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
+      step.value = 'input'
       return
     }
-    outline.value = data.outline ?? []
-    outlineModel.value = data.model ?? ''
+    if (data.error) {
+      outlineError.value = String(data.error)
+      return
+    }
+    outline.value = (data.outline ?? []) as typeof outline.value
+    outlineModel.value = String(data.model ?? '')
     if (outline.value.length === 0) {
       outlineError.value = 'Outline خالی برگشت — دوباره تلاش کنید'
       return
@@ -641,14 +722,30 @@ async function generateWithOutline() {
         outline: outline.value.map((i) => i.heading),
       }),
     })
-    const data = await res.json()
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (data.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (data.error as string) ?? undefined
+      const msgText = (data.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
+      step.value = 'input'
+      return
+    }
     if (data.error) {
-      errorMsg.value = data.error
+      errorMsg.value = String(data.error)
       step.value = 'outline'
     } else {
-      result.value = data
+      result.value = data as unknown as typeof result.value
       keywordInput.value = title.value.trim()
-      parseSections(data.content)
+      parseSections(data.content as string)
       step.value = 'result'
     }
   } catch (e: unknown) {
@@ -739,11 +836,27 @@ async function analyzeSerp() {
         outline: outline.value.map((i) => ({ heading: i.heading, level: i.level })),
       }),
     })
-    const data = await res.json()
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>
+    if (!res.ok) {
+      const errs = (data.errors ?? {}) as Record<string, string[]>
+      const planMsg = Array.isArray(errs.plan_limit) ? errs.plan_limit[0] : undefined
+      const errText = (data.error as string) ?? undefined
+      const msgText = (data.message as string) ?? undefined
+      const msg =
+        planMsg ??
+        errText ??
+        msgText ??
+        (res.status === 429
+          ? 'تعداد درخواست‌ها زیاد است — کمی بعد دوباره تلاش کنید.'
+          : 'خطای سرور (' + res.status + ')')
+      errorMsg.value = msg
+      step.value = 'input'
+      return
+    }
     if (data.error) {
-      serpError.value = data.error
+      serpError.value = String(data.error)
     } else {
-      serpAnalysis.value = data
+      serpAnalysis.value = data as unknown as typeof serpAnalysis.value
       showSerpPanel.value = true
     }
   } catch (e: unknown) {
@@ -995,7 +1108,28 @@ watch(title, (v) => {
               >
                 <div class="flex items-center justify-between">
                   <span class="font-medium">{{ tpl.title }}</span>
-                  <VBadge v-if="tpl.is_featured" tone="success" size="sm">⭐</VBadge>
+                  <span class="flex items-center gap-1">
+                    <VBadge v-if="tpl.is_featured" tone="success" size="sm">⭐</VBadge>
+                    <span v-if="tpl.is_user_created" class="flex gap-1">
+                      <button
+                        type="button"
+                        class="text-ink-muted hover:text-brand-600"
+                        title="ویرایش قالب"
+                        @click.stop="editTemplate(tpl.id)"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        class="text-ink-muted hover:text-red-600"
+                        title="حذف قالب"
+                        :disabled="deletingTemplateId === tpl.id"
+                        @click.stop="deleteTemplate(tpl.id)"
+                      >
+                        🗑️
+                      </button>
+                    </span>
+                  </span>
                 </div>
                 <div class="text-ink-muted mt-1 flex gap-2 text-xs">
                   <span>{{ tpl.tone }}</span>
@@ -1423,6 +1557,8 @@ watch(title, (v) => {
           <VCard v-if="activeResultTab === 'content'">
             <!-- eslint-disable-next-line vue/no-v-html -- محتوا توسط موتور خودِ پلتفرم تولید شده (نه ورودی کاربر) و صرفاً پیش‌نمایش است -->
             <div class="prose prose-sm max-w-none" dir="auto" v-html="result.content" />
+
+            <CoverPicker :draft-id="currentDraftId" :title="title" class="mt-4" />
           </VCard>
 
           <!-- Meta Tab -->
