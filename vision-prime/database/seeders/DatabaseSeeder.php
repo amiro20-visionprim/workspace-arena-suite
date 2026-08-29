@@ -11,6 +11,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolePermissionSeeder::class);
+
+        // R1-1: سوخت استودیوی محتوا — کتابچهٔ پرامپت‌ها + استانداردها (idempotent)
+        $this->call(ContentStandardsSeeder::class);
+        $this->call(PromptTemplateSeeder::class);
         $this->call(ContentStandardsSeeder::class);
     }
 }

@@ -960,11 +960,72 @@ async function publishToWordPress(status: string) {
         tags: selectedTagNames.value.length ? selectedTagNames.value : undefined,
       }),
     })
-    publishResult.value = await res.json()
+    const pd = (await res.json()) as Record<string, unknown>
+    if (pd.via === 'connector' && pd.success === true && pd.command_id) {
+      // انتشار کانکتور async است — تا رسیدن نتیجهٔ واقعی پلاگین poll می‌کنیم
+      publishResult.value = {
+        success: true,
+        pending: true,
+        message: 'در حال انتشار روی وردپرس…',
+      } as unknown as typeof publishResult.value
+      pollPublishStatus(Number(pd.command_id))
+      return
+    }
+    publishResult.value = pd as unknown as typeof publishResult.value
   } catch (e) {
     publishResult.value = { success: false, error: e instanceof Error ? e.message : String(e) }
   }
   publishing.value = false
+}
+
+/** R1-3 — poll وضعیت فرمان انتشار تا نتیجهٔ واقعی پلاگین (حداکثر ~۹۰ ثانیه). */
+async function pollPublishStatus(commandId: number, attempt = 1): Promise<void> {
+  if (attempt > 30) {
+    publishResult.value = {
+      success: false,
+      error: 'پاسخ پلاگین طولانی شد — وضعیت را از «تغییرات اجرایی» ببینید.',
+    } as unknown as typeof publishResult.value
+    return
+  }
+  try {
+    const res = await fetch(`/api/content/publish-status?command_id=${commandId}`, {
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    const d = (await res.json()) as {
+      status?: string
+      post_url?: string | null
+      post_id?: number | null
+      error?: string | null
+    }
+    if (d.status === 'executed') {
+      publishResult.value = {
+        success: true,
+        post_url: d.post_url ?? undefined,
+        message: d.post_url ? '✅ منتشر شد!' : `✅ پست ساخته شد (#${d.post_id ?? '?'})`,
+      } as typeof publishResult.value
+      return
+    }
+    if (d.status === 'failed') {
+      publishResult.value = {
+        success: false,
+        error: d.error ?? 'اجرای فرمان در وردپرس ناموفق بود.',
+      } as unknown as typeof publishResult.value
+      return
+    }
+    if (d.status === 'pending_approval') {
+      publishResult.value = {
+        success: false,
+        error:
+          'انتشار نیازمند تأیید انسانی است (گیت کاور/سیاست) — از «بررسی و تأییدها» ادامه دهید.',
+      } as unknown as typeof publishResult.value
+      return
+    }
+    await new Promise((r) => setTimeout(r, 3000))
+    void pollPublishStatus(commandId, attempt + 1)
+  } catch {
+    await new Promise((r) => setTimeout(r, 4000))
+    void pollPublishStatus(commandId, attempt + 1)
+  }
 }
 
 const currentDraftId = ref<number | null>(null)
@@ -1088,6 +1149,13 @@ watch(title, (v) => {
           </div>
 
           <!-- Prompt Template Selector -->
+          <div
+            v-if="templates.length === 0 && !templatesLoading"
+            class="text-ink-muted bg-surface-muted rounded-lg p-3 text-xs leading-6"
+          >
+            کتابخانهٔ قالب‌ها خالی است — با دکمهٔ «ذخیره به‌عنوان قالب» پرامپت خودتان را اضافه کنید
+            یا روی سرور اجرا کنید: <code dir="ltr">php artisan db:seed</code>
+          </div>
           <div v-if="templates.length > 0">
             <label class="text-ink-strong text-sm font-semibold">قالب پرامپت (اختیاری)</label>
             <p class="text-ink-muted mb-2 text-xs">
@@ -1552,6 +1620,13 @@ watch(title, (v) => {
               {{ tab.label }}
             </button>
           </div>
+
+          <!-- R1-2: شفافیت منبع تولید -->
+          <VAlert v-if="result && result.source === 'rule_based'" tone="warning" class="mb-4">
+            ⚙️ این پیش‌نویس با <b>موتور قانونی (آفلاین)</b> ساخته شده، نه مدل زبانی — احتمالاً سرویس
+            AI در دسترس نبود یا محدود شد. کلید/سهمیه را در تنظیمات←یکپارچه‌سازی بررسی کنید و «تولید
+            مجدد» را بزنید.
+          </VAlert>
 
           <!-- Content Tab -->
           <VCard v-if="activeResultTab === 'content'">

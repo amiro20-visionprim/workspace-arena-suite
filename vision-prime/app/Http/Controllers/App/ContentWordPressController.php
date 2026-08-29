@@ -395,6 +395,47 @@ class ContentWordPressController extends Controller
      *
      * GET /api/content/research?site_id=1
      */
+
+    /**
+     * وضعیت لحظه‌ای فرمان انتشار (R1-3 — «انتشار صادق»): فرانت command_id را
+     * poll می‌کند تا post_url واقعی از callback پلاگین یا خطا را بگیرد.
+     */
+    public function publishStatus(Request $request, CurrentOrganization $org): JsonResponse
+    {
+        $data = $request->validate(['command_id' => ['required', 'integer']]);
+
+        $command = DB::table('commands')
+            ->join('sites', 'sites.id', '=', 'commands.site_id')
+            ->where('commands.id', (int) $data['command_id'])
+            ->where('sites.organization_id', $org->id())
+            ->first(['commands.id', 'commands.status']);
+
+        if ($command === null) {
+            return response()->json(['success' => false, 'error' => 'فرمان یافت نشد.'], 404);
+        }
+
+        $log = DB::table('command_execution_logs')
+            ->where('command_id', $command->id)
+            ->orderByDesc('id')
+            ->first(['status', 'response_redacted']);
+
+        $result = null;
+        $error = null;
+        if ($log !== null) {
+            $decoded = json_decode((string) $log->response_redacted, true);
+            $result = $decoded['result'] ?? null;
+            $error = $decoded['error'] ?? null;
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $command->status,
+            'post_id' => $result['post_id'] ?? null,
+            'post_url' => $result['url'] ?? ($result['post_url'] ?? null),
+            'error' => $error,
+        ]);
+    }
+
     private function upsertUrlProfile(int $siteId, string $url, string $contentType, string $slug, string $title, int $wpId, string $modifiedAt, array $extra = []): void
     {
         $metadata = array_merge(['title' => $title, 'wp_id' => $wpId], $extra);

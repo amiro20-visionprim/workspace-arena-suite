@@ -6,6 +6,7 @@ namespace App\Http\Controllers\App\Concerns;
 
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Services\OrganizationPermission;
+use Illuminate\Support\Facades\DB;
 
 /**
  * هلپرهای مشترک کنترلرهای API محتوا (پیش از این در ContentApiController ۱۴۱۴خطی بودند).

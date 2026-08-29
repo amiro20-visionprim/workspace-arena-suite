@@ -106,6 +106,13 @@ async function checkConnection(): Promise<void> {
   }
 }
 
+/** R1-4: پلاگین قدیمی → قابلیت‌های دسته/کاور/رسانه کار نمی‌کنند. */
+function pluginOutdated(version: string | null | undefined): boolean {
+  if (!version) return false
+  const [major, minor, patch] = version.split('.').map(Number)
+  return major < 1 || (major === 1 && (minor < 4 || (minor === 4 && patch < 1)))
+}
+
 function csrfToken(): string {
   const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/)
   return match ? decodeURIComponent(match[1]) : ''
@@ -154,6 +161,17 @@ function csrfToken(): string {
           {{ checkResult.message }}
         </VAlert>
       </VCard>
+
+      <!-- R1-4: هشدار نسخهٔ پلاگین -->
+      <VAlert
+        v-if="connection && pluginOutdated(connection.pluginVersion)"
+        tone="warning"
+        class="mt-4"
+      >
+        نسخهٔ پلاگین نصب‌شده ({{ connection.pluginVersion }}) قدیمی است — انتشار با دسته/برچسب/تصویر
+        شاخص کار نخواهد کرد. نسخهٔ جدید را از مرحلهٔ ۱ (دانلود پلاگین) بگیرید و در وردپرس
+        به‌روزرسانی کنید.
+      </VAlert>
 
       <!-- ویزارد ۳ مرحله‌ای -->
       <div v-if="!connected" class="grid gap-5 lg:grid-cols-3">

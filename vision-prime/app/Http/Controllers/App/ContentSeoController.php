@@ -6,6 +6,10 @@ namespace App\Http\Controllers\App;
 
 use App\Domains\Content\Models\ContentDraft;
 use App\Domains\Content\Services\ContentProfiler;
+use App\Domains\Content\Services\ContentQualityGuard;
+use App\Domains\Content\Services\InternalLinkEngine;
+use App\Domains\Content\Services\SchemaGenerator;
+use App\Domains\Content\Services\StandardsKB;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Http\Controllers\App\Concerns\InteractsWithContentApi;
 use App\Http\Controllers\Controller;
@@ -22,11 +26,11 @@ class ContentSeoController extends Controller
     use InteractsWithContentApi;
 
     public function __construct(
-        private readonly profiler $profiler,
-        private readonly standards $standards,
-        private readonly qualityGuard $qualityGuard,
-        private readonly linkEngine $linkEngine,
-        private readonly schemaGen $schemaGen
+        private readonly ContentProfiler $profiler,
+        private readonly StandardsKB $standards,
+        private readonly ContentQualityGuard $qualityGuard,
+        private readonly InternalLinkEngine $linkEngine,
+        private readonly SchemaGenerator $schemaGen
     ) {}
 
     /**

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import AppLayout from '@/app/layouts/AppLayout.vue'
 import { formatJalaliDate } from '@/lib/locale'
 import VBadge from '@/shared/ui/VBadge.vue'
@@ -218,7 +218,10 @@ function disconnectSite(): void {
     <div v-else class="mt-8">
       <VCard>
         <p class="text-ink-muted text-center text-sm">
-          هنوز محتوایی از این سایت همگام‌سازی نشده است.
+          هنوز محتوایی از این سایت همگام‌سازی نشده است —
+          <Link :href="`/app/sites/${site.id}/sync`" class="text-brand-700 underline"
+            >شروع همگام‌سازی</Link
+          >
         </p>
       </VCard>
     </div>

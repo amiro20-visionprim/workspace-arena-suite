@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Domains\Ai\Services\AiGateway;
 use App\Domains\Content\Models\ContentGuardrail;
 use App\Domains\Content\Models\PromptTemplate;
+use App\Domains\Content\Services\ContentProfiler;
 use App\Domains\Content\Services\SERPAnalyzer;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Models\Site;
@@ -26,8 +28,8 @@ class ContentResearchController extends Controller
     use InteractsWithContentApi;
 
     public function __construct(
-        private readonly profiler $profiler,
-        private readonly gateway $gateway
+        private readonly ContentProfiler $profiler,
+        private readonly AiGateway $gateway
     ) {}
 
     public function research(Request $request, CurrentOrganization $org): JsonResponse

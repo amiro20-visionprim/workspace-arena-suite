@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\App;
 
+use App\Domains\Ai\Services\AiGateway;
 use App\Domains\Content\Models\ContentDraft;
 use App\Domains\Content\Models\ContentGuardrail;
 use App\Domains\Content\Models\PromptTemplate;
+use App\Domains\Content\Services\ContentProfiler;
+use App\Domains\Content\Services\ContentQualityGuard;
+use App\Domains\Content\Services\InternalLinkEngine;
+use App\Domains\Content\Services\SchemaGenerator;
 use App\Domains\Content\Services\SEOExpertAnalyzer;
+use App\Domains\Content\Services\StandardsKB;
 use App\Domains\Organization\Contracts\CurrentOrganization;
 use App\Domains\Workspace\Models\Site;
 use App\Http\Controllers\App\Concerns\InteractsWithContentApi;
@@ -26,12 +32,12 @@ class ContentGenerateController extends Controller
     use InteractsWithContentApi;
 
     public function __construct(
-        private readonly profiler $profiler,
-        private readonly standards $standards,
-        private readonly qualityGuard $qualityGuard,
-        private readonly linkEngine $linkEngine,
-        private readonly schemaGen $schemaGen,
-        private readonly gateway $gateway
+        private readonly ContentProfiler $profiler,
+        private readonly StandardsKB $standards,
+        private readonly ContentQualityGuard $qualityGuard,
+        private readonly InternalLinkEngine $linkEngine,
+        private readonly SchemaGenerator $schemaGen,
+        private readonly AiGateway $gateway
     ) {}
 
     /**
