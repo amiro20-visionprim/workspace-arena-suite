@@ -5,6 +5,7 @@ import MarketingPageHero from '@/marketing/components/MarketingPageHero.vue'
 import MarketingLayout from '@/marketing/layouts/MarketingLayout.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 
 const phoneDisplay = '۰۹۰۲ ۴۱۵ ۱۶۳۰'
 const phoneHref = 'tel:+989024151630'
@@ -18,39 +19,38 @@ const channels = [
     value: phoneDisplay,
     href: phoneHref,
     note: 'همه‌روزه، ۹ صبح تا ۹ شب',
-    icon: '📞',
+    icon: '',
   },
   {
     title: 'واتس‌اپ',
     value: phoneDisplay,
     href: whatsappHref,
     note: 'پاسخ‌گویی در کمتر از ۲۴ ساعت کاری',
-    icon: '💬',
+    icon: '',
   },
   {
     title: 'تلگرام',
     value: '@' + phoneDisplay.replaceAll(' ', ''),
     href: telegramHref,
     note: 'همان شمارهٔ واتس‌اپ',
-    icon: '✈️',
+    icon: '️',
   },
   {
     title: 'بله',
     value: phoneDisplay,
     href: phoneHref,
     note: 'پیام‌رسان بله — همان شماره',
-    icon: '🟢',
+    icon: '',
   },
   {
     title: 'ایمیل',
     value: email,
     href: `mailto:${email}`,
     note: 'برای مدارک، قرارداد و مسائل رسمی',
-    icon: '✉️',
+    icon: '️',
   },
 ]
 </script>
-
 <template>
   <Head title="تماس با ما" />
   <MarketingLayout>
@@ -80,7 +80,9 @@ const channels = [
         </a>
 
         <div class="rounded-panel border-line bg-surface border p-6">
-          <div class="text-3xl">📋</div>
+          <div class="text-3xl"
+            ><VIcon :name="'table'" size="sm" class="inline-block align-middle"
+          /></div>
           <h2 class="text-ink-strong mt-4 text-base font-bold">برای مسائل رسمی</h2>
           <div class="mt-3 space-y-3">
             <div class="flex items-center justify-between gap-3">

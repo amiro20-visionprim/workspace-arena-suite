@@ -46,7 +46,6 @@ function send(): void {
 const statusTone = (status: string): 'success' | 'danger' | 'info' | 'neutral' | 'warning' =>
   status === 'sent' ? 'success' : 'danger'
 </script>
-
 <template>
   <Head title="پنل پیامک" />
   <PlatformLayout>

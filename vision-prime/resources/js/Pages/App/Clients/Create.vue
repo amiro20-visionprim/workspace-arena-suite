@@ -6,7 +6,6 @@ import AppLayout from '@/app/layouts/AppLayout.vue'
 import VCard from '@/shared/ui/VCard.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 </script>
-
 <template>
   <Head title="افزودن مشتری" />
   <AppLayout

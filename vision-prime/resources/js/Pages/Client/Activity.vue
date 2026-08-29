@@ -18,7 +18,6 @@ defineProps<{
   activities: ActivityItem[]
 }>()
 </script>
-
 <template>
   <Head title="فعالیت‌ها" />
   <ClientPortalLayout>

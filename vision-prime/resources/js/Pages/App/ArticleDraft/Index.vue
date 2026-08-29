@@ -49,7 +49,6 @@ const statusTones: Record<string, BadgeTone> = {
   archived: 'neutral',
 }
 </script>
-
 <template>
   <Head title="پیش‌نویس‌های محتوا" />
   <AppLayout>

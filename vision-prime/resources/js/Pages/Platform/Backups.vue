@@ -6,6 +6,7 @@ import VAlert from '@/shared/ui/VAlert.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import VInput from '@/shared/ui/VInput.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 
@@ -49,7 +50,6 @@ function runNow(): void {
   )
 }
 </script>
-
 <template>
   <Head title="مدیریت بکاپ" />
   <AppLayout>
@@ -66,7 +66,7 @@ function runNow(): void {
       <VCard>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <span class="text-lg">🗄️</span>
+            <span class="text-lg">️</span>
             <div>
               <p class="text-ink-strong text-sm font-semibold">آخرین بکاپ</p>
               <p class="text-ink-muted text-xs">
@@ -88,7 +88,7 @@ function runNow(): void {
       </VCard>
 
       <!-- تنظیمات -->
-      <VCard title="⚙️ تنظیمات">
+      <VCard title=" تنظیمات">
         <form class="grid gap-4 md:grid-cols-3" @submit.prevent="save">
           <VInput
             v-model="form.notify_email"
@@ -114,13 +114,16 @@ function runNow(): void {
             </label>
           </div>
           <div class="md:col-span-3">
-            <VButton type="submit" :loading="saving">💾 ذخیرهٔ تنظیمات</VButton>
+            <VButton type="submit" :loading="saving"
+              ><VIcon :name="'save'" size="sm" class="inline-block align-middle" /> ذخیرهٔ
+              تنظیمات</VButton
+            >
           </div>
         </form>
       </VCard>
 
       <!-- فهرست نسخه‌ها -->
-      <VCard title="📦 نسخه‌های بکاپ">
+      <VCard title="نسخه‌های بکاپ">
         <div v-if="files.length === 0" class="text-ink-muted py-8 text-center text-sm">
           هنوز نسخه‌ای ثبت نشده — «اجرا همین حالا» را بزنید.
         </div>

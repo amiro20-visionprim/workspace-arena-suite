@@ -42,7 +42,7 @@ function save() {
         target="_blank"
         rel="noopener"
         >فعال‌سازی Search Console API</a
-      > </VAlert
+      ></VAlert
     ><VCard title="انتخاب Property سرچ کنسول"
       ><form class="space-y-4" @submit.prevent="save">
         <VSelect

@@ -151,7 +151,6 @@ const faqs = [
   },
 ]
 </script>
-
 <template>
   <Head title="قیمت‌گذاری" />
   <MarketingLayout>
@@ -304,7 +303,7 @@ const faqs = [
     <!-- Guarantee strip -->
     <section class="mx-auto max-w-7xl px-5 pb-12 sm:px-8 lg:px-10">
       <div class="rounded-panel bg-success-50 border-success-200 border p-6 text-center sm:p-8">
-        <p class="text-success-700 font-display text-lg font-bold">🛡 ضمانت ۱۴ روزهٔ بازگشت وجه</p>
+        <p class="text-success-700 font-display text-lg font-bold">ضمانت ۱۴ روزهٔ بازگشت وجه</p>
         <p class="text-ink-muted mx-auto mt-2 max-w-2xl text-sm leading-7">
           اگر تا ۱۴ روز پس از شروع، به هر دلیلی راضی نبودید، کل مبلغ بدون سؤال بازگردانده می‌شود. ما
           ریسک را بر عهده می‌گیریم تا شما با خیال راحت شروع کنید.

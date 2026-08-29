@@ -77,7 +77,6 @@ function scoreTone(score: number): string {
   return 'bg-brand-600'
 }
 </script>
-
 <template>
   <Head title="اولویت‌ها | پرتال مشتری" />
   <ClientPortalLayout>

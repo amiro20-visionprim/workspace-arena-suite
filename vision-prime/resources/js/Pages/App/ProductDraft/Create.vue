@@ -6,6 +6,7 @@ import VAlert from '@/shared/ui/VAlert.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import CoverPicker from '@/Pages/App/ContentStudio/CoverPicker.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
@@ -732,7 +733,6 @@ async function applySuggestions(suggestions: string[]) {
   applyingSuggestions.value = false
 }
 </script>
-
 <template>
   <Head title="تولید محصول هوشمند" />
   <AppLayout>
@@ -764,9 +764,10 @@ async function applySuggestions(suggestions: string[]) {
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-ink-strong text-sm font-bold">حالت تولید محصول را انتخاب کنید</p>
-            <p class="text-ink-muted mt-1 text-xs leading-6">
-              ⚡ <b>سرعتی:</b> فقط نام محصول. &nbsp;·&nbsp; 🎯 <b>حرفه‌ای:</b> بریف + قیمت/موجودی
-              واقعی ووکامرس + دسته‌بندی محصول.
+            <p class="text-ink-muted mt-1 text-xs leading-6"
+              ><VIcon :name="'zap'" size="sm" class="inline-block align-middle" /><b>سرعتی:</b> فقط
+              نام محصول. &nbsp;·&nbsp; <b>حرفه‌ای:</b> بریف + قیمت/موجودی واقعی ووکامرس + دسته‌بندی
+              محصول.
             </p>
           </div>
           <div class="bg-surface-muted flex rounded-xl p-1">
@@ -776,7 +777,7 @@ async function applySuggestions(suggestions: string[]) {
               :class="studioMode === 'quick' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
               @click="studioMode = 'quick'"
             >
-              ⚡ سرعتی
+              سرعتی
             </button>
             <button
               type="button"
@@ -784,7 +785,7 @@ async function applySuggestions(suggestions: string[]) {
               :class="studioMode === 'pro' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
               @click="studioMode = 'pro'"
             >
-              🎯 حرفه‌ای
+              حرفه‌ای
             </button>
           </div>
         </div>
@@ -884,7 +885,9 @@ async function applySuggestions(suggestions: string[]) {
               >
                 <div class="flex items-center justify-between">
                   <span class="text-ink-strong font-medium">{{ t.title }}</span>
-                  <VBadge v-if="t.is_featured" tone="warning" size="sm">⭐</VBadge>
+                  <VBadge v-if="t.is_featured" tone="warning" size="sm"
+                    ><VIcon :name="'star'" size="sm" class="inline-block align-middle"
+                  /></VBadge>
                 </div>
                 <div class="text-ink-muted mt-1 text-xs">{{ t.tone }}</div>
               </button>
@@ -894,7 +897,7 @@ async function applySuggestions(suggestions: string[]) {
               class="text-brand-700 mt-2 text-xs"
               @click="showCustomPrompt = !showCustomPrompt"
             >
-              {{ showCustomPrompt ? 'بستن پرامپت اختیاری' : '✏️ نوشتن پرامپت اختیاری' }}
+              {{ showCustomPrompt ? 'بستن پرامپت اختیاری' : ' نوشتن پرامپت اختیاری' }}
             </button>
             <textarea
               v-if="showCustomPrompt"
@@ -915,7 +918,7 @@ async function applySuggestions(suggestions: string[]) {
               class="flex-1"
               @click="quickGenerate"
             >
-              {{ generatingLoading ? 'در حال تولید...' : '⚡ تولید سریع' }}
+              {{ generatingLoading ? 'در حال تولید...' : ' تولید سریع' }}
             </VButton>
             <VButton
               :loading="outlineLoading"
@@ -925,7 +928,7 @@ async function applySuggestions(suggestions: string[]) {
               class="flex-1"
               @click="generateOutline"
             >
-              {{ outlineLoading ? 'در حال تحلیل...' : '📋 با Outline' }}
+              {{ outlineLoading ? 'در حال تحلیل...' : ' با Outline' }}
             </VButton>
           </div>
           <VAlert v-if="outlineError" tone="danger">{{ outlineError }}</VAlert>
@@ -964,7 +967,8 @@ async function applySuggestions(suggestions: string[]) {
             variant="primary"
             size="lg"
             @click="generateFromOutline"
-            >🚀 تولید محتوا</VButton
+            ><VIcon :name="'rocket'" size="sm" class="inline-block align-middle" /> تولید
+            محتوا</VButton
           >
           <VButton variant="secondary" @click="goToOutline">بازگشت</VButton>
         </div>
@@ -973,12 +977,12 @@ async function applySuggestions(suggestions: string[]) {
 
     <!-- STEP 3: GENERATING -->
     <div v-if="step === 'generating'" class="mx-auto mt-6 max-w-2xl py-16 text-center">
-      <div class="mb-4 animate-pulse text-6xl">🤖</div>
+      <div class="mb-4 animate-pulse text-6xl"></div>
       <h2 class="text-ink-strong text-xl font-bold">در حال تولید توضیح محصول...</h2>
       <p class="text-ink-muted mt-2">{{ generatingStatus }}</p>
       <div class="text-ink-muted mt-8 space-y-2 text-sm">
-        <p>✅ تحلیل ساختار پیشنهادی</p>
-        <p>✅ اعمال گاردرایل‌ها و استانداردها</p>
+        <p>تحلیل ساختار پیشنهادی</p>
+        <p>اعمال گاردرایل‌ها و استانداردها</p>
         <p class="animate-pulse">در انتظار تولید محتوا با AI...</p>
       </div>
     </div>
@@ -988,7 +992,7 @@ async function applySuggestions(suggestions: string[]) {
       <VCard class="mb-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="text-2xl">✅</span>
+            <span class="text-2xl"></span>
             <div>
               <h3 class="text-ink-strong font-bold">توضیح محصول تولید شد!</h3>
               <p class="text-ink-muted text-sm">
@@ -1003,7 +1007,10 @@ async function applySuggestions(suggestions: string[]) {
               >امتیاز: {{ seoScore }}/100</VBadge
             >
             <VButton variant="secondary" @click="goToOutline">بازگشت</VButton>
-            <VButton variant="secondary" @click="regenerate">🔄 تولید مجدد</VButton>
+            <VButton variant="secondary" @click="regenerate"
+              ><VIcon :name="'refresh'" size="sm" class="inline-block align-middle" /> تولید
+              مجدد</VButton
+            >
           </div>
         </div>
       </VCard>
@@ -1013,11 +1020,11 @@ async function applySuggestions(suggestions: string[]) {
           <div class="border-line flex gap-1 border-b">
             <button
               v-for="tab in [
-                { id: 'content', label: '✏️ محتوا' },
-                { id: 'meta', label: '🏷️ Meta' },
-                { id: 'seo', label: '📊 امتیاز' },
-                { id: 'schema', label: '📊 اسکیما' },
-                { id: 'sections', label: '📝 ویرایش بخش‌ها' },
+                { id: 'content', label: ' محتوا' },
+                { id: 'meta', label: '️ Meta' },
+                { id: 'seo', label: ' امتیاز' },
+                { id: 'schema', label: ' اسکیما' },
+                { id: 'sections', label: 'ویرایش بخش‌ها' },
               ]"
               :key="tab.id"
               type="button"
@@ -1170,9 +1177,8 @@ async function applySuggestions(suggestions: string[]) {
                       type="button"
                       class="text-ink-muted hover:bg-surface-muted rounded p-1.5 text-xs"
                       @click="editSection(i)"
-                    >
-                      ✏️
-                    </button>
+                      ><VIcon :name="'pencil'" size="sm" class="inline-block align-middle"
+                    /></button>
                     <button
                       type="button"
                       class="text-ink-muted rounded p-1.5 text-xs hover:bg-blue-100 hover:text-blue-600"
@@ -1180,7 +1186,9 @@ async function applySuggestions(suggestions: string[]) {
                       @click="regenerateSection(i)"
                     >
                       <span v-if="sec.regenerating" class="animate-pulse">⏳</span
-                      ><span v-else>🔄</span>
+                      ><span v-else
+                        ><VIcon :name="'refresh'" size="sm" class="inline-block align-middle"
+                      /></span>
                     </button>
                   </div>
                 </div>
@@ -1228,7 +1236,7 @@ async function applySuggestions(suggestions: string[]) {
 
         <!-- Sidebar -->
         <div class="space-y-6">
-          <VCard title="📊 خلاصه">
+          <VCard title=" خلاصه">
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-ink-muted">کلمات:</span
@@ -1260,7 +1268,7 @@ async function applySuggestions(suggestions: string[]) {
           </VCard>
 
           <!-- Keyword Density -->
-          <VCard title="🎯 تراکم کلیدواژه">
+          <VCard title=" تراکم کلیدواژه">
             <div class="space-y-3">
               <input
                 v-model="keywordInput"
@@ -1292,13 +1300,13 @@ async function applySuggestions(suggestions: string[]) {
           </VCard>
 
           <!-- Expert Analysis -->
-          <VCard v-if="result.expert_analysis" title="🧠 تحلیل متخصص SEO">
+          <VCard v-if="result.expert_analysis" title=" تحلیل متخصص SEO">
             <div class="space-y-3">
               <p class="text-ink-strong text-sm font-medium">
                 {{ result.expert_analysis.summary }}
               </p>
               <div v-if="result.expert_analysis.strengths?.length" class="space-y-1">
-                <p class="text-xs font-semibold text-green-600">✅ نقاط قوت:</p>
+                <p class="text-xs font-semibold text-green-600">نقاط قوت:</p>
                 <p
                   v-for="s in result.expert_analysis.strengths"
                   :key="s"
@@ -1308,7 +1316,10 @@ async function applySuggestions(suggestions: string[]) {
                 </p>
               </div>
               <div v-if="result.expert_analysis.weaknesses?.length" class="space-y-1">
-                <p class="text-xs font-semibold text-red-600">⚠️ نقاط ضعف:</p>
+                <p class="text-xs font-semibold text-red-600"
+                  ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" /> نقاط
+                  ضعف:</p
+                >
                 <p
                   v-for="w in result.expert_analysis.weaknesses"
                   :key="w"
@@ -1318,7 +1329,10 @@ async function applySuggestions(suggestions: string[]) {
                 </p>
               </div>
               <div v-if="result.expert_analysis.recommendations?.length" class="space-y-1">
-                <p class="text-xs font-semibold text-blue-600">💡 توصیه‌ها:</p>
+                <p class="text-xs font-semibold text-blue-600"
+                  ><VIcon :name="'lightbulb'" size="sm" class="inline-block align-middle" />
+                  توصیه‌ها:</p
+                >
                 <p
                   v-for="r in result.expert_analysis.recommendations"
                   :key="r"
@@ -1340,7 +1354,7 @@ async function applySuggestions(suggestions: string[]) {
           </VCard>
 
           <!-- Profile -->
-          <VCard v-if="result.profile" title="🎯 پروفایل">
+          <VCard v-if="result.profile" title=" پروفایل">
             <div class="space-y-1 text-xs">
               <div>نوع: {{ result.profile.content_type }}</div>
               <div>زیرنوع: {{ result.profile.subtype }}</div>
@@ -1349,25 +1363,35 @@ async function applySuggestions(suggestions: string[]) {
           </VCard>
 
           <!-- Action Buttons -->
-          <VCard title="🚀 اقدامات">
+          <VCard title=" اقدامات">
             <div class="space-y-3">
               <div class="flex flex-wrap gap-2">
-                <VButton variant="primary" size="sm" @click="saveCurrentDraft">💾 ذخیره</VButton>
-                <VButton variant="secondary" size="sm" @click="copyHtml">📋 کپی HTML</VButton>
-                <VButton variant="secondary" size="sm" @click="copyPlainText">📝 کپی متن</VButton>
+                <VButton variant="primary" size="sm" @click="saveCurrentDraft"
+                  ><VIcon :name="'save'" size="sm" class="inline-block align-middle" />
+                  ذخیره</VButton
+                >
+                <VButton variant="secondary" size="sm" @click="copyHtml"
+                  ><VIcon :name="'table'" size="sm" class="inline-block align-middle" /> کپی
+                  HTML</VButton
+                >
+                <VButton variant="secondary" size="sm" @click="copyPlainText">کپی متن</VButton>
                 <VButton variant="secondary" size="sm" @click="showPublishDialog = true"
-                  >🚀 انتشار در وردپرس</VButton
+                  ><VIcon :name="'rocket'" size="sm" class="inline-block align-middle" /> انتشار در
+                  وردپرس</VButton
                 >
               </div>
-              <p v-if="draftSaved" class="text-xs text-green-600">✅ Draft ذخیره شد</p>
-              <p v-if="copyStatus === 'HTML'" class="text-xs text-blue-600">📋 HTML کپی شد!</p>
-              <p v-if="copyStatus === 'TEXT'" class="text-xs text-blue-600">📝 متن کپی شد!</p>
+              <p v-if="draftSaved" class="text-xs text-green-600">Draft ذخیره شد</p>
+              <p v-if="copyStatus === 'HTML'" class="text-xs text-blue-600"
+                ><VIcon :name="'table'" size="sm" class="inline-block align-middle" /> HTML کپی
+                شد!</p
+              >
+              <p v-if="copyStatus === 'TEXT'" class="text-xs text-blue-600">متن کپی شد!</p>
               <p v-if="publishResult?.success" class="text-xs text-green-600">
-                ✅ منتشر شد!
+                منتشر شد!
                 <a :href="publishResult.post_url" target="_blank" class="underline">مشاهده</a>
               </p>
               <p v-if="publishResult?.error" class="text-xs text-red-600">
-                ❌ {{ publishResult.error }}
+                {{ publishResult.error }}
               </p>
             </div>
           </VCard>
@@ -1382,7 +1406,10 @@ async function applySuggestions(suggestions: string[]) {
     >
       <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
         <div class="mb-4 flex items-center justify-between">
-          <h4 class="text-ink-strong font-bold">🚀 انتشار در وردپرس</h4>
+          <h4 class="text-ink-strong font-bold"
+            ><VIcon :name="'rocket'" size="sm" class="inline-block align-middle" /> انتشار در
+            وردپرس</h4
+          >
           <button class="text-ink-muted hover:text-ink-strong" @click="showPublishDialog = false">
             ✕
           </button>
@@ -1402,7 +1429,7 @@ async function applySuggestions(suggestions: string[]) {
       </div>
     </div>
     <!-- ═══ گام بریف محصول (حرفه‌ای) ═══ -->
-    <VCard v-if="step === 'brief' && brief" title="📋 بریف محصول — بازبینی و ویرایش">
+    <VCard v-if="step === 'brief' && brief" title=" بریف محصول — بازبینی و ویرایش">
       <div class="grid gap-4 md:grid-cols-2">
         <div class="space-y-3">
           <div>
@@ -1466,7 +1493,10 @@ async function applySuggestions(suggestions: string[]) {
             v-if="brief.woo"
             class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs leading-6"
           >
-            <p class="mb-1 font-bold text-emerald-800">🛒 دادهٔ واقعی ووکامرس</p>
+            <p class="mb-1 font-bold text-emerald-800"
+              ><VIcon :name="'shopping-bag'" size="sm" class="inline-block align-middle" /> دادهٔ
+              واقعی ووکامرس</p
+            >
             <p>
               قیمت:
               <b dir="ltr"
@@ -1490,8 +1520,8 @@ async function applySuggestions(suggestions: string[]) {
             <p class="opacity-70">توضیحات با قیمت/موجودی واقعی هماهنگ تولید می‌شود.</p>
           </div>
           <p v-else class="text-ink-muted text-[11px] leading-5">
-            💡 برای هماهنگی توضیحات با قیمت واقعی، URL محصول را در گام قبل وارد کنید (اتصال پلاگین
-            لازم است).
+            برای هماهنگی توضیحات با قیمت واقعی، URL محصول را در گام قبل وارد کنید (اتصال پلاگین لازم
+            است).
           </p>
         </div>
       </div>
@@ -1499,7 +1529,10 @@ async function applySuggestions(suggestions: string[]) {
       <!-- دسته/برچسب محصول -->
       <div class="border-line mt-5 border-t pt-4">
         <div class="mb-2 flex items-center justify-between">
-          <p class="text-ink-strong text-xs font-bold">🗂️ دسته و برچسب محصول (ووکامرس)</p>
+          <p class="text-ink-strong text-xs font-bold"
+            ><VIcon :name="'table'" size="sm" class="inline-block align-middle" /> دسته و برچسب
+            محصول (ووکامرس)</p
+          >
           <button
             class="text-brand-700 text-[11px] underline"
             type="button"

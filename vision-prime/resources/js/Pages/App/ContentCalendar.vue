@@ -11,6 +11,7 @@ import VInput from '@/shared/ui/VInput.vue'
 import VModal from '@/shared/ui/VModal.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 
 interface CalendarItem {
   id: number
@@ -411,7 +412,6 @@ function onCellDragLeave(): void {
   dragOverDate.value = ''
 }
 </script>
-
 <template>
   <Head title="تقویم محتوایی" />
   <AppLayout>
@@ -658,7 +658,10 @@ function onCellDragLeave(): void {
         </template>
         <template v-else>
           <div v-if="suggestionFor(selectedItem)" class="rounded-ui bg-brand-50 px-3 py-2 text-xs">
-            <p class="text-brand-800 font-semibold">✨ پیشنهاد سیستم</p>
+            <p class="text-brand-800 font-semibold"
+              ><VIcon :name="'sparkles'" size="sm" class="inline-block align-middle" /> پیشنهاد
+              سیستم</p
+            >
             <p class="text-brand-700 mt-0.5">
               {{ suggestionFor(selectedItem)!.label }} (میانگین
               {{ suggestionFor(selectedItem)!.avg_clicks }} کلیک در

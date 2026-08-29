@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/vue3'
 import PlatformLayout from '@/platform/layouts/PlatformLayout.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VStatCard from '@/shared/ui/VStatCard.vue'
 import VAreaChart, { type AreaPoint } from '@/shared/ui/VAreaChart.vue'
@@ -84,7 +85,6 @@ const revenueBars = (trend: TrendPoint[]): { label: string; value: number }[] =>
 
 const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(value)
 </script>
-
 <template>
   <Head title="داشبورد فرماندهی" />
   <PlatformLayout>
@@ -100,8 +100,8 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
     >
       <span
         class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/15 text-lg"
-        >🧠</span
-      >
+        ><VIcon :name="'brain'" size="sm" class="inline-block align-middle"
+      /></span>
       <div>
         <h2 class="text-ink-strong font-display text-sm font-bold">
           خلاصهٔ هوشمند تصمیم‌ها
@@ -121,7 +121,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
       <div class="flex items-center justify-between gap-3">
         <div>
           <h2 class="text-ink-strong font-display text-lg font-bold">
-            🔴 {{ pendingDecisions.length }} تصمیم در انتظار شما
+            {{ pendingDecisions.length }} تصمیم در انتظار شما
           </h2>
           <p class="text-ink-muted mt-1 text-sm">
             این‌ها چیزهایی هستند که فقط شما می‌توانید تصمیم بگیرید؛ بقیه‌اش خودکار انجام شده است.

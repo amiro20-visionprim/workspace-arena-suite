@@ -16,7 +16,6 @@ const controls = [
   ['پاسخ‌گویی', 'Audit trail برای تغییرات حساس، تأییدها، اتصال‌ها و چرخه اجرای command.'],
 ]
 </script>
-
 <template>
   <Head title="امنیت" />
   <MarketingLayout>

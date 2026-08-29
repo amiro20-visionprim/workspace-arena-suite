@@ -92,7 +92,6 @@ const summaryHealth = computed(() => {
   return { avg, level: healthOf(avg) }
 })
 </script>
-
 <template>
   <Head title="وضعیت سایت | پرتال مشتری" />
   <ClientPortalLayout>

@@ -66,7 +66,6 @@ const methodLabels: Record<string, string> = {
 
 const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(value)
 </script>
-
 <template>
   <Head title="پرداخت‌ها" />
   <PlatformLayout>

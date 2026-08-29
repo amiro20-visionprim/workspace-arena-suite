@@ -155,7 +155,6 @@ function onCta(): void {
   trackAudienceCta('agencies')
 }
 </script>
-
 <template>
   <Head title="لندینگ اختصاصی آژانس‌ها" />
   <MarketingLayout>

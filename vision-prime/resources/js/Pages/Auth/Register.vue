@@ -82,7 +82,6 @@ function csrfToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 </script>
-
 <template>
   <AuthLayout
     title="ساخت حساب"

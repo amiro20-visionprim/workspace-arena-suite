@@ -72,7 +72,6 @@ function convertToRecommendation(): void {
   })
 }
 </script>
-
 <template>
   <Head title="جزئیات فرصت رشد" />
   <AppLayout>

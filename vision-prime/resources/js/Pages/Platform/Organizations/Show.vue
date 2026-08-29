@@ -89,7 +89,6 @@ function impersonate(memberId: number, memberName: string): void {
   )
 }
 </script>
-
 <template>
   <Head :title="organization.name" />
   <PlatformLayout>

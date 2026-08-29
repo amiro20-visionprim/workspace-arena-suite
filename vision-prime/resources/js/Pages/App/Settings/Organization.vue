@@ -87,7 +87,6 @@ const columns = computed<TableColumn[]>(() => [
   ...(props.canManage ? [{ key: 'actions', label: 'عملیات', align: 'end' as const }] : []),
 ])
 </script>
-
 <template>
   <Head title="سازمان و اعضا" />
   <AppLayout>

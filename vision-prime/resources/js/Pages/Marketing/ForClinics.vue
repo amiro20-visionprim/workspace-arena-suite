@@ -149,7 +149,6 @@ function onCta(): void {
   trackAudienceCta('clinics')
 }
 </script>
-
 <template>
   <Head title="لندینگ اختصاصی کلینیک‌ها" />
   <MarketingLayout>

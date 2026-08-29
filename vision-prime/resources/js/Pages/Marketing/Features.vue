@@ -50,7 +50,6 @@ const features = [
   },
 ]
 </script>
-
 <template>
   <Head title="قابلیت‌ها" />
   <MarketingLayout>

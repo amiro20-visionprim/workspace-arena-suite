@@ -64,7 +64,6 @@ function archiveClient(): void {
   router.delete(`/app/clients/${props.client.id}`)
 }
 </script>
-
 <template>
   <Head :title="client.name" />
   <AppLayout

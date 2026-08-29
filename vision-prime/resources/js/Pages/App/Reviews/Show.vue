@@ -8,6 +8,7 @@ import { decisionLabels, labelOf, reviewStatusLabels, reviewSubjectLabels } from
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VTextarea from '@/shared/ui/VTextarea.vue'
 
@@ -386,7 +387,7 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
                     :key="key"
                     :tone="elementTone(present)"
                   >
-                    {{ requiredElementLabels[key] ?? key }}: {{ present ? '✓' : '✗' }}
+                    {{ requiredElementLabels[key] ?? key }}: {{ present ? '✓' : '×' }}
                   </VBadge>
                 </div>
               </div>
@@ -396,7 +397,10 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
               v-if="p.subject.generation.featured_image"
               class="border-line rounded-ui border p-4"
             >
-              <p class="text-ink-strong mb-2 text-sm font-semibold">🖼️ تصویر شاخص پیشنهادی</p>
+              <p class="text-ink-strong mb-2 text-sm font-semibold"
+                ><VIcon :name="'image'" size="sm" class="inline-block align-middle" /> تصویر شاخص
+                پیشنهادی</p
+              >
               <div class="flex flex-wrap gap-2">
                 <VBadge tone="info">{{ p.subject.generation.featured_image.aspect }}</VBadge>
                 <VBadge tone="neutral">
@@ -415,7 +419,10 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
 
             <!-- اسکیمای Schema.org -->
             <div v-if="p.subject.generation.schema.length" class="space-y-3">
-              <p class="text-ink-strong text-sm font-semibold">📊 اسکیمای Schema.org پیشنهادی</p>
+              <p class="text-ink-strong text-sm font-semibold"
+                ><VIcon :name="'chart-bar'" size="sm" class="inline-block align-middle" /> اسکیمای
+                Schema.org پیشنهادی</p
+              >
               <div
                 v-for="(node, index) in p.subject.generation.schema"
                 :key="index"
@@ -471,7 +478,10 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
 
           <!-- دادهٔ واقعی ووکامرس (قیمت/موجودی) -->
           <div v-if="p.subject.generation.woo_product" class="border-line rounded-ui border p-4">
-            <p class="text-ink-strong mb-2 text-sm font-semibold">🛒 دادهٔ واقعی ووکامرس</p>
+            <p class="text-ink-strong mb-2 text-sm font-semibold"
+              ><VIcon :name="'shopping-bag'" size="sm" class="inline-block align-middle" /> دادهٔ
+              واقعی ووکامرس</p
+            >
             <div class="flex flex-wrap items-center gap-2">
               <VBadge tone="info">
                 {{
@@ -505,7 +515,10 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
 
           <!-- ویجت وضعیت بلادرنگ کامند فاز ۲ -->
           <div v-if="p.subject.generation.command" class="border-line rounded-ui border p-4">
-            <p class="text-ink-strong mb-2 text-sm font-semibold">🚀 وضعیت انتشار خودکار</p>
+            <p class="text-ink-strong mb-2 text-sm font-semibold"
+              ><VIcon :name="'rocket'" size="sm" class="inline-block align-middle" /> وضعیت انتشار
+              خودکار</p
+            >
             <div class="flex flex-wrap items-center gap-2">
               <VBadge
                 :tone="
@@ -543,7 +556,7 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
               </VBadge>
             </div>
             <div v-if="p.subject.generation.command.post_url" class="mt-2">
-              <span class="text-ink-strong text-sm">📄 مقالهٔ منتشرشده:</span>
+              <span class="text-ink-strong text-sm"> مقالهٔ منتشرشده:</span>
               <a
                 :href="p.subject.generation.command.post_url"
                 target="_blank"
@@ -565,7 +578,10 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
             <div v-if="p.subject.generation.command.impact" class="border-line mt-3 border-t pt-3">
               <template v-if="p.subject.generation.command.impact.status === 'ready'">
                 <div class="flex flex-wrap items-center gap-2">
-                  <span class="text-ink-strong text-sm font-semibold">📈 تأثیر پس از انتشار</span>
+                  <span class="text-ink-strong text-sm font-semibold"
+                    ><VIcon :name="'trend-up'" size="sm" class="inline-block align-middle" /> تأثیر
+                    پس از انتشار</span
+                  >
                   <VBadge
                     :tone="
                       p.subject.generation.command.impact.verdict === 'improved'
@@ -699,7 +715,6 @@ function payloadRows(payload: Record<string, unknown> | null): [string, unknown]
     </VCard>
   </AppLayout>
 </template>
-
 <style scoped>
 .article-preview :deep(h1) {
   font-size: 1.5rem;

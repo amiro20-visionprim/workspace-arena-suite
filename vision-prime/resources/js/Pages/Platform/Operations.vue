@@ -6,6 +6,7 @@ import PlatformLayout from '@/platform/layouts/PlatformLayout.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VStatCard from '@/shared/ui/VStatCard.vue'
 
@@ -48,7 +49,6 @@ function emergencyStop(): void {
   )
 }
 </script>
-
 <template>
   <Head title="رصد فنی" />
   <PlatformLayout>
@@ -91,7 +91,10 @@ function emergencyStop(): void {
     <div class="border-danger-200/60 bg-danger-50/60 mt-6 rounded-2xl border p-5">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-ink-strong font-display text-lg font-bold">🚨 توقف اضطراری اتوماسیون</h2>
+          <h2 class="text-ink-strong font-display text-lg font-bold"
+            ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" /> توقف اضطراری
+            اتوماسیون</h2
+          >
           <p class="text-ink-muted mt-1 text-sm">
             توقف فوری همهٔ دستورهای خودکار در کل پلتفرم (یا یک سازمان) — با ثبت کامل در گزارش ممیزی.
           </p>
@@ -165,7 +168,10 @@ function emergencyStop(): void {
       @click.self="emergencyOpen = false"
     >
       <div class="bg-surface w-full max-w-md rounded-2xl p-6 shadow-2xl">
-        <h3 class="text-danger-600 font-display text-lg font-bold">🚨 تأیید توقف اضطراری</h3>
+        <h3 class="text-danger-600 font-display text-lg font-bold"
+          ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" /> تأیید توقف
+          اضطراری</h3
+        >
         <p class="text-ink-muted mt-1 text-sm">
           این اقدام همهٔ دستورهای خودکار در صف را لغو و سیاست‌های اتوماسیون را متوقف می‌کند. دلیل
           ثبت و در گزارش ممیزی ذخیره می‌شود.

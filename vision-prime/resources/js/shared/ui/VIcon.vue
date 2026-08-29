@@ -1,6 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {
+  Bot,
+  Brain,
+  CloudDownload,
+  Database,
+  FileEdit,
+  Image,
+  Info,
+  Pencil,
+  RefreshCw,
+  Rocket,
+  Save,
+  Star,
+  Table2,
+  Trash2,
+  TriangleAlert,
+  Upload,
   Activity,
   ArrowDownRight,
   ArrowUpRight,
@@ -91,6 +107,22 @@ export type IconName =
   | 'users'
   | 'x'
   | 'zap'
+  | 'alert'
+  | 'bot'
+  | 'brain'
+  | 'cloud-download'
+  | 'database'
+  | 'file-edit'
+  | 'image'
+  | 'info'
+  | 'pencil'
+  | 'refresh'
+  | 'rocket'
+  | 'save'
+  | 'star'
+  | 'table'
+  | 'trash'
+  | 'upload'
 
 export type IconTone = 'brand' | 'success' | 'warning' | 'danger' | 'neutral' | 'violet'
 
@@ -139,6 +171,22 @@ const registry: Record<IconName, Component> = {
   users: Users,
   x: XCircle,
   zap: Zap,
+  alert: TriangleAlert,
+  bot: Bot,
+  brain: Brain,
+  'cloud-download': CloudDownload,
+  database: Database,
+  'file-edit': FileEdit,
+  image: Image,
+  info: Info,
+  pencil: Pencil,
+  refresh: RefreshCw,
+  rocket: Rocket,
+  save: Save,
+  star: Star,
+  table: Table2,
+  trash: Trash2,
+  upload: Upload,
 }
 
 const toneClasses: Record<IconTone, string> = {

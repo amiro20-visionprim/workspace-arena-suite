@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 import PlatformLayout from '@/platform/layouts/PlatformLayout.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import type { AppPageProps } from '@/types/app'
 
@@ -60,7 +61,6 @@ function toggleRequire(): void {
   router.post('/platform/mfa/require', { required: !props.mfaRequired }, { preserveScroll: true })
 }
 </script>
-
 <template>
   <Head title="امنیت و MFA" />
   <PlatformLayout>
@@ -87,7 +87,7 @@ function toggleRequire(): void {
                   : 'bg-amber-100 dark:bg-amber-900/40'
               "
             >
-              {{ enabled ? '🛡️' : '⚠️' }}
+              {{ enabled ? '️' : '' }}
             </span>
             <div>
               <p class="text-sm font-bold text-gray-900 dark:text-white">
@@ -180,8 +180,8 @@ function toggleRequire(): void {
           <div class="flex items-start gap-3">
             <span
               class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-lg dark:bg-amber-900/40"
-              >💾</span
-            >
+              ><VIcon :name="'save'" size="sm" class="inline-block align-middle"
+            /></span>
             <div>
               <h3 class="text-lg font-bold text-gray-900 dark:text-white">
                 کدهای پشتیبان خود را ذخیره کنید
@@ -252,25 +252,25 @@ function toggleRequire(): void {
           <h3 class="text-lg font-bold text-gray-900 dark:text-white">چرا مهم است؟</h3>
           <ul class="mt-4 space-y-3 text-sm text-gray-600 dark:text-gray-300">
             <li class="flex items-start gap-2">
-              <span>🛡️</span>
+              <span>️</span>
               <span
                 >اتاق فرماندهی پلتفرم بالاترین دسترسی است — حتی با رمز عبور درزکرده، بدون کد دوم کسی
                 وارد نمی‌شود.</span
               >
             </li>
             <li class="flex items-start gap-2">
-              <span>🔑</span>
+              <span></span>
               <span>کدها هر ۳۰ ثانیه تغییر می‌کنند و فقط روی دستگاه شما نمایش داده می‌شوند.</span>
             </li>
             <li class="flex items-start gap-2">
-              <span>💾</span>
+              <span><VIcon :name="'save'" size="sm" class="inline-block align-middle" /></span>
               <span
                 >در زمان فعال‌سازی، ۱۰ کد پشتیبان ساخته می‌شود — اگر گوشی را گم کردید با آن‌ها وارد
                 شوید (هر کد یک‌بار).</span
               >
             </li>
             <li class="flex items-start gap-2">
-              <span>📱</span>
+              <span></span>
               <span>از Google Authenticator، Authy یا هر اپ TOTP استاندارد استفاده کنید.</span>
             </li>
           </ul>

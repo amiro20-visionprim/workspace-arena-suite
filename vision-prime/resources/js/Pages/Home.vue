@@ -150,7 +150,6 @@ const modules = [
   },
 ]
 </script>
-
 <template>
   <Head title="پلتفرم هوشمند عملیات SEO" />
   <MarketingLayout>

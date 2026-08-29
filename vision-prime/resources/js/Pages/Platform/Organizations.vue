@@ -33,7 +33,6 @@ const subTone = (status: string | null): 'success' | 'warning' | 'danger' | 'neu
         ? 'danger'
         : 'neutral'
 </script>
-
 <template>
   <Head title="سازمان‌ها" />
   <PlatformLayout>

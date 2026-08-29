@@ -1,6 +1,7 @@
 /** Shared UI component: SEO Score Card — RankMath-style */
 <script setup lang="ts">
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 
 interface CheckItem {
   label: string
@@ -27,9 +28,8 @@ defineProps<{
 const scoreColor = (s: number) => (s >= 80 ? 'success' : s >= 60 ? 'warning' : 'danger')
 const scoreLabel = (s: number) => (s >= 80 ? 'عالی' : s >= 60 ? 'قابل قبول' : 'نیاز به بهبود')
 </script>
-
 <template>
-  <VCard title="📊 امتیاز SEO" description="امتیاز لحظه‌ای بر اساس معیارهای RankMath/Yoast">
+  <VCard title=" امتیاز SEO" description="امتیاز لحظه‌ای بر اساس معیارهای RankMath/Yoast">
     <!-- دایره امتیاز -->
     <div class="flex items-center gap-5">
       <div class="relative flex h-20 w-20 shrink-0 items-center justify-center">
@@ -126,9 +126,13 @@ const scoreLabel = (s: number) => (s >= 80 ? 'عالی' : s >= 60 ? 'قابل ق
     <!-- لیست چک‌ها -->
     <div class="mt-4 space-y-2">
       <div v-for="(check, i) in checks" :key="i" class="flex items-start gap-2 text-xs">
-        <span v-if="check.passed" class="mt-0.5 text-green-500">✅</span>
-        <span v-else-if="check.warning" class="mt-0.5 text-amber-500">⚠️</span>
-        <span v-else class="mt-0.5 text-red-500">❌</span>
+        <span v-if="check.passed" class="mt-0.5 text-green-500"></span>
+        <span v-else-if="check.warning" class="mt-0.5 text-amber-500"
+          ><VIcon :name="'alert'" size="sm" class="inline-block align-middle"
+        /></span>
+        <span v-else class="mt-0.5 text-red-500"
+          ><VIcon :name="'x'" size="sm" class="inline-block align-middle"
+        /></span>
         <div>
           <span class="text-ink-strong">{{ check.label }}</span>
           <span v-if="check.detail" class="text-ink-muted ms-1">— {{ check.detail }}</span>

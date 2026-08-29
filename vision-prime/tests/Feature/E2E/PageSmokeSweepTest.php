@@ -66,7 +66,7 @@ class PageSmokeSweepTest extends TestCase
                     continue 2;
                 }
             }
-            if (! (str_starts_with($uri, 'app/') || str_starts_with($uri, 'marketing') || in_array($uri, ['login', 'register', 'forgot-password', 'for-agencies', 'for-ecommerce', 'for-clinics', 'for-education', 'for-hospitality', 'product', 'features', 'pricing', 'demo', 'security', 'about', 'contact', 'assistant/knowledge'], true))) {
+            if (! (str_starts_with($uri, 'app/') || str_starts_with($uri, 'marketing') || in_array($uri, ['login', 'register', 'forgot-password', 'for-agencies', 'for-ecommerce', 'for-clinics', 'for-education', 'for-hospitality', 'product', 'app/training/glossary', 'features', 'pricing', 'demo', 'security', 'about', 'contact', 'assistant/knowledge'], true))) {
                 continue;
             }
 

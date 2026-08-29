@@ -17,7 +17,6 @@ function submit(): void {
   form.post('/reset-password', { onFinish: () => form.reset('password', 'password_confirmation') })
 }
 </script>
-
 <template>
   <AuthLayout
     title="انتخاب رمز عبور جدید"

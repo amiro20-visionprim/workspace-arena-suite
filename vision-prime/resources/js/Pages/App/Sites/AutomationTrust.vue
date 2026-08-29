@@ -87,7 +87,6 @@ const stats = (): Array<{ label: string; value: string | number; hint: string }>
   ),
 ]
 </script>
-
 <template>
   <Head title="اعتماد به سیستم" />
   <AppLayout>

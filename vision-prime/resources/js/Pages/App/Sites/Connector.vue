@@ -92,14 +92,14 @@ async function checkConnection(): Promise<void> {
     checkResult.value = {
       success: data.success,
       message: data.success
-        ? `✅ پلاگین پاسخ داد — نسخهٔ پلاگین: ${data.health?.plugin_version ?? '?'} · وردپرس: ${data.health?.wordpress_version ?? '?'}`
-        : `❌ ${data.error ?? 'پاسخی دریافت نشد'}`,
+        ? `پلاگین پاسخ داد — نسخهٔ پلاگین: ${data.health?.plugin_version ?? '?'} · وردپرس: ${data.health?.wordpress_version ?? '?'}`
+        : ` ${data.error ?? 'پاسخی دریافت نشد'}`,
     }
     router.reload({ only: ['connection'] })
   } catch (e) {
     checkResult.value = {
       success: false,
-      message: `❌ ${e instanceof Error ? e.message : 'خطای شبکه'}`,
+      message: ` ${e instanceof Error ? e.message : 'خطای شبکه'}`,
     }
   } finally {
     checkBusy.value = false
@@ -118,7 +118,6 @@ function csrfToken(): string {
   return match ? decodeURIComponent(match[1]) : ''
 }
 </script>
-
 <template>
   <Head :title="`اتصال وردپرس — ${site.name}`" />
   <AppLayout>
@@ -129,7 +128,7 @@ function csrfToken(): string {
       <VCard>
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <span class="text-lg">🔌</span>
+            <span class="text-lg"></span>
             <div>
               <p class="text-ink-strong text-sm font-semibold">وضعیت اتصال</p>
               <p class="text-ink-muted text-xs">
@@ -193,7 +192,7 @@ function csrfToken(): string {
             :href="`/app/sites/${site.id}/connector/plugin`"
             class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
           >
-            ⬇️ دانلود Vision Prime Connector
+            ↓️ دانلود Vision Prime Connector
           </a>
         </VCard>
 
@@ -210,7 +209,7 @@ function csrfToken(): string {
             با یک کلیک، توکن یک‌بارمصرف بسازید. اعتبار ۱۵ دقیقه است و پس از مصرف باطل می‌شود.
           </p>
           <VButton v-if="!token" class="w-full" :loading="tokenBusy" @click="generateToken">
-            🔑 ساخت توکن اتصال
+            ساخت توکن اتصال
           </VButton>
           <div v-else class="space-y-3">
             <div
@@ -275,9 +274,7 @@ function csrfToken(): string {
 
       <!-- متصل: راهنمای بعدی -->
       <VCard v-else>
-        <p class="text-ink-strong mb-2 text-sm font-semibold"
-          >✅ این سایت از طریق کانکتور متصل است</p
-        >
+        <p class="text-ink-strong mb-2 text-sm font-semibold">این سایت از طریق کانکتور متصل است</p>
         <ul class="text-ink-muted list-inside list-disc space-y-1 text-xs leading-6">
           <li>انتشار مقاله و محصول (پیش‌نویس یا منتشرشده) مستقیم از همین پلتفرم انجام می‌شود.</li>
           <li

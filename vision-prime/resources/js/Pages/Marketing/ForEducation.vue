@@ -146,7 +146,6 @@ function onCta(): void {
   trackAudienceCta('education')
 }
 </script>
-
 <template>
   <Head title="لندینگ اختصاصی مراکز آموزشی" />
   <MarketingLayout>

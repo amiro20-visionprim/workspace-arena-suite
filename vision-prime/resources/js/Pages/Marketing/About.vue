@@ -4,7 +4,6 @@ import { Head } from '@inertiajs/vue3'
 import MarketingPageHero from '@/marketing/components/MarketingPageHero.vue'
 import MarketingLayout from '@/marketing/layouts/MarketingLayout.vue'
 </script>
-
 <template>
   <Head title="درباره سوئیت" />
   <MarketingLayout>

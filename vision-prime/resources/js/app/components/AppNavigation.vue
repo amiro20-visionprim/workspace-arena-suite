@@ -25,6 +25,7 @@ const baseGroups: NavigationGroup[] = [
     items: [
       { label: 'داشبورد', href: '/app/dashboard', icon: 'chart-line', exact: true },
       { label: 'مرکز آموزش', href: '/app/training', icon: 'graduation' },
+      { label: 'واژه‌نامهٔ اصطلاحات', href: '/app/training/glossary', icon: 'info' },
     ],
   },
   {

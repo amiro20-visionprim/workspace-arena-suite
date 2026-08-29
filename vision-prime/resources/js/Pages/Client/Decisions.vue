@@ -170,7 +170,6 @@ function sendQuestion(): void {
   )
 }
 </script>
-
 <template>
   <Head title="تأییدهای من | پرتال مشتری" />
   <ClientPortalLayout>
@@ -238,7 +237,7 @@ function sendQuestion(): void {
               variant="secondary"
               @click="openAsk('command', command.id, labelOf(commandTypeLabels, command.type))"
             >
-              ❓ سؤال از تیم
+              سؤال از تیم
             </VButton>
             <VButton size="sm" variant="ghost" @click="choose('command', command.id, 'rejected')">
               رد
@@ -302,7 +301,7 @@ function sendQuestion(): void {
               variant="secondary"
               @click="openAsk('review', review.id, labelOf(subjectLabels, review.subject_type))"
             >
-              ❓ سؤال از تیم
+              سؤال از تیم
             </VButton>
             <VButton
               size="sm"

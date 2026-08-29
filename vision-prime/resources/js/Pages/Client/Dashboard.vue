@@ -136,7 +136,7 @@ const banner = computed<Banner>(() => {
     return {
       tone: 'success',
       icon: 'sparkles',
-      title: 'سایت شما در حال رشد است 🎉',
+      title: 'سایت شما در حال رشد است',
       body: `بازدید از گوگل نسبت به دو هفتهٔ قبل ${faNum(delta)}٪ بیشتر شده است. همین مسیر را ادامه می‌دهیم.`,
       action: { label: 'مشاهده رشد من', href: '/client/growth' },
     }
@@ -260,7 +260,6 @@ const decisionTypeLabels: Record<string, string> = {
   execute_recommendation: 'اعمال پیشنهاد تیم',
 }
 </script>
-
 <template>
   <Head title="خانه | پرتال مشتری" />
   <ClientPortalLayout>

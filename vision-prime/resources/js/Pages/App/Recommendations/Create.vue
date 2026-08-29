@@ -41,7 +41,6 @@ function submit(): void {
   form.post('/app/recommendations', { preserveScroll: true })
 }
 </script>
-
 <template>
   <Head title="پیشنهاد جدید" />
   <AppLayout>

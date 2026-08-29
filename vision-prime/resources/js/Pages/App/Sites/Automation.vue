@@ -117,21 +117,21 @@ function copyProfile(profileId: number): void {
 }
 
 const LEVELS = [
-  { value: '0', label: 'L0 — فقط مشاهده', hint: 'بدون توصیهٔ اجرایی یا تغییر' },
+  { value: '0', label: 'فقط مشاهده (L0)', hint: 'بدون توصیهٔ اجرایی یا تغییر' },
   {
     value: '1',
-    label: 'L1 — پیشنهاد با تأیید کامل',
+    label: 'پیشنهاد با تأیید کامل (L1)',
     hint: 'پیشنویس ساخته می‌شود؛ هر مورد تأیید انسانی',
   },
-  { value: '2', label: 'L2 — اجرای کنترل‌شده', hint: 'تغییرات کم‌ریسک از‌پیش‌مجاز خودکار' },
+  { value: '2', label: 'اجرای کنترل‌شده (L2)', hint: 'تغییرات کم‌ریسک از‌پیش‌مجاز خودکار' },
   {
     value: '3',
-    label: 'L3 — خودکارسازی نظارت‌شده',
+    label: 'خودکارسازی نظارت‌شده (L3)',
     hint: 'اجرای قاعده‌مند + نمونه‌برداری بازبینی',
   },
   {
     value: '4',
-    label: 'L4 — Autopilot محدود',
+    label: 'خلبان خودکار محدود (L4)',
     hint: 'خودکار در budget و دامنهٔ مجاز؛ R3 همیشه تأیید',
   },
 ]
@@ -193,7 +193,7 @@ const form = reactive({
 const profileOptions = computed(() =>
   props.profiles.map((p) => ({
     value: String(p.id),
-    label: `${p.name} (L${p.automationLevel} — ${p.aiPolicy})`,
+    label: `${p.name} — سطح ${p.automationLevel} (${p.aiPolicy})`,
   })),
 )
 
@@ -303,7 +303,6 @@ const statusTone = (status: string): 'success' | 'danger' | 'warning' | 'neutral
   return 'neutral'
 }
 </script>
-
 <template>
   <Head title="خودکارسازی" />
   <AppLayout>

@@ -14,7 +14,6 @@ function submit(): void {
   form.post('/forgot-password')
 }
 </script>
-
 <template>
   <AuthLayout
     title="بازیابی رمز عبور"

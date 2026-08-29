@@ -166,7 +166,6 @@ const doughnutData: DoughnutDatum[] = [
   { label: 'سایر', value: 8, color: '#c7ddf2' },
 ]
 </script>
-
 <template>
   <Head title="Design System" />
 
@@ -210,7 +209,7 @@ const doughnutData: DoughnutDatum[] = [
           کارت‌های آمار (VStatCard)
         </h2>
         <p class="text-ink-muted mt-1 mb-5 text-sm">
-          کارت KPI با آیکون، شمارندهٔ متحرک، روند و نکتهٔ راهنمای «💡» — مخصوص کاربر غیرفنی.
+          کارت KPI با آیکون، شمارندهٔ متحرک، روند و نکتهٔ راهنمای «» — مخصوص کاربر غیرفنی.
         </p>
         <div v-stagger class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <VStatCard v-for="card in statCards" :key="card.label" v-bind="card" />

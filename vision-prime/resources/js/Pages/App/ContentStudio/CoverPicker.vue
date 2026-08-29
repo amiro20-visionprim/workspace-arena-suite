@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 
 /**
  * انتخاب‌گر کاور (استودیوی محتوا v2):
@@ -139,9 +140,8 @@ async function generateAi(): Promise<void> {
   }
 }
 </script>
-
 <template>
-  <VCard title="🖼️ تصویر شاخص (کاور)">
+  <VCard title=" تصویر شاخص (کاور)">
     <div class="bg-surface-muted mb-4 flex rounded-xl p-1">
       <button
         type="button"
@@ -149,7 +149,7 @@ async function generateAi(): Promise<void> {
         :class="tab === 'stock' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
         @click="tab = 'stock'"
       >
-        🔎 استوک (رایگان)
+        استوک (رایگان)
       </button>
       <button
         type="button"
@@ -157,7 +157,7 @@ async function generateAi(): Promise<void> {
         :class="tab === 'ai' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
         @click="tab = 'ai'"
       >
-        ✨ تولید AI
+        تولید AI
       </button>
     </div>
 
@@ -198,9 +198,8 @@ async function generateAi(): Promise<void> {
       <div
         v-else
         class="bg-brand-50 text-brand-700 flex h-16 w-28 items-center justify-center rounded-lg text-2xl"
-      >
-        ✨
-      </div>
+        ><VIcon :name="'sparkles'" size="sm" class="inline-block align-middle"
+      /></div>
       <div class="text-xs">
         <p class="text-ink-strong font-semibold">کاور انتخاب شد — منبع: {{ picked.source }}</p>
         <p class="text-ink-muted mt-1">{{ picked.alt }}</p>

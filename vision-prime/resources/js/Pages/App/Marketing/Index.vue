@@ -142,7 +142,6 @@ function funnelWidth(count: number): string {
   return `${Math.max(4, Math.round((count / maxFunnelTotal) * 100))}%`
 }
 </script>
-
 <template>
   <Head title="بازاریابی و لیدها" />
   <AppLayout>
@@ -371,7 +370,7 @@ function funnelWidth(count: number): string {
         <VButton size="sm" @click="applyFilters">اعمال فیلتر</VButton>
         <VButton size="sm" variant="ghost" @click="clearFilters">پاک‌کردن</VButton>
         <VButton size="sm" variant="secondary" @click="toggleSort">
-          {{ draft.sort === 'score' ? 'مرتب‌سازی: تاریخ ⏱' : 'مرتب‌سازی: امتیاز ⭐' }}
+          {{ draft.sort === 'score' ? 'مرتب‌سازی: تاریخ ⏱' : 'مرتب‌سازی: امتیاز' }}
         </VButton>
         <span class="text-ink-muted ms-auto text-xs">{{ leads.length }} لید نمایش داده شده</span>
       </div>

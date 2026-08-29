@@ -6,6 +6,7 @@ import VAlert from '@/shared/ui/VAlert.vue'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import CoverPicker from '@/Pages/App/ContentStudio/CoverPicker.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
@@ -1001,7 +1002,7 @@ async function pollPublishStatus(commandId: number, attempt = 1): Promise<void> 
       publishResult.value = {
         success: true,
         post_url: d.post_url ?? undefined,
-        message: d.post_url ? '✅ منتشر شد!' : `✅ پست ساخته شد (#${d.post_id ?? '?'})`,
+        message: d.post_url ? 'منتشر شد!' : `پست ساخته شد (#${d.post_id ?? '?'})`,
       } as typeof publishResult.value
       return
     }
@@ -1062,7 +1063,6 @@ watch(title, (v) => {
   if (v && v.trim().length > 5) autoDetect(v)
 })
 </script>
-
 <template>
   <Head title="تولید مقاله هوشمند" />
   <AppLayout>
@@ -1094,9 +1094,10 @@ watch(title, (v) => {
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p class="text-ink-strong text-sm font-bold">حالت تولید را انتخاب کنید</p>
-            <p class="text-ink-muted mt-1 text-xs leading-6">
-              ⚡ <b>سرعتی:</b> فقط عنوان — سیستم همه‌چیز را خودکار می‌سازد. &nbsp;·&nbsp; 🎯
-              <b>حرفه‌ای:</b> بریف محتوایی قابل ویرایش + دسته‌بندی وردپرس + کنترل کامل.
+            <p class="text-ink-muted mt-1 text-xs leading-6"
+              ><VIcon :name="'zap'" size="sm" class="inline-block align-middle" /><b>سرعتی:</b> فقط
+              عنوان — سیستم همه‌چیز را خودکار می‌سازد. &nbsp;·&nbsp; <b>حرفه‌ای:</b> بریف محتوایی
+              قابل ویرایش + دسته‌بندی وردپرس + کنترل کامل.
             </p>
           </div>
           <div class="bg-surface-muted flex rounded-xl p-1">
@@ -1106,7 +1107,7 @@ watch(title, (v) => {
               :class="studioMode === 'quick' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
               @click="studioMode = 'quick'"
             >
-              ⚡ سرعتی
+              سرعتی
             </button>
             <button
               type="button"
@@ -1114,7 +1115,7 @@ watch(title, (v) => {
               :class="studioMode === 'pro' ? 'bg-brand-600 text-white' : 'text-ink-muted'"
               @click="studioMode = 'pro'"
             >
-              🎯 حرفه‌ای
+              حرفه‌ای
             </button>
           </div>
         </div>
@@ -1177,32 +1178,33 @@ watch(title, (v) => {
                 <div class="flex items-center justify-between">
                   <span class="font-medium">{{ tpl.title }}</span>
                   <span class="flex items-center gap-1">
-                    <VBadge v-if="tpl.is_featured" tone="success" size="sm">⭐</VBadge>
+                    <VBadge v-if="tpl.is_featured" tone="success" size="sm"
+                      ><VIcon :name="'star'" size="sm" class="inline-block align-middle"
+                    /></VBadge>
                     <span v-if="tpl.is_user_created" class="flex gap-1">
                       <button
                         type="button"
                         class="text-ink-muted hover:text-brand-600"
                         title="ویرایش قالب"
                         @click.stop="editTemplate(tpl.id)"
-                      >
-                        ✏️
-                      </button>
+                        ><VIcon :name="'pencil'" size="sm" class="inline-block align-middle"
+                      /></button>
                       <button
                         type="button"
                         class="text-ink-muted hover:text-red-600"
                         title="حذف قالب"
                         :disabled="deletingTemplateId === tpl.id"
                         @click.stop="deleteTemplate(tpl.id)"
-                      >
-                        🗑️
-                      </button>
+                        ><VIcon :name="'trash'" size="sm" class="inline-block align-middle"
+                      /></button>
                     </span>
                   </span>
                 </div>
                 <div class="text-ink-muted mt-1 flex gap-2 text-xs">
                   <span>{{ tpl.tone }}</span>
                   <span v-if="tpl.avg_quality_score > 0"
-                    >⭐ {{ tpl.avg_quality_score.toFixed(1) }}</span
+                    ><VIcon :name="'star'" size="sm" class="inline-block align-middle" />
+                    {{ tpl.avg_quality_score.toFixed(1) }}</span
                   >
                   <span v-if="tpl.usage_count > 0">{{ tpl.usage_count }}x</span>
                 </div>
@@ -1217,7 +1219,7 @@ watch(title, (v) => {
               class="text-brand-600 text-sm hover:underline"
               @click="showCustomPrompt = !showCustomPrompt"
             >
-              {{ showCustomPrompt ? '⬆️ بستن پرامپت دستی' : '✏️ نوشتن پرامپت اختیاری' }}
+              {{ showCustomPrompt ? '️ بستن پرامپت دستی' : ' نوشتن پرامپت اختیاری' }}
             </button>
             <div v-if="showCustomPrompt" class="mt-3 space-y-3">
               <textarea
@@ -1233,7 +1235,8 @@ watch(title, (v) => {
                   variant="secondary"
                   :disabled="!customPrompt.trim()"
                   @click="showSaveDialog = true"
-                  >💾 ذخیره به عنوان قالب</VButton
+                  ><VIcon :name="'save'" size="sm" class="inline-block align-middle" /> ذخیره به
+                  عنوان قالب</VButton
                 >
               </div>
               <div
@@ -1271,7 +1274,10 @@ watch(title, (v) => {
             class="bg-surface border-surface-muted rounded-xl border p-4"
           >
             <div class="mb-3 flex items-center justify-between">
-              <span class="text-sm font-semibold">📊 Context سایت</span>
+              <span class="text-sm font-semibold"
+                ><VIcon :name="'chart-bar'" size="sm" class="inline-block align-middle" /> Context
+                سایت</span
+              >
               <button
                 type="button"
                 class="text-brand-600 text-xs hover:underline"
@@ -1311,7 +1317,10 @@ watch(title, (v) => {
 
           <VAlert v-if="showDuplicates && duplicates.length > 0" tone="warning">
             <div class="space-y-2">
-              <p class="font-semibold">⚠️ {{ duplicates.length }} مقاله مشابه یافت شد:</p>
+              <p class="font-semibold"
+                ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" />
+                {{ duplicates.length }} مقاله مشابه یافت شد:</p
+              >
               <div
                 v-for="d in duplicates"
                 :key="d.id"
@@ -1339,7 +1348,7 @@ watch(title, (v) => {
               class="flex-1"
               @click="quickGenerate"
             >
-              {{ generatingLoading ? 'در حال تولید...' : '⚡ تولید سریع' }}
+              {{ generatingLoading ? 'در حال تولید...' : ' تولید سریع' }}
             </VButton>
             <VButton
               :loading="outlineLoading"
@@ -1349,7 +1358,7 @@ watch(title, (v) => {
               class="flex-1"
               @click="fetchOutline(studioMode)"
             >
-              {{ outlineLoading ? 'در حال تحلیل...' : '📋 با Outline' }}
+              {{ outlineLoading ? 'در حال تحلیل...' : ' با Outline' }}
             </VButton>
           </div>
           <VButton
@@ -1452,7 +1461,7 @@ watch(title, (v) => {
               :disabled="!title.trim()"
               @click="analyzeSerp"
             >
-              🔍 تحلیل رقبا (SERP)
+              تحلیل رقبا (SERP)
             </VButton>
           </div>
           <VButton
@@ -1472,7 +1481,10 @@ watch(title, (v) => {
       <VCard v-if="showSerpPanel && serpAnalysis" class="mt-4">
         <template #title>
           <div class="flex items-center justify-between">
-            <span>🔍 تحلیل رقبا (SERP Intelligence)</span>
+            <span
+              ><VIcon :name="'search'" size="sm" class="inline-block align-middle" /> تحلیل رقبا
+              (SERP Intelligence)</span
+            >
             <VBadge tone="info" size="sm">مدل: {{ serpAnalysis.model }}</VBadge>
           </div>
         </template>
@@ -1520,7 +1532,10 @@ watch(title, (v) => {
         </div>
 
         <div v-if="serpAnalysis.content_gaps.length > 0" class="mt-4">
-          <h4 class="text-ink-strong text-sm font-semibold">⚠️ شکاف‌های محتوایی:</h4>
+          <h4 class="text-ink-strong text-sm font-semibold"
+            ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" /> شکاف‌های
+            محتوایی:</h4
+          >
           <ul class="mt-2 space-y-1">
             <li v-for="gap in serpAnalysis.content_gaps" :key="gap" class="text-xs text-yellow-600">
               • {{ gap }}
@@ -1529,7 +1544,10 @@ watch(title, (v) => {
         </div>
 
         <div v-if="serpAnalysis.recommendations.length > 0" class="mt-4">
-          <h4 class="text-ink-strong text-sm font-semibold">💡 پیشنهادات:</h4>
+          <h4 class="text-ink-strong text-sm font-semibold"
+            ><VIcon :name="'lightbulb'" size="sm" class="inline-block align-middle" />
+            پیشنهادات:</h4
+          >
           <ul class="mt-2 space-y-1">
             <li
               v-for="rec in serpAnalysis.recommendations"
@@ -1561,13 +1579,13 @@ watch(title, (v) => {
 
     <!-- STEP 3: GENERATING -->
     <div v-if="step === 'generating'" class="mx-auto mt-6 max-w-2xl py-16 text-center">
-      <div class="mb-4 animate-pulse text-6xl">🤖</div>
+      <div class="mb-4 animate-pulse text-6xl"></div>
       <h2 class="text-ink-strong text-xl font-bold">در حال تولید مقاله...</h2>
       <p class="text-ink-muted mt-2">{{ generatingStatus }}</p>
       <div class="text-ink-muted mt-8 space-y-2 text-sm">
-        <p>✅ تحلیل outline پیشنهادی</p>
-        <p>✅ اعمال گاردرایل‌ها و استانداردها</p>
-        <p>✅ تحلیل داده GSC</p>
+        <p>تحلیل outline پیشنهادی</p>
+        <p>اعمال گاردرایل‌ها و استانداردها</p>
+        <p>تحلیل داده GSC</p>
         <p class="animate-pulse">در انتظار تولید مقاله با AI...</p>
       </div>
     </div>
@@ -1577,7 +1595,7 @@ watch(title, (v) => {
       <VCard class="mb-6">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="text-2xl">✅</span>
+            <span class="text-2xl"></span>
             <div>
               <h3 class="text-ink-strong font-bold">مقاله تولید شد!</h3>
               <p class="text-ink-muted text-sm">
@@ -1592,7 +1610,10 @@ watch(title, (v) => {
               >امتیاز: {{ seoScore }}/100</VBadge
             >
             <VButton variant="secondary" @click="goToOutline">بازگشت به Outline</VButton>
-            <VButton variant="secondary" @click="regenerate">🔄 تولید مجدد</VButton>
+            <VButton variant="secondary" @click="regenerate"
+              ><VIcon :name="'refresh'" size="sm" class="inline-block align-middle" /> تولید
+              مجدد</VButton
+            >
           </div>
         </div>
       </VCard>
@@ -1601,11 +1622,11 @@ watch(title, (v) => {
           <div class="border-line flex gap-1 border-b">
             <button
               v-for="tab in [
-                { id: 'content', label: '✏️ محتوا' },
-                { id: 'meta', label: '🏷️ Meta' },
-                { id: 'seo', label: '📊 امتیاز' },
-                { id: 'schema', label: '📊 اسکیما' },
-                { id: 'sections', label: '📝 ویرایش بخش‌ها' },
+                { id: 'content', label: ' محتوا' },
+                { id: 'meta', label: '️ Meta' },
+                { id: 'seo', label: ' امتیاز' },
+                { id: 'schema', label: ' اسکیما' },
+                { id: 'sections', label: 'ویرایش بخش‌ها' },
               ]"
               :key="tab.id"
               type="button"
@@ -1622,10 +1643,10 @@ watch(title, (v) => {
           </div>
 
           <!-- R1-2: شفافیت منبع تولید -->
-          <VAlert v-if="result && result.source === 'rule_based'" tone="warning" class="mb-4">
-            ⚙️ این پیش‌نویس با <b>موتور قانونی (آفلاین)</b> ساخته شده، نه مدل زبانی — احتمالاً سرویس
-            AI در دسترس نبود یا محدود شد. کلید/سهمیه را در تنظیمات←یکپارچه‌سازی بررسی کنید و «تولید
-            مجدد» را بزنید.
+          <VAlert v-if="result && result.source === 'rule_based'" tone="warning" class="mb-4"
+            ><VIcon :name="'settings'" size="sm" class="inline-block align-middle" /> این پیش‌نویس
+            با<b>موتور قانونی (آفلاین)</b> ساخته شده، نه مدل زبانی — احتمالاً سرویس AI در دسترس نبود
+            یا محدود شد. کلید/سهمیه را در تنظیمات←یکپارچه‌سازی بررسی کنید و «تولید مجدد» را بزنید.
           </VAlert>
 
           <!-- Content Tab -->
@@ -1738,7 +1759,7 @@ watch(title, (v) => {
                 v-if="readability"
                 class="border-surface-muted bg-surface mt-4 rounded-xl border p-4"
               >
-                <h4 class="text-ink-strong mb-2 text-sm font-semibold">📖 خوانایی</h4>
+                <h4 class="text-ink-strong mb-2 text-sm font-semibold">خوانایی</h4>
                 <div class="mb-3 flex items-center gap-3">
                   <VBadge
                     :tone="
@@ -1819,9 +1840,8 @@ watch(title, (v) => {
                       class="text-ink-muted hover:bg-surface-muted rounded p-1.5 text-xs"
                       title="ویرایش متن"
                       @click="editSection(i)"
-                    >
-                      ✏️
-                    </button>
+                      ><VIcon :name="'pencil'" size="sm" class="inline-block align-middle"
+                    /></button>
                     <button
                       type="button"
                       class="text-ink-muted rounded p-1.5 text-xs hover:bg-blue-100 hover:text-blue-600"
@@ -1830,7 +1850,9 @@ watch(title, (v) => {
                       @click="regenerateSection(i)"
                     >
                       <span v-if="sec.regenerating" class="animate-pulse">⏳</span>
-                      <span v-else>🔄</span>
+                      <span v-else
+                        ><VIcon :name="'refresh'" size="sm" class="inline-block align-middle"
+                      /></span>
                     </button>
                   </div>
                 </div>
@@ -1879,7 +1901,7 @@ watch(title, (v) => {
 
         <!-- Sidebar -->
         <div class="space-y-6">
-          <VCard title="📊 خلاصه">
+          <VCard title=" خلاصه">
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-ink-muted">کلمات:</span
@@ -1909,7 +1931,7 @@ watch(title, (v) => {
           </VCard>
 
           <!-- Keyword Density -->
-          <VCard title="🎯 تراکم کلیدواژه">
+          <VCard title=" تراکم کلیدواژه">
             <div class="space-y-3">
               <input
                 v-model="keywordInput"
@@ -1957,7 +1979,7 @@ watch(title, (v) => {
             </div>
           </VCard>
 
-          <VCard v-if="result.links?.length" title="🔗 لینک‌های داخلی">
+          <VCard v-if="result.links?.length" title="لینک‌های داخلی">
             <div class="space-y-2">
               <div v-for="link in result.links.slice(0, 5)" :key="link.url" class="text-xs">
                 <span class="text-brand-700">{{ link.anchor }}</span> →
@@ -1965,7 +1987,7 @@ watch(title, (v) => {
               </div>
             </div>
           </VCard>
-          <VCard v-if="result.profile" title="🎯 پروفایل">
+          <VCard v-if="result.profile" title=" پروفایل">
             <div class="space-y-1 text-xs">
               <div>نوع: {{ result.profile.content_type }}</div>
               <div>زیرنوع: {{ result.profile.subtype }}</div>
@@ -1974,13 +1996,13 @@ watch(title, (v) => {
           </VCard>
 
           <!-- Expert Analysis Card -->
-          <VCard v-if="result.expert_analysis" title="🧠 تحلیل متخصص SEO">
+          <VCard v-if="result.expert_analysis" title=" تحلیل متخصص SEO">
             <div class="space-y-3">
               <p class="text-ink-strong text-sm font-medium">
                 {{ result.expert_analysis.summary }}
               </p>
               <div v-if="result.expert_analysis.strengths?.length" class="space-y-1">
-                <p class="text-xs font-semibold text-green-600">✅ نقاط قوت:</p>
+                <p class="text-xs font-semibold text-green-600">نقاط قوت:</p>
                 <p
                   v-for="s in result.expert_analysis.strengths"
                   :key="s"
@@ -1990,7 +2012,10 @@ watch(title, (v) => {
                 </p>
               </div>
               <div v-if="result.expert_analysis.weaknesses?.length" class="space-y-1">
-                <p class="text-xs font-semibold text-red-600">⚠️ نقاط ضعف:</p>
+                <p class="text-xs font-semibold text-red-600"
+                  ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" /> نقاط
+                  ضعف:</p
+                >
                 <p
                   v-for="w in result.expert_analysis.weaknesses"
                   :key="w"
@@ -2000,7 +2025,10 @@ watch(title, (v) => {
                 </p>
               </div>
               <div v-if="result.expert_analysis.recommendations?.length" class="space-y-1">
-                <p class="text-xs font-semibold text-blue-600">💡 توصیه‌ها:</p>
+                <p class="text-xs font-semibold text-blue-600"
+                  ><VIcon :name="'lightbulb'" size="sm" class="inline-block align-middle" />
+                  توصیه‌ها:</p
+                >
                 <p
                   v-for="r in result.expert_analysis.recommendations"
                   :key="r"
@@ -2025,25 +2053,35 @@ watch(title, (v) => {
           </VCard>
 
           <!-- Action Buttons Card -->
-          <VCard title="🚀 اقدامات">
+          <VCard title=" اقدامات">
             <div class="space-y-3">
               <div class="flex flex-wrap gap-2">
-                <VButton variant="primary" size="sm" @click="saveCurrentDraft">💾 ذخیره</VButton>
-                <VButton variant="secondary" size="sm" @click="copyHtml">📋 کپی HTML</VButton>
-                <VButton variant="secondary" size="sm" @click="copyPlainText">📝 کپی متن</VButton>
+                <VButton variant="primary" size="sm" @click="saveCurrentDraft"
+                  ><VIcon :name="'save'" size="sm" class="inline-block align-middle" />
+                  ذخیره</VButton
+                >
+                <VButton variant="secondary" size="sm" @click="copyHtml"
+                  ><VIcon :name="'table'" size="sm" class="inline-block align-middle" /> کپی
+                  HTML</VButton
+                >
+                <VButton variant="secondary" size="sm" @click="copyPlainText">کپی متن</VButton>
                 <VButton variant="secondary" size="sm" @click="showPublishDialog = true"
-                  >🚀 انتشار در وردپرس</VButton
+                  ><VIcon :name="'rocket'" size="sm" class="inline-block align-middle" /> انتشار در
+                  وردپرس</VButton
                 >
               </div>
-              <p v-if="draftSaved" class="text-xs text-green-600">✅ Draft ذخیره شد</p>
-              <p v-if="copyStatus === 'HTML'" class="text-xs text-blue-600">📋 HTML کپی شد!</p>
-              <p v-if="copyStatus === 'TEXT'" class="text-xs text-blue-600">📝 متن کپی شد!</p>
+              <p v-if="draftSaved" class="text-xs text-green-600">Draft ذخیره شد</p>
+              <p v-if="copyStatus === 'HTML'" class="text-xs text-blue-600"
+                ><VIcon :name="'table'" size="sm" class="inline-block align-middle" /> HTML کپی
+                شد!</p
+              >
+              <p v-if="copyStatus === 'TEXT'" class="text-xs text-blue-600">متن کپی شد!</p>
               <p v-if="publishResult?.success" class="text-xs text-green-600">
-                ✅ منتشر شد!
+                منتشر شد!
                 <a :href="publishResult.post_url" target="_blank" class="underline">مشاهده</a>
               </p>
               <p v-if="publishResult?.error" class="text-xs text-red-600">
-                ❌ {{ publishResult.error }}
+                {{ publishResult.error }}
               </p>
             </div>
           </VCard>
@@ -2058,7 +2096,10 @@ watch(title, (v) => {
     >
       <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
         <div class="mb-4 flex items-center justify-between">
-          <h4 class="text-ink-strong font-bold">🚀 انتشار در وردپرس</h4>
+          <h4 class="text-ink-strong font-bold"
+            ><VIcon :name="'rocket'" size="sm" class="inline-block align-middle" /> انتشار در
+            وردپرس</h4
+          >
           <button class="text-ink-muted hover:text-ink-strong" @click="showPublishDialog = false">
             ✕
           </button>
@@ -2079,7 +2120,7 @@ watch(title, (v) => {
     </div>
 
     <!-- ═══ گام بریف (حالت حرفه‌ای) ═══ -->
-    <VCard v-if="step === 'brief' && brief" title="📋 بریف محتوایی — بازبینی و ویرایش">
+    <VCard v-if="step === 'brief' && brief" title=" بریف محتوایی — بازبینی و ویرایش">
       <div class="grid gap-4 md:grid-cols-2">
         <div class="space-y-3">
           <div>
@@ -2183,7 +2224,10 @@ watch(title, (v) => {
       <!-- دسته/برچسب وردپرس -->
       <div class="border-line mt-5 border-t pt-4">
         <div class="mb-2 flex items-center justify-between">
-          <p class="text-ink-strong text-xs font-bold">🗂️ دسته و برچسب وردپرس (اختیاری)</p>
+          <p class="text-ink-strong text-xs font-bold"
+            ><VIcon :name="'table'" size="sm" class="inline-block align-middle" /> دسته و برچسب
+            وردپرس (اختیاری)</p
+          >
           <VButton size="sm" variant="ghost" @click="loadTaxonomies">دریافت از سایت</VButton>
         </div>
         <p v-if="taxonomiesError" class="text-warning-700 text-[11px]">{{ taxonomiesError }}</p>

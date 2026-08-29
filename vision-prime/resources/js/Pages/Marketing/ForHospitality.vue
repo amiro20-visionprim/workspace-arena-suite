@@ -149,7 +149,6 @@ function onCta(): void {
   trackAudienceCta('hospitality')
 }
 </script>
-
 <template>
   <Head title="لندینگ اختصاصی سفر و هتلداری" />
   <MarketingLayout>

@@ -13,6 +13,7 @@ import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import type { Command, Paginated } from '@/types/automation'
+import VIcon from '@/shared/ui/VIcon.vue'
 defineProps<{ commands: Paginated<Command> }>()
 
 function decide(command: Command, decision: 'approved' | 'rejected'): void {
@@ -131,7 +132,7 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
           class="border-line mt-3 grid gap-4 border-t pt-3 sm:grid-cols-2"
         >
           <div v-if="gateRows(command.gate_snapshot).length">
-            <p class="text-ink-strong mb-2 text-sm font-semibold">🛡️ snapshot گیت‌ها</p>
+            <p class="text-ink-strong mb-2 text-sm font-semibold">️ snapshot گیت‌ها</p>
             <div class="flex flex-wrap gap-2">
               <VBadge
                 v-for="[label, value] in gateRows(command.gate_snapshot)"
@@ -143,7 +144,10 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
             </div>
           </div>
           <div v-if="Object.keys(command.confidence_factors ?? {}).length">
-            <p class="text-ink-strong mb-2 text-sm font-semibold">🎯 عوامل اطمینان</p>
+            <p class="text-ink-strong mb-2 text-sm font-semibold"
+              ><VIcon :name="'gauge'" size="sm" class="inline-block align-middle" /> عوامل
+              اطمینان</p
+            >
             <ul class="space-y-1">
               <li
                 v-for="[key, value] in Object.entries(command.confidence_factors ?? {})"
@@ -158,7 +162,7 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
         </div>
 
         <div v-if="command.post_url" class="border-line mt-3 flex items-center gap-2 border-t pt-3">
-          <span class="text-ink-strong text-sm">📄 مقالهٔ منتشرشده:</span>
+          <span class="text-ink-strong text-sm"> مقالهٔ منتشرشده:</span>
           <a
             :href="command.post_url"
             target="_blank"
@@ -172,7 +176,10 @@ function gateRows(snapshot: Record<string, unknown> | null | undefined): [string
 
         <!-- گزارش تأثیر پس از انتشار (GSC) -->
         <div v-if="command.impact" class="border-line mt-3 border-t pt-3">
-          <p class="text-ink-strong mb-2 text-sm font-semibold">📈 تأثیر پس از انتشار</p>
+          <p class="text-ink-strong mb-2 text-sm font-semibold"
+            ><VIcon :name="'trend-up'" size="sm" class="inline-block align-middle" /> تأثیر پس از
+            انتشار</p
+          >
           <template v-if="command.impact.status === 'ready' && command.impact.delta">
             <VBadge
               :tone="

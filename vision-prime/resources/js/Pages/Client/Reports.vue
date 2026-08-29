@@ -27,7 +27,6 @@ function reportCount(report: ClientReport, key: string): number | null {
   return typeof value === 'number' ? value : null
 }
 </script>
-
 <template>
   <Head title="گزارش‌ها | پرتال مشتری" />
   <ClientPortalLayout>

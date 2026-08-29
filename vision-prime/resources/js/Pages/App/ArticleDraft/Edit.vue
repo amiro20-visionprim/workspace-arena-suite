@@ -48,7 +48,6 @@ function save() {
   f.put(`/app/ai-drafts/${props.draft.id}`, { preserveScroll: true })
 }
 </script>
-
 <template>
   <Head :title="`ویرایش: ${draft.title}`" />
   <AppLayout>

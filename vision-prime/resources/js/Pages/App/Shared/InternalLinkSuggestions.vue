@@ -47,10 +47,9 @@ function updateAnchor(index: number, event: Event): void {
   emit('update-anchor', index, target.value)
 }
 </script>
-
 <template>
   <VCard
-    title="🔗 لینک‌های داخلی پیشنهادی"
+    title="لینک‌های داخلی پیشنهادی"
     description="صفحات مرتبط با محتوای شما بر اساس شباهت موضوعی رتبه‌بندی شده‌اند."
   >
     <div v-if="suggestions.length === 0" class="text-ink-muted text-sm leading-7">
@@ -98,7 +97,7 @@ function updateAnchor(index: number, event: Event): void {
     </div>
 
     <p v-if="suggestions.length > 0" class="text-ink-muted mt-3 text-xs leading-5">
-      ✅ لینک‌های انتخاب‌شده به‌صورت خودکار در محتوا قرار داده می‌شوند. تعداد پیشنهادی: حداقل
+      لینک‌های انتخاب‌شده به‌صورت خودکار در محتوا قرار داده می‌شوند. تعداد پیشنهادی: حداقل
       {{ Math.min(2, suggestions.length) }} — حداکثر {{ Math.min(8, suggestions.length) }} لینک.
     </p>
   </VCard>

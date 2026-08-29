@@ -69,7 +69,6 @@ const statusTone = (status: string): 'success' | 'warning' | 'danger' | 'neutral
           ? 'warning'
           : 'neutral'
 </script>
-
 <template>
   <Head title="اشتراک‌ها" />
   <PlatformLayout>

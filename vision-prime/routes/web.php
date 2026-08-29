@@ -166,6 +166,7 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::get('/app/dashboard', DashboardController::class)->name('app.dashboard');
     // Content Command Center v2
     Route::get('/app/training', [TrainingController::class, 'agency'])->name('app.training');
+    Route::get('/app/training/glossary', fn () => Inertia::render('App/Training/Glossary'))->name('app.training.glossary');
 
     Route::get('/app/notifications', [NotificationController::class, 'index'])->name('app.notifications.index');
     Route::put('/app/notifications/read-all', [NotificationController::class, 'readAll'])->name('app.notifications.read-all');

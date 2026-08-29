@@ -51,7 +51,6 @@ const attribution: { label: string; value: string | null | undefined }[] = [
   { label: 'زبان', value: props.lead.locale },
 ]
 </script>
-
 <template>
   <Head :title="lead.name" />
   <AppLayout>

@@ -15,7 +15,6 @@ const workflow = [
   'سنجش اثر و گزارش‌دهی',
 ]
 </script>
-
 <template>
   <Head title="محصول" />
   <MarketingLayout>

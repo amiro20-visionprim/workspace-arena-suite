@@ -7,6 +7,7 @@ import { formatLocalizedDate } from '@/lib/locale'
 import VBadge from '@/shared/ui/VBadge.vue'
 import VButton from '@/shared/ui/VButton.vue'
 import VCard from '@/shared/ui/VCard.vue'
+import VIcon from '@/shared/ui/VIcon.vue'
 import VInput from '@/shared/ui/VInput.vue'
 import VPageHeader from '@/shared/ui/VPageHeader.vue'
 import VSelect from '@/shared/ui/VSelect.vue'
@@ -184,7 +185,7 @@ async function testImageProvider(): Promise<void> {
     const data = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
     imageTest.value = {
       success: data.success === true,
-      message: data.success ? '✅ اتصال برقرار است.' : `❌ ${data.error || 'ناموفق'}`,
+      message: data.success ? 'اتصال برقرار است.' : ` ${data.error || 'ناموفق'}`,
     }
   } catch {
     imageTest.value = { success: false, message: 'خطای شبکه' }
@@ -304,7 +305,6 @@ async function testConnection(): Promise<void> {
   testing.value = false
 }
 </script>
-
 <template>
   <Head title="یکپارچه‌سازی‌ها" />
   <AppLayout>
@@ -403,7 +403,7 @@ async function testConnection(): Promise<void> {
       <!-- AI Gateway — فقط سوپر ادمین -->
       <template v-if="isSuperAdmin">
         <!-- ═══ سرویس تصویر (Image Engine) ═══ -->
-        <VCard title="🖼️ سرویس تصویر (استوک + تولید AI)">
+        <VCard title=" سرویس تصویر (استوک + تولید AI)">
           <p class="text-ink-muted text-xs leading-6">
             تصاویر مقالات و محصولات از سه منبع هوشمند تأمین می‌شوند: جستجوی استوک حرفه‌ای (رایگان)،
             تولید اختصاصی با هوش مصنوعی (با کلید OpenAI) و پیشنهاد جای‌نگهدار. کلید استوک Pexels را
@@ -426,14 +426,16 @@ async function testConnection(): Promise<void> {
               placeholder="کلید را اینجا بچسبانید"
             />
             <div class="flex items-end gap-2">
-              <VButton type="submit" :loading="imageSaving">💾 ذخیره</VButton>
+              <VButton type="submit" :loading="imageSaving"
+                ><VIcon :name="'save'" size="sm" class="inline-block align-middle" /> ذخیره</VButton
+              >
               <VButton
                 type="button"
                 variant="secondary"
                 :loading="imageSaving"
                 @click="testImageProvider"
               >
-                🔌 تست
+                تست
               </VButton>
             </div>
           </form>
@@ -532,7 +534,7 @@ async function testConnection(): Promise<void> {
                 :loading="detectingModels"
                 @click="detectModels"
               >
-                🔍 تشخیص خودکار مدل‌ها
+                تشخیص خودکار مدل‌ها
               </VButton>
             </div>
           </form>
@@ -667,9 +669,11 @@ async function testConnection(): Promise<void> {
                 (حداکثر ۳ بار)
               </li>
             </ol>
-            <p class="text-ink-muted mt-3 text-xs">
-              💡 <strong>۱۶+ سرویس AI</strong> داخلی و خارجی پشتیبانی می‌شود — از DeepSeek و سمانی
-              تا OpenAI و Anthropic.
+            <p class="text-ink-muted mt-3 text-xs"
+              ><VIcon :name="'lightbulb'" size="sm" class="inline-block align-middle" /><strong
+                >۱۶+ سرویس AI</strong
+              >
+              داخلی و خارجی پشتیبانی می‌شود — از DeepSeek و سمانی تا OpenAI و Anthropic.
             </p>
           </div>
         </VCard>

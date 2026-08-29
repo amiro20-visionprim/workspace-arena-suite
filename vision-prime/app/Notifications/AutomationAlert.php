@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Domains\Workspace\Models\Site;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -56,7 +57,7 @@ class AutomationAlert extends Notification implements ShouldQueue
         return (new MailMessage)
             ->subject('هشدار اتوماسیون سوئیت')
             ->line($this->context['message'] ?? 'افت معیار زیر baseline شناسایی شد.')
-            ->line('سایت #'.$this->siteId.' · دستور #'.$this->commandId.' · نوع: '.($this->context['command_type'] ?? '—'))
+            ->line('سایت: '.(Site::query()->find($this->siteId)?->name ?? ('#'.$this->siteId)).' · دستور #'.$this->commandId.' · نوع: '.($this->context['command_type'] ?? '—'))
             ->line('این پیام به‌صورت خودکار از سامانهٔ سوئیت ارسال شده است.');
     }
 

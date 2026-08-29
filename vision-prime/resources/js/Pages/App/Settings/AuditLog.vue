@@ -51,7 +51,6 @@ const sourceLabels: Record<string, string> = {
   system: 'سیستم',
 }
 </script>
-
 <template>
   <Head title="گزارش ممیزی" />
   <AppLayout>

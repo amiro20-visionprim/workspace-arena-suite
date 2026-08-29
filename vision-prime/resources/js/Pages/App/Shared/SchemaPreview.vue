@@ -38,10 +38,9 @@ function copyToClipboard(): void {
   navigator.clipboard.writeText(jsonLd.value)
 }
 </script>
-
 <template>
   <VCard
-    title="📊 اسکیمای Schema.org"
+    title=" اسکیمای Schema.org"
     description="JSON-LD اسکیما به‌صورت خودکار بر اساس نوع محتوا تولید شده."
   >
     <!-- نمایش نوع اسکیماها -->
@@ -53,7 +52,7 @@ function copyToClipboard(): void {
 
     <!-- خلاصه -->
     <p class="text-ink-muted mt-3 text-xs leading-5">
-      ✅ {{ schemaTypes.length }} اسکیما تولید شده · ✅ JSON-LD معتبر · ✅ شامل
+      {{ schemaTypes.length }} اسکیما تولید شده · JSON-LD معتبر · شامل
       {{ schemaTypes.includes('BreadcrumbList') ? 'ناوبری' : '—' }} +
       {{ schemaTypes.includes('FAQPage') ? 'FAQ' : '—' }}
     </p>
@@ -80,7 +79,7 @@ function copyToClipboard(): void {
           class="text-brand-700 absolute end-3 top-3 text-xs"
           @click="copyToClipboard"
         >
-          📋 کپی
+          کپی
         </button>
       </div>
       <p class="text-ink-muted mt-2 text-xs leading-5" dir="ltr">

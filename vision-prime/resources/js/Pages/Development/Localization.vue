@@ -11,7 +11,6 @@ import {
 
 const sampleDate = '2026-07-25T12:30:00Z'
 </script>
-
 <template>
   <Head title="RTL & Localization" />
 

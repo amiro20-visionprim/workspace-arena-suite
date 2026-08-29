@@ -31,7 +31,6 @@ const columns: TableColumn[] = [
   { key: 'updatedAt', label: 'آخرین بروزرسانی', align: 'end' },
 ]
 </script>
-
 <template>
   <Head title="مشتریان" />
   <AppLayout

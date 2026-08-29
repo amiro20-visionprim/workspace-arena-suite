@@ -141,7 +141,6 @@ function submitConvert(): void {
   })
 }
 </script>
-
 <template>
   <Head title="پیشنهادها" />
   <AppLayout>

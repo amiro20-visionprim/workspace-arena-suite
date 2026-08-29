@@ -134,7 +134,6 @@ const impressionBars = computed(() =>
   })),
 )
 </script>
-
 <template>
   <Head title="رشد من | پرتال مشتری" />
   <ClientPortalLayout>

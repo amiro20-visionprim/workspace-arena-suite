@@ -31,7 +31,6 @@ function exportCsv(): void {
 
 const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(value)
 </script>
-
 <template>
   <Head title="گزارش‌ها" />
   <PlatformLayout>

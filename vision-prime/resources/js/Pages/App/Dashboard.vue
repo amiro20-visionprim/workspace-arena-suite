@@ -403,12 +403,11 @@ const nextStep = computed(() => {
   }
 })
 </script>
-
 <template>
   <Head title="داشبورد | سوئیت" />
   <AppLayout>
     <VPageHeader
-      :title="`سلام، ${firstName} 👋`"
+      :title="`سلام، ${firstName}`"
       :description="`${meta.message} اینجا اولویت‌های نقش «${meta.label}» برای شما چیده شده است.`"
       :status="{ label: 'فضای کاری فعال', tone: 'success' }"
     />
@@ -417,7 +416,7 @@ const nextStep = computed(() => {
       v-if="declinedEntries.length"
       class="mt-6"
       tone="danger"
-      :title="`⚠️ هشدار افت عملکرد — ${declinedEntries.length} محتوا پس از انتشار افت کرده است`"
+      :title="` هشدار افت عملکرد — ${declinedEntries.length} محتوا پس از انتشار افت کرده است`"
     >
       <ul class="list-inside list-disc space-y-1">
         <li v-for="entry in declinedEntries" :key="entry.command_id" class="text-sm">
@@ -511,7 +510,7 @@ const nextStep = computed(() => {
         </div>
       </div>
       <p v-else class="text-ink-muted text-sm leading-7">
-        صف تأیید خالی است — همه‌چیز به‌روز است. ✅
+        صف تأیید خالی است — همه‌چیز به‌روز است.
       </p>
     </VCard>
 
@@ -540,7 +539,7 @@ const nextStep = computed(() => {
 
     <VCard
       class="mt-8"
-      title="📈 تأثیر محتوا پس از انتشار"
+      title=" تأثیر محتوا پس از انتشار"
       description="تأثیر GSC محتوای منتشرشدهٔ خودکار — فقط بر اساس دادهٔ واقعی سرچ کنسول، بدون تخمین."
     >
       <div v-if="contentImpact.reported > 0" class="grid gap-6 lg:grid-cols-3">
@@ -577,7 +576,9 @@ const nextStep = computed(() => {
           v-if="contentImpact.best"
           class="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4"
         >
-          <p class="text-xs font-semibold text-emerald-700">🏆 بهترین بهبود</p>
+          <p class="text-xs font-semibold text-emerald-700"
+            ><VIcon :name="'star'" size="sm" class="inline-block align-middle" /> بهترین بهبود</p
+          >
           <p class="text-ink-strong mt-2 text-sm font-semibold">
             {{ contentImpact.best.site_name ?? '—' }}
           </p>
@@ -590,7 +591,10 @@ const nextStep = computed(() => {
           </p>
         </div>
         <div v-if="contentImpact.worst" class="rounded-xl border border-red-100 bg-red-50/50 p-4">
-          <p class="text-xs font-semibold text-red-700">⚠️ ضعیف‌ترین نتیجه</p>
+          <p class="text-xs font-semibold text-red-700"
+            ><VIcon :name="'alert'" size="sm" class="inline-block align-middle" /> ضعیف‌ترین
+            نتیجه</p
+          >
           <p class="text-ink-strong mt-2 text-sm font-semibold">
             {{ contentImpact.worst.site_name ?? '—' }}
           </p>
@@ -612,7 +616,7 @@ const nextStep = computed(() => {
     <VCard
       v-if="publishSuggestions.length"
       class="mt-8"
-      title="✨ بهترین زمان انتشار"
+      title=" بهترین زمان انتشار"
       description="پیشنهاد هوشمند روز و ساعت انتشار برای هر سایت — بر اساس میانگین کلیک واقعی GSC."
     >
       <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

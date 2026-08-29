@@ -11,7 +11,6 @@ function submit(): void {
   form.post('/app/onboarding')
 }
 </script>
-
 <template>
   <Head title="ساخت فضای کاری" />
   <main class="bg-canvas min-h-screen px-5 py-10 sm:px-8 lg:py-16" dir="rtl">

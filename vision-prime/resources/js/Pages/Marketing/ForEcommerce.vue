@@ -161,7 +161,6 @@ function onCta(): void {
   trackAudienceCta('ecommerce')
 }
 </script>
-
 <template>
   <Head title="لندینگ اختصاصی فروشگاه‌های اینترنتی" />
   <MarketingLayout>

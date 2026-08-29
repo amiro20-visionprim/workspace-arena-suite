@@ -16,7 +16,6 @@ interface ClientData {
 
 defineProps<{ client: ClientData }>()
 </script>
-
 <template>
   <Head :title="`ویرایش ${client.name}`" />
   <AppLayout

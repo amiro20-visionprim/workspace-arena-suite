@@ -104,7 +104,6 @@ const formatUrl = (url: string) => {
   }
 }
 </script>
-
 <template>
   <Head title="سرچ کنسول | سوئیت" />
   <AppLayout>
@@ -202,7 +201,7 @@ const formatUrl = (url: string) => {
           </select>
         </div>
         <VButton :disabled="!hasProperties || importing" :loading="importing" @click="startImport">
-          🔄 ایمپورت خودکار
+          ایمپورت خودکار
         </VButton>
         <VButton
           variant="secondary"
@@ -210,21 +209,20 @@ const formatUrl = (url: string) => {
           :loading="analyzing"
           @click="startAnalysis"
         >
-          📊 تحلیل رشد
+          تحلیل رشد
         </VButton>
       </div>
       <p v-if="!hasProperties" class="text-ink-muted mt-3 text-sm">
-        ⚠️ ابتدا یک ملک سرچ کنسول انتخاب کنید.
+        ابتدا یک ملک سرچ کنسول انتخاب کنید.
       </p>
       <p class="text-ink-muted mt-3 text-xs leading-6">
-        💡 ایمپورت خودکار هر ۲۴ ساعت اجرا می‌شود. پس از هر ایمپورت، تحلیل رشد نیز خودکار اجرا
-        می‌شود.
+        ایمپورت خودکار هر ۲۴ ساعت اجرا می‌شود. پس از هر ایمپورت، تحلیل رشد نیز خودکار اجرا می‌شود.
       </p>
     </VCard>
 
     <!-- صفحات و کوئری‌های برتر -->
     <div v-if="hasData" class="mt-8 grid gap-5 lg:grid-cols-2">
-      <VCard title="🏆 ۱۰ صفحهٔ برتر" description="بیشترین کلیک در ۲۸ روز اخیر">
+      <VCard title=" ۱۰ صفحهٔ برتر" description="بیشترین کلیک در ۲۸ روز اخیر">
         <div v-if="topPages?.length" class="space-y-2">
           <div
             v-for="(page, i) in topPages"
@@ -247,7 +245,7 @@ const formatUrl = (url: string) => {
         <p v-else class="text-ink-muted text-sm">هنوز داده‌ای موجود نیست.</p>
       </VCard>
 
-      <VCard title="🔍 ۱۰ کوئری برتر" description="بیشترین جستجوی کاربران">
+      <VCard title=" ۱۰ کوئری برتر" description="بیشترین جستجوی کاربران">
         <div v-if="topQueries?.length" class="space-y-2">
           <div
             v-for="(q, i) in topQueries"

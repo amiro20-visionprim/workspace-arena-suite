@@ -61,7 +61,6 @@ const statusTone = (status: string): 'success' | 'warning' | 'danger' | 'neutral
 
 const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(value)
 </script>
-
 <template>
   <Head title="فاکتورها" />
   <PlatformLayout>

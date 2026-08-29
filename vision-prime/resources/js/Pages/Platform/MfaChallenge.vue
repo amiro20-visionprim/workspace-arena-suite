@@ -12,7 +12,6 @@ function submit(): void {
   form.post('/platform/mfa/verify', { onFinish: () => form.reset('code') })
 }
 </script>
-
 <template>
   <Head title="تأیید دومرحله‌ای" />
   <AuthLayout

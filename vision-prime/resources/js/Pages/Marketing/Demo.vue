@@ -70,7 +70,6 @@ const nextSteps = [
   },
 ]
 </script>
-
 <template>
   <Head title="درخواست دمو" />
   <MarketingLayout>
@@ -159,7 +158,7 @@ const nextSteps = [
           </div>
         </form>
       </VCard>
-      <VCard v-else title="درخواست شما ثبت شد ✅" class="sm:col-span-2"
+      <VCard v-else title="درخواست شما ثبت شد" class="sm:col-span-2"
         ><VAlert class="mb-5" tone="success">{{ page.props.flash?.status }}</VAlert>
         <div class="grid gap-5 sm:grid-cols-3">
           <div

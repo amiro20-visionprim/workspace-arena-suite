@@ -54,7 +54,6 @@ function toggle(plan: PlanRow): void {
 
 const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(value)
 </script>
-
 <template>
   <Head title="پلن‌ها" />
   <PlatformLayout>
@@ -93,7 +92,7 @@ const faNum = (value: number): string => new Intl.NumberFormat('fa-IR').format(v
           <li>حداکثر سایت: {{ faNum(plan.limits.max_sites ?? 0) }}</li>
           <li>حداکثر مشتری: {{ faNum(plan.limits.max_clients ?? 0) }}</li>
           <li>توکن AI ماهانه: {{ faNum(plan.limits.max_ai_tokens_monthly ?? 0) }}</li>
-          <li>انتشار خودکار: {{ plan.features.auto_publish ? '✅' : '—' }}</li>
+          <li>انتشار خودکار: {{ plan.features.auto_publish ? '' : '—' }}</li>
           <li>دورهٔ آزمایشی: {{ (plan.features.trial_days as number) ?? 0 }} روز</li>
         </ul>
 
