@@ -2,19 +2,20 @@
 /**
  * Plugin Name: Vision Prime Connector
  * Description: Secure connection between WordPress and Vision Prime.
- * Version: 1.4.1
+ * Version: 1.5.0
  * Requires PHP: 8.2
  */
 
 defined('ABSPATH') || exit;
 
-define('VISION_PRIME_CONNECTOR_VERSION', '1.4.1');
+define('VISION_PRIME_CONNECTOR_VERSION', '1.5.0');
 define('VISION_PRIME_OPTION', 'vision_prime_connector');
 
 require_once __DIR__ . '/includes/class-vp-guard.php';
 require_once __DIR__ . '/includes/class-vp-secret.php';
 require_once __DIR__ . '/includes/class-vp-api-client.php';
 require_once __DIR__ . '/includes/class-vp-request-verifier.php';
+require_once __DIR__ . '/includes/class-vp-telemetry.php';
 
 final class Vision_Prime_Connector {
     private const OPTION = VISION_PRIME_OPTION;
@@ -25,6 +26,7 @@ final class Vision_Prime_Connector {
         add_action('admin_post_vision_prime_pair', [$this, 'pair']);
         add_action('admin_post_vision_prime_health', [$this, 'health_check']);
         add_action('rest_api_init', [$this, 'register_routes']);
+        add_action('init', [VP_Telemetry::class, 'init']);
     }
 
     public function register_settings(): void {
@@ -177,8 +179,6 @@ final class Vision_Prime_Connector {
         register_rest_route('vision-prime/v1', '/commands', ['methods' => 'POST', 'callback' => [$this, 'commands'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
         register_rest_route('vision-prime/v1', '/rollback', ['methods' => 'POST', 'callback' => [$this, 'rollback'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
         register_rest_route('vision-prime/v1', '/product-info', ['methods' => 'POST', 'callback' => [$this, 'product_info'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
-        register_rest_route('vision-prime/v1', '/taxonomies', ['methods' => 'GET', 'callback' => [$this, 'taxonomies'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
-        register_rest_route('vision-prime/v1', '/media', ['methods' => 'POST', 'callback' => [$this, 'media'], 'permission_callback' => [VP_Request_Verifier::class, 'verify']]);
     }
 
     public function health(): WP_REST_Response {
@@ -196,6 +196,14 @@ final class Vision_Prime_Connector {
             return ['id' => $post->ID, 'title' => get_the_title($post), 'url' => get_permalink($post), 'slug' => $post->post_name, 'type' => $post->post_type, 'status' => $post->post_status, 'modified_at' => get_post_modified_time('c', true, $post), 'meta_title' => self::read_meta($post->ID, 'title'), 'meta_description' => self::read_meta($post->ID, 'description'), 'headings' => $headings, 'word_count' => str_word_count(wp_strip_all_tags($content)), 'content_hash' => hash('sha256', $content), 'content' => $content];
         }, $query->posts);
         return new WP_REST_Response(['data' => $items, 'page' => $page, 'per_page' => $per_page, 'total' => (int) $query->found_posts, 'total_pages' => (int) $query->max_num_pages]);
+    }
+
+    /**
+     * Activation hook — install the internal traffic-count table + telemetry cron.
+     */
+    public static function activate_plugin(): void {
+        VP_Telemetry::install();
+        VP_Telemetry::init();
     }
 
     /**
@@ -335,6 +343,13 @@ final class Vision_Prime_Connector {
                     throw new RuntimeException('Failed to restore product title for post ' . $post_id);
                 }
                 return ['post_id' => $post_id, 'restored' => true];
+            case 'update_post_title':
+                $restored = sanitize_text_field((string) ($previous['title'] ?? ''));
+                $updated = wp_update_post(['ID' => $post_id, 'post_title' => $restored], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to restore post title for post ' . $post_id);
+                }
+                return ['post_id' => $post_id, 'restored' => true];
             case 'publish_new_article':
                 // بازگشت مقالهٔ جدید = حذف پست ساخته‌شده (فقط در صورتی که واقعاً توسط VP ساخته شده باشد).
                 $created_flag = (string) get_post_meta($post_id, '_vp_created_by', true);
@@ -403,6 +418,17 @@ final class Vision_Prime_Connector {
                 }
                 // previous باید آرایه باشد تا با قرارداد rollback (RollbackCommand و restore_command) سازگار بماند.
                 return ['post_id' => $post_id, 'previous' => ['title' => (string) $previous], 'new' => $new];
+            case 'update_post_title':
+                $new = sanitize_text_field((string) ($payload['title'] ?? ''));
+                if ($new === '') {
+                    throw new RuntimeException('Command payload has no title.');
+                }
+                $previous = get_post_field('post_title', $post_id);
+                $updated = wp_update_post(['ID' => $post_id, 'post_title' => $new], true);
+                if (is_wp_error($updated) || (int) $updated === 0) {
+                    throw new RuntimeException('Failed to update post title for post ' . $post_id);
+                }
+                return ['post_id' => $post_id, 'previous' => ['title' => (string) $previous], 'new' => $new];
             case 'update_product_description':
                 $this->assert_product($post_id);
                 $new = (string) ($payload['description'] ?? '');
@@ -426,12 +452,9 @@ final class Vision_Prime_Connector {
                 // پیش‌نویس محصول → پست ووکامرس (post_type=product)؛ مقاله → پست معمولی
                 $content_type = (string) ($payload['content_type'] ?? 'article');
                 $post_type = $content_type === 'product' ? 'product' : 'post';
-                // وضعیت پست از فرمان می‌آید (publish|draft|pending) — پیش‌فرض publish
-                $requested_status = sanitize_key((string) ($payload['status'] ?? 'publish'));
-                $post_status = in_array($requested_status, ['publish', 'draft', 'pending'], true) ? $requested_status : 'publish';
                 $post_id = wp_insert_post([
                     'post_type' => $post_type,
-                    'post_status' => $post_status,
+                    'post_status' => 'publish',
                     'post_title' => $title,
                     'post_content' => wp_kses_post($content),
                     'post_name' => $slug !== '' ? $slug : null,
@@ -441,22 +464,6 @@ final class Vision_Prime_Connector {
                 }
                 // علامت امنیت: پست‌هایی که VP ساخته — rollback فقط همین‌ها را حذف می‌کند.
                 update_post_meta((int) $post_id, '_vp_created_by', 'vision-prime');
-
-                // v1.4: دسته‌ها و برچسب‌ها (id یا نام — ساخت خودکار) + تصویر شاخص/گالری
-                // v1.4.1: برای محصول، تاکسونومی ووکامرس (product_cat/product_tag) استفاده می‌شود
-                $categories = is_array($payload['categories'] ?? null) ? $payload['categories'] : [];
-                $tags = is_array($payload['tags'] ?? null) ? $payload['tags'] : [];
-                $cat_tax = ($post_type === 'product' && self::woo_active()) ? 'product_cat' : 'category';
-                $tag_tax = ($post_type === 'product' && self::woo_active()) ? 'product_tag' : 'post_tag';
-                $cat_ids = self::resolve_terms($categories, $cat_tax);
-                $tag_ids = self::resolve_terms($tags, $tag_tax);
-                if ($cat_ids !== []) wp_set_object_terms($post_id, $cat_ids, $cat_tax, true);
-                if ($tag_ids !== []) wp_set_object_terms($post_id, $tag_ids, $tag_tax, true);
-
-                $featured = absint($payload['featured_media_id'] ?? 0);
-                if ($featured > 0) set_post_thumbnail($post_id, $featured);
-                $gallery = array_filter(array_map('absint', is_array($payload['gallery_media_ids'] ?? null) ? $payload['gallery_media_ids'] : []));
-                if ($gallery !== [] && $post_type === 'product') update_post_meta((int) $post_id, '_product_image_gallery', implode(',', $gallery));
                 // Meta SEO (title/description) را روی پست جدید می‌نویسیم تا همانجا دیده شود.
                 $meta_title = sanitize_text_field((string) ($payload['meta_title'] ?? ''));
                 if ($meta_title !== '') {
@@ -481,105 +488,6 @@ final class Vision_Prime_Connector {
      * Payload: { post_id } or { slug } (WP post id or product slug).
      * Responds synchronously (no async callback) with the product data.
      */
-    /**
-     * فهرست دسته‌ها و برچسب‌ها (امضاشده) — جایگزین REST عمومی در همگام‌سازی.
-     */
-    public function taxonomies(WP_REST_Request $request): WP_REST_Response {
-        $map_terms = static function (array $terms): array {
-            $out = [];
-            foreach ($terms as $t) {
-                if (!is_object($t)) continue;
-                $out[] = ['id' => (int) $t->term_id, 'name' => (string) $t->name, 'slug' => (string) $t->slug, 'parent' => (int) $t->parent, 'count' => (int) $t->count];
-            }
-            return $out;
-        };
-        $data = [
-            'categories' => $map_terms(get_categories(['hide_empty' => false, 'number' => 200])),
-            'tags' => $map_terms(get_terms(['taxonomy' => 'post_tag', 'hide_empty' => false, 'number' => 200])),
-        ];
-        // ووکامرس: دسته/برچسب محصول (برای استودیوی محصول)
-        if (self::woo_active()) {
-            $data['product_cats'] = $map_terms(get_terms(['taxonomy' => 'product_cat', 'hide_empty' => false, 'number' => 200]));
-            $data['product_tags'] = $map_terms(get_terms(['taxonomy' => 'product_tag', 'hide_empty' => false, 'number' => 200]));
-        }
-        return new WP_REST_Response($data);
-    }
-
-    /**
-     * آپلود رسانه (امضاشده): file_b64 یا download_url + alt → media_id + url.
-     */
-    public function media(WP_REST_Request $request): WP_REST_Response {
-        $params = $request->get_json_params();
-        $alt = sanitize_text_field((string) ($params['alt'] ?? ''));
-        $b64 = (string) ($params['file_b64'] ?? '');
-        $download_url = esc_url_raw((string) ($params['download_url'] ?? ''));
-
-        // در وردپرس واقعی فایل‌های ادمین لود می‌شوند؛ اگر توابع از قبل تعریف باشند (محیط تست) رد می‌شویم.
-        if (! function_exists('wp_upload_bits')) { require_once ABSPATH . 'wp-admin/includes/file.php'; }
-        if (! function_exists('media_handle_sideload')) { require_once ABSPATH . 'wp-admin/includes/media.php'; }
-        if (! function_exists('wp_generate_attachment_metadata')) { require_once ABSPATH . 'wp-admin/includes/image.php'; }
-
-        try {
-            if ($b64 !== '') {
-                $raw = base64_decode($b64, true);
-                if ($raw === false || strlen($raw) < 64) throw new RuntimeException('file_b64 نامعتبر است.');
-                $filename = 'vp-' . gmdate('Ymd-His') . '-' . wp_generate_password(8, false) . '.png';
-                $upload = wp_upload_bits($filename, null, $raw);
-                if (!empty($upload['error'])) throw new RuntimeException('آپلود ناموفق: ' . $upload['error']);
-                $file = $upload['file'];
-                $attachment_id = wp_insert_attachment([
-                    'post_mime_type' => 'image/png',
-                    'post_title' => ($alt !== '' ? $alt : 'vision-prime-image'),
-                    'post_status' => 'inherit',
-                ], $file);
-                if (is_wp_error($attachment_id) || (int) $attachment_id === 0) throw new RuntimeException('ثبت پیوست ناموفق.');
-                wp_update_attachment_metadata((int) $attachment_id, wp_generate_attachment_metadata((int) $attachment_id, $file));
-            } elseif ($download_url !== '') {
-                $tmp = download_url($download_url, 120);
-                if (is_wp_error($tmp)) throw new RuntimeException('دانلود ناموفق: ' . $tmp->get_error_message());
-                $ext = strtolower(pathinfo((string) wp_parse_url($download_url, PHP_URL_PATH), PATHINFO_EXTENSION));
-                if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) $ext = 'jpg';
-                $file_array = ['name' => 'vp-' . gmdate('Ymd-His') . '.' . $ext, 'tmp_name' => $tmp];
-                $id = media_handle_sideload($file_array, 0, $alt);
-                if (is_wp_error($id)) { @unlink($tmp); throw new RuntimeException('sideload ناموفق: ' . $id->get_error_message()); }
-                $attachment_id = $id;
-            } else {
-                throw new RuntimeException('file_b64 یا download_url لازم است.');
-            }
-
-            if ($alt !== '') update_post_meta((int) $attachment_id, '_wp_attachment_image_alt', $alt);
-
-            return new WP_REST_Response(['media_id' => (int) $attachment_id, 'url' => (string) wp_get_attachment_url((int) $attachment_id)], 200);
-        } catch (Throwable $e) {
-            return new WP_REST_Response(['error' => $e->getMessage()], 422);
-        }
-    }
-
-
-    /** آیا ووکامرس فعال است؟ */
-    private static function woo_active(): bool {
-        return class_exists("WooCommerce");
-    }
-
-    /** تبدیل ورودی دسته/برچسب (id یا نام) به term_id — با ساخت خودکار. */
-    private static function resolve_terms(array $input, string $taxonomy): array {
-        $ids = [];
-        foreach ($input as $item) {
-            if (is_int($item) || ctype_digit((string) $item)) { $ids[] = (int) $item; continue; }
-            $name = sanitize_text_field((string) $item);
-            if ($name === '') continue;
-            $term = get_term_by('name', $name, $taxonomy);
-            if ($term === false) $term = get_term_by('slug', sanitize_title($name), $taxonomy);
-            if ($term === false) {
-                $created = wp_insert_term($name, $taxonomy);
-                $ids[] = is_wp_error($created) ? 0 : (int) $created['term_id'];
-            } else {
-                $ids[] = (int) $term->term_id;
-            }
-        }
-        return array_values(array_filter($ids));
-    }
-
     public function product_info(WP_REST_Request $request): WP_REST_Response {
         if (VP_Guard::tampered()) {
             return new WP_REST_Response(['error' => 'integrity check failed'], 403);
@@ -717,3 +625,4 @@ final class Vision_Prime_Connector {
     }
 }
 new Vision_Prime_Connector();
+register_activation_hook(__FILE__, ['Vision_Prime_Connector', 'activate_plugin']);
