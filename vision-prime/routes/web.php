@@ -446,3 +446,6 @@ if (app()->environment(['local', 'testing'])) {
     Route::get('/_design-system', fn () => Inertia::render('Development/DesignSystem'))->name('development.design-system');
     Route::get('/_localization', fn () => Inertia::render('Development/Localization'))->name('development.localization');
 }
+
+// ─── Smart Suggestions API (Auto Tag + Category) ───
+Route::post('/api/content/smart-suggest', [App\Http\Controllers\App\SmartSuggestionsController::class, 'suggest'])->name('api.content.smart-suggest')->middleware('throttle:30,1');

@@ -209,9 +209,120 @@ function toggleTag(name: string): void {
   else selectedTagNames.value.splice(i, 1)
 }
 
+function removeSmartTag(name: string): void {
+  const i = selectedTagNames.value.indexOf(name)
+  if (i !== -1) selectedTagNames.value.splice(i, 1)
+}
+
+function removeSmartCategory(id: number): void {
+  const i = selectedCategoryIds.value.indexOf(id)
+  if (i !== -1) selectedCategoryIds.value.splice(i, 1)
+}
+
 const selectedSiteId = ref('')
 const title = ref('')
 const subtype = ref('how_to_guide')
+
+// ─── پیشنهاد هوشمند تگ و دسته ───
+interface SmartSuggestion {
+  name: string
+  score: number
+  reason: string
+  existing?: boolean
+  wp_id?: number
+  similar_to?: string
+}
+interface SmartCategorySuggestion {
+  id: number
+  name: string
+  score: number
+  confidence: string
+  reason: string
+}
+const smartTags = ref<SmartSuggestion[]>([])
+const smartCategories = ref<SmartCategorySuggestion[]>([])
+const smartLoading = ref(false)
+const smartNewCategory = ref<{ suggested: boolean; name: string | null }>({ suggested: false, name: null })
+const smartNote = ref<string | null>(null)
+const autoApplySmart = ref(true) // خودکار اعمال پیشنهادات
+
+async function fetchSmartSuggestions(): Promise<void> {
+  if (!selectedSiteId.value || !title.value.trim() || title.value.trim().length < 5) return
+  smartLoading.value = true
+  try {
+    const res = await fetch('/api/content/smart-suggest', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify({
+        site_id: Number(selectedSiteId.value),
+        title: title.value.trim(),
+        keyword: title.value.trim(),
+      }),
+    })
+    const data = (await res.json()) as {
+      success: boolean
+      tags?: SmartSuggestion[]
+      categories?: SmartCategorySuggestion[]
+      best_category_id?: number | null
+      new_category_suggested?: boolean
+      new_category_name?: string | null
+      note?: string | null
+    }
+    if (data.success) {
+      smartTags.value = data.tags ?? []
+      smartCategories.value = data.categories ?? []
+      smartNewCategory.value = {
+        suggested: data.new_category_suggested ?? false,
+        name: data.new_category_name ?? null,
+      }
+      smartNote.value = data.note ?? null
+
+      // خودکار اعمال بهترین پیشنهادات
+      if (autoApplySmart.value) {
+        // اعمال بهترین دسته
+        if (data.best_category_id && !selectedCategoryIds.value.includes(data.best_category_id)) {
+          selectedCategoryIds.value.push(data.best_category_id)
+        }
+        // اعمال تگ‌های با امتیاز بالا
+        for (const tag of (data.tags ?? []).slice(0, 5)) {
+          if (tag.score >= 60 && !selectedTagNames.value.includes(tag.name)) {
+            selectedTagNames.value.push(tag.name)
+          }
+        }
+      }
+    }
+  } catch {
+    /* نادیده گرفته شد */
+  }
+  smartLoading.value = false
+}
+
+function acceptSmartTag(tag: SmartSuggestion): void {
+  if (!selectedTagNames.value.includes(tag.name)) {
+    selectedTagNames.value.push(tag.name)
+  }
+}
+
+function acceptSmartCategory(cat: SmartCategorySuggestion): void {
+  if (!selectedCategoryIds.value.includes(cat.id)) {
+    selectedCategoryIds.value.push(cat.id)
+  }
+}
+
+// Debounce برای جلوگیری از درخواست‌های زیاد
+let smartDebounceTimer: ReturnType<typeof setTimeout> | null = null
+watch(title, (v) => {
+  if (smartDebounceTimer) clearTimeout(smartDebounceTimer)
+  smartDebounceTimer = setTimeout(() => {
+    if (v && v.trim().length > 5 && selectedSiteId.value) {
+      fetchSmartSuggestions()
+    }
+  }, 800) // 800ms debounce
+})
 
 const outline = ref<OutlineItem[]>([])
 const outlineLoading = ref(false)
@@ -1337,7 +1448,80 @@ watch(title, (v) => {
                 >
               </div>
             </div>
-          </VAlert>
+          </VAlert>          <!-- ═══ پیشنهاد هوشمند تگ و دسته ═══ -->
+          <div
+            v-if="(smartTags.length > 0 || smartCategories.length > 0 || smartNewCategory.suggested) && !smartLoading"
+            class="bg-brand-50 border-brand-200 rounded-xl border p-4"
+          >
+            <div class="mb-3 flex items-center justify-between">
+              <span class="text-brand-700 text-sm font-bold">
+                <VIcon :name="'sparkles'" size="sm" class="inline-block align-middle" />
+                پیشنهاد هوشمند
+              </span>
+              <label class="flex items-center gap-2 text-xs">
+                <input v-model="autoApplySmart" type="checkbox" class="rounded" />
+                خودکار اعمال بشه
+              </label>
+            </div>
+
+            <!-- دسته‌های پیشنهادی -->
+            <div v-if="smartCategories.length > 0" class="mb-3">
+              <p class="text-ink-muted mb-2 text-xs">دسته‌های پیشنهادی:</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="cat in smartCategories"
+                  :key="cat.id"
+                  type="button"
+                  class="rounded-lg border px-3 py-1.5 text-xs transition-all"
+                  :class="[
+                    selectedCategoryIds.includes(cat.id)
+                      ? 'border-brand-500 bg-brand-100 text-brand-700'
+                      : 'border-surface-muted bg-white hover:border-brand-300',
+                  ]"
+                  @click="acceptSmartCategory(cat)"
+                >
+                  {{ cat.name }}
+                  <span class="text-ink-muted">({{ cat.score }}%)</span>
+                  <span v-if="cat.confidence === 'high'" class="text-green-600">✓</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- دسته جدید پیشنهادی -->
+            <div v-if="smartNewCategory.suggested && smartNewCategory.name" class="mb-3">
+              <p class="text-ink-muted mb-1 text-xs">دسته جدید پیشنهادی:</p>
+              <VBadge tone="info" size="sm">+ {{ smartNewCategory.name }}</VBadge>
+            </div>
+
+            <!-- تگ‌های پیشنهادی -->
+            <div v-if="smartTags.length > 0">
+              <p class="text-ink-muted mb-2 text-xs">تگ‌های پیشنهادی:</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="tag in smartTags.slice(0, 8)"
+                  :key="tag.name"
+                  type="button"
+                  class="rounded-lg border px-3 py-1.5 text-xs transition-all"
+                  :class="[
+                    selectedTagNames.includes(tag.name)
+                      ? 'border-brand-500 bg-brand-100 text-brand-700'
+                      : 'border-surface-muted bg-white hover:border-brand-300',
+                  ]"
+                  @click="acceptSmartTag(tag)"
+                >
+                  {{ tag.name }}
+                  <span class="text-ink-muted">({{ tag.score }})</span>
+                  <span v-if="tag.existing" class="text-green-600">✓</span>
+                </button>
+              </div>
+            </div>
+
+            <p v-if="smartNote" class="text-ink-muted mt-2 text-xs">{{ smartNote }}</p>
+          </div>
+
+          <div v-if="smartLoading" class="text-brand-600 flex items-center gap-2 text-xs">
+            <span class="animate-spin">⏳</span> در حال تحلیل هوشمند...
+          </div>
 
           <div class="flex gap-2">
             <VButton
@@ -1348,7 +1532,7 @@ watch(title, (v) => {
               class="flex-1"
               @click="quickGenerate"
             >
-              {{ generatingLoading ? 'در حال تولید...' : ' تولید سریع' }}
+              {{ generatingLoading ? 'در حال تولید...' : '  تولید سریع' }}
             </VButton>
             <VButton
               :loading="outlineLoading"
@@ -1358,7 +1542,7 @@ watch(title, (v) => {
               class="flex-1"
               @click="fetchOutline(studioMode)"
             >
-              {{ outlineLoading ? 'در حال تحلیل...' : ' با Outline' }}
+              {{ outlineLoading ? 'در حال تحلیل...' : '  با Outline' }}
             </VButton>
           </div>
           <VButton
