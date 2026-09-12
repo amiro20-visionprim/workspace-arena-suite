@@ -38,12 +38,16 @@ class CommandConfidenceAssessor
             'history' => $history,
         ]);
 
+        $learningBlocked = app(\App\Domains\Automation\Services\AdaptiveLearning::class)
+            ->isBlocked((int) $recommendation->site_id, $commandType);
+
         return [
             'score' => $result['score'],
             'factors' => array_merge($result['factors'], [
                 'gsc_freshness' => round($dataQuality, 3),
                 'source' => 'recommendation:'.($recommendation->source_type ?? 'manual'),
                 'history' => $history,
+                'learning_blocked' => $learningBlocked,
             ]),
         ];
     }

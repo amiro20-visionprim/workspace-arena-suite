@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domains\Automation\Actions;
 
 use App\Domains\Audit\Actions\RecordAuditLog;
+use App\Domains\Automation\Services\AdaptiveLearning;
 use App\Domains\Automation\Services\CommandConfidenceAssessor;
 use App\Domains\Seo\Models\Recommendation;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +39,14 @@ class ConvertRecommendationToCommand
     {
         if (! in_array($type, self::SUPPORTED_TYPES, true)) {
             throw new \InvalidArgumentException('نوع تغییر اجرایی پشتیبانی نمی‌شود.');
+        }
+
+        // D-013 Adaptive: اگر نوع دستور برای این سایت مسدود شده، تبدیل متوقف می‌شود.
+        if (app(AdaptiveLearning::class)->isBlocked((int) $recommendation->site_id, $type)) {
+            throw new \RuntimeException(
+                'این نوع تغییر ({$type}) برای سایت موردنظر متوقف شده است. '
+                . (app(AdaptiveLearning::class)->blockReason((int) $recommendation->site_id, $type) ?? '')
+            );
         }
 
         $existing = DB::table('commands')

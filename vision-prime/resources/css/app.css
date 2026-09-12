@@ -17,6 +17,13 @@
   --color-canvas: #f8fbff;
   --color-surface: #ffffff;
   --color-surface-muted: #f1f6fc;
+
+  /* Inverse band: نوار تیره‌ای که در هر دو تم تیره می‌ماند (hero/CTA با متن سفید).
+     رمپ برند در تم تاریک عمداً معکوس می‌شود، پس bg-brand-900 نمی‌تواند نقش نوار
+     تیره را در تم تاریک بازی کند؛ این توکن همان نقش را در هر دو تم تضمین می‌کند. */
+  --color-inverse: #163b68;
+  --color-inverse-deep: #0d2440;
+
   --color-ink-strong: #23364d;
   --color-ink: #4e647f;
   --color-ink-muted: #6e87a6;
@@ -95,6 +102,10 @@
   --color-canvas: #0a101c;
   --color-surface: #111a2c;
   --color-surface-muted: #182338;
+
+  /* Inverse band: در تم تاریک هم تیره می‌ماند تا متن سفید خوانا بماند */
+  --color-inverse: #0d1930;
+  --color-inverse-deep: #070d18;
 
   /* Ink: light family */
   --color-ink-strong: #e8eef7;
@@ -185,6 +196,15 @@
     var(--color-grad-via) 55%,
     var(--color-grad-to) 100%
   );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* نسخهٔ روشن گرادیان برند برای متن روی پس‌زمینه‌های تیره (نوار hero / CTA).
+   گرادیان اصلی با رنگ شروع تیره (#245c9b) روی navy خوانا نیست. */
+@utility text-gradient-on-dark {
+  background-image: linear-gradient(120deg, #9ec5ff 0%, #c4b5fd 55%, #f0abfc 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

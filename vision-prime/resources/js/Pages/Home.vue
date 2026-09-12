@@ -22,6 +22,7 @@ import {
 
 import AnimatedNumber from '@/marketing/components/AnimatedNumber.vue'
 
+import CaseStudy from '@/marketing/components/CaseStudy.vue'
 import HeroDashboardMock from '@/marketing/components/HeroDashboardMock.vue'
 import MarketingLayout from '@/marketing/layouts/MarketingLayout.vue'
 import SectionHeading from '@/marketing/components/SectionHeading.vue'
@@ -387,6 +388,9 @@ const modules = [
           </div>
         </div>
       </section>
+
+      <!-- CASE STUDY -->
+      <CaseStudy />
 
       <!-- TESTIMONIALS -->
       <section class="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-10 lg:py-24">

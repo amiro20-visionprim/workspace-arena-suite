@@ -50,7 +50,7 @@ class RunGrowthAnalysis
             'money_page_audits' => $this->auditMoneyPages->handle($site),
             'signal_opportunities' => $this->signals->handle($site),
             'conversion_risks' => $this->conversionRisks->handle($site),
-            'recommendations' => $this->riskRecommendations->handle($site),
+            'recommendations' => $this->riskRecommendations->handle($site)['created'],
             'review_items' => $this->openFlaggedAuditReviews($site),
         ];
     }

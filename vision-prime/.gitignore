@@ -30,3 +30,8 @@ vision-prime-update.patch
 docker/nginx/ssl/*.pem
 /storage/backups
 storage/framework/views/*.php
+
+# Database files
+*.sqlite
+*.db
+database/database.sqlite

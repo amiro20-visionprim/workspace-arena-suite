@@ -110,6 +110,7 @@ Route::get('/for-ecommerce', fn () => Inertia::render('Marketing/ForEcommerce'))
 Route::get('/for-clinics', fn () => Inertia::render('Marketing/ForClinics'))->name('marketing.for-clinics');
 Route::get('/for-education', fn () => Inertia::render('Marketing/ForEducation'))->name('marketing.for-education');
 Route::get('/for-hospitality', fn () => Inertia::render('Marketing/ForHospitality'))->name('marketing.for-hospitality');
+Route::get('/case-study', fn () => Inertia::render('Marketing/CaseStudy'))->name('marketing.case-study');
 Route::get('/product', fn () => Inertia::render('Marketing/Product'))->name('marketing.product');
 Route::get('/features', fn () => Inertia::render('Marketing/Features'))->name('marketing.features');
 Route::get('/pricing', fn () => Inertia::render('Marketing/Pricing'))->name('marketing.pricing');
@@ -278,6 +279,13 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::get('/app/ai-drafts', [AiDraftController::class, 'index'])->name('app.ai-drafts.index');
     Route::get('/app/ai-drafts/{id}/edit', [AiDraftController::class, 'edit'])->name('app.ai-drafts.edit');
     Route::put('/app/ai-drafts/{id}', [AiDraftController::class, 'update'])->name('app.ai-drafts.update');
+
+    // ─── Orphan pages — wired to existing Vue components ───
+    Route::get('/app/bulk-content', fn () => Inertia::render('App/BulkContent'))->name('app.bulk-content');
+    Route::get('/app/crawler-analysis', fn () => Inertia::render('App/CrawlerAnalysis'))->name('app.crawler-analysis');
+    Route::get('/app/competitors', fn () => Inertia::render('App/Competitors'))->name('app.competitors');
+    Route::get('/app/title-ab-tests', fn () => Inertia::render('App/TitleAbTests'))->name('app.title-ab-tests');
+    Route::get('/app/content-refresh', fn () => Inertia::render('App/ContentRefresh'))->name('app.content-refresh');
 
     // ─── Content API (AI Gateway + SEO Intelligence) ───
     Route::get('/api/content/research', [ContentResearchController::class, 'research'])->name('api.content.research');
