@@ -4,9 +4,9 @@ import { Link } from '@inertiajs/vue3'
 const enamadLogo = '/images/enamad-logo.png'
 
 const productLinks = [
-  { label: 'معرفی محصول', href: '/product' },
   { label: 'قابلیت‌ها', href: '/features' },
   { label: 'قیمت‌گذاری', href: '/pricing' },
+  { label: 'مطالعه موردی', href: '/case-study' },
 ]
 
 const audienceLinks = [
@@ -18,7 +18,7 @@ const audienceLinks = [
 ]
 
 const companyLinks = [
-  { label: 'امنیت', href: '/security' },
+  { label: 'مطالعه موردی', href: '/case-study' },
   { label: 'درباره ما', href: '/about' },
   { label: 'تماس با ما', href: '/contact' },
 ]

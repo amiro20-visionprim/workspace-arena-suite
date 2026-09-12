@@ -12,10 +12,9 @@ interface NavigationItem {
 }
 
 const navigation: NavigationItem[] = [
-  { label: 'محصول', href: '/product' },
   { label: 'قابلیت‌ها', href: '/features' },
   { label: 'قیمت‌گذاری', href: '/pricing' },
-  { label: 'امنیت', href: '/security' },
+  { label: 'مطالعه موردی', href: '/case-study' },
 ]
 
 const mobileMenuOpen = ref(false)
