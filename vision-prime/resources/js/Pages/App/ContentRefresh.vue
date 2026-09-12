@@ -54,8 +54,8 @@ async function fetchData() {
   loading.value = true
   try {
     const [summaryRes, staleRes] = await Promise.all([
-      fetch('/api/content/refresh/summary'),
-      fetch('/api/content/refresh'),
+      fetch('/api/content/refresh/summary', { headers: { Accept: 'application/json' } }),
+      fetch('/api/content/refresh', { headers: { Accept: 'application/json' } }),
     ])
     summary.value = await summaryRes.json()
     const data = await staleRes.json()

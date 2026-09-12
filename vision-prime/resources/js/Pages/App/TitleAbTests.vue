@@ -85,7 +85,7 @@ async function fetchTests() {
     const params = new URLSearchParams()
     if (filterStatus.value) params.set('status', filterStatus.value)
 
-    const res = await fetch(`/api/title-ab-tests?${params}`)
+    const res = await fetch(`/api/title-ab-tests?${params}`, { headers: { Accept: 'application/json' } })
     const data = await res.json()
     summary.value = data.summary
     tests.value = data.tests
@@ -98,7 +98,7 @@ async function fetchTests() {
 
 async function fetchTestDetail(id: number) {
   try {
-    const res = await fetch(`/api/title-ab-tests/${id}`)
+    const res = await fetch(`/api/title-ab-tests/${id}`, { headers: { Accept: 'application/json' } })
     selectedTest.value = await res.json()
   } catch (e: any) {
     error.value = e.message || 'خطا در دریافت جزئیات'

@@ -54,7 +54,7 @@ const stats = ref<PublishStats>({ published: 0, publish_failed: 0, review_queue:
 
 async function loadStats() {
   try {
-    const res = await fetch('/api/bulk-content/stats', {
+    const res = await fetch('/api/bulk-content/stats', { headers: { Accept: 'application/json' } }, {
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     })
     if (res.ok) stats.value = (await res.json()) as PublishStats
@@ -134,7 +134,7 @@ const keywordList = computed(() =>
 
 async function loadJobs() {
   try {
-    const res = await fetch('/api/bulk-content/jobs', {
+    const res = await fetch('/api/bulk-content/jobs', { headers: { Accept: 'application/json' } }, {
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     })
     const data = await res.json()
@@ -149,7 +149,7 @@ async function loadJobs() {
 /** P2.8 — گزارش کیفیت تولید گروهی */
 async function loadQualityReport() {
   try {
-    const res = await fetch('/api/bulk-content/quality-report', {
+    const res = await fetch('/api/bulk-content/quality-report', { headers: { Accept: 'application/json' } }, {
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
     })
     if (res.ok) qualityReport.value = (await res.json()) as QualityReport
@@ -228,7 +228,7 @@ async function createJob() {
   }
   creating.value = true
   try {
-    const res = await fetch('/api/bulk-content/jobs', {
+    const res = await fetch('/api/bulk-content/jobs', { headers: { Accept: 'application/json' } }, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({

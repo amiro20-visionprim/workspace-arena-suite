@@ -41,7 +41,7 @@ const error = ref('')
 async function fetchCompetitors() {
   loading.value = true
   try {
-    const res = await fetch('/api/competitors')
+    const res = await fetch('/api/competitors', { headers: { Accept: 'application/json' } })
     const data = await res.json()
     competitors.value = data.competitors
   } catch (e: any) {
@@ -95,13 +95,13 @@ async function crawlCompetitor(id: number) {
 }
 
 async function showDetail(id: number) {
-  const res = await fetch(`/api/competitors/${id}`)
+  const res = await fetch(`/api/competitors/${id}`, { headers: { Accept: 'application/json' } })
   detail.value = await res.json()
 }
 
 async function fetchComparison() {
   showCompare.value = true
-  const res = await fetch('/api/competitors/compare')
+  const res = await fetch('/api/competitors/compare', { headers: { Accept: 'application/json' } })
   comparison.value = await res.json()
 }
 

@@ -99,7 +99,7 @@ async function fetchData() {
     if (filterMinScore.value > 0) params.set('min_score', String(filterMinScore.value))
     if (filterSearch.value) params.set('search', filterSearch.value)
 
-    const res = await fetch(`/api/crawler/analysis?${params}`)
+    const res = await fetch(`/api/crawler/analysis?${params}`, { headers: { Accept: 'application/json' } })
     const data = await res.json()
     summary.value = data.summary
     opportunities.value = data.opportunities.items
