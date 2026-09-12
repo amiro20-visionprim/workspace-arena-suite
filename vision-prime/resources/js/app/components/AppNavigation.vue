@@ -46,6 +46,9 @@ const baseGroups: NavigationGroup[] = [
       },
       { label: 'پیش‌نویس‌ها', href: '/app/ai-drafts', icon: 'document' },
       { label: 'تقویم محتوایی', href: '/app/content-calendar', icon: 'calendar' },
+      { label: 'تولید گروهی', hint: 'تولید انبوه محتوا', href: '/app/bulk-content', icon: 'list' },
+      { label: 'بروزرسانی محتوا', hint: 'صفحات نیازمند بروز', href: '/app/content-refresh', icon: 'refresh' },
+      { label: 'تست A/B عناوین', hint: 'بهینه‌سازی CTR', href: '/app/title-ab-tests', icon: 'sparkles' },
     ],
   },
   {
@@ -53,6 +56,8 @@ const baseGroups: NavigationGroup[] = [
     icon: 'trend-up',
     items: [
       { label: 'سرچ کنسول', href: '/app/gsc', icon: 'search' },
+      { label: 'تحلیل کرالر', hint: 'جایگزین GSC', href: '/app/crawler-analysis', icon: 'search' },
+      { label: 'رقبا', hint: 'تحلیل رقبا', href: '/app/competitors', icon: 'users' },
       { label: 'فرصت‌های رشد', href: '/app/opportunities', icon: 'lightbulb' },
       { label: 'صفحات درآمدزا', href: '/app/money-pages', icon: 'gauge' },
       { label: 'ریسک‌های تبدیل', href: '/app/conversion-risks', icon: 'trend-down' },

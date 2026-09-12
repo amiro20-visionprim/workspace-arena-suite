@@ -43,6 +43,11 @@ use App\Http\Controllers\App\ReviewDecisionController;
 use App\Http\Controllers\App\ReviewDetailController;
 use App\Http\Controllers\App\Settings\AiSettingsController;
 use App\Http\Controllers\App\Settings\AuditLogSettingsController;
+use App\Http\Controllers\App\BulkContentController;
+use App\Http\Controllers\App\CompetitorController;
+use App\Http\Controllers\App\CrawlerAnalysisController;
+use App\Http\Controllers\App\TitleAbTestController;
+use App\Http\Controllers\App\TitleOptimizationController;
 use App\Http\Controllers\App\Settings\IntegrationsSettingsController;
 use App\Http\Controllers\App\Settings\OrganizationSettingsController;
 use App\Http\Controllers\App\SiteConnectorController;
@@ -281,11 +286,50 @@ Route::middleware(['auth', 'current.organization'])->group(function (): void {
     Route::put('/app/ai-drafts/{id}', [AiDraftController::class, 'update'])->name('app.ai-drafts.update');
 
     // ─── Orphan pages — wired to existing Vue components ───
-    Route::get('/app/bulk-content', fn () => Inertia::render('App/BulkContent'))->name('app.bulk-content');
+    Route::get('/app/bulk-content', [BulkContentController::class, 'page'])->name('app.bulk-content');
     Route::get('/app/crawler-analysis', fn () => Inertia::render('App/CrawlerAnalysis'))->name('app.crawler-analysis');
     Route::get('/app/competitors', fn () => Inertia::render('App/Competitors'))->name('app.competitors');
     Route::get('/app/title-ab-tests', fn () => Inertia::render('App/TitleAbTests'))->name('app.title-ab-tests');
     Route::get('/app/content-refresh', fn () => Inertia::render('App/ContentRefresh'))->name('app.content-refresh');
+
+    // ─── Crawler Analysis API ───
+    Route::get('/api/crawler/analysis', [CrawlerAnalysisController::class, 'index'])->name('api.crawler.analysis');
+    Route::put('/api/crawler/opportunities/{id}/status', [CrawlerAnalysisController::class, 'updateStatus'])->name('api.crawler.opportunities.status')->middleware('throttle:20,1');
+    Route::post('/api/crawler/opportunities/{id}/create-job', [CrawlerAnalysisController::class, 'createBulkJob'])->name('api.crawler.opportunities.create-job')->middleware('throttle:10,1');
+
+    // ─── Competitors API ───
+    Route::get('/api/competitors', [CompetitorController::class, 'index'])->name('api.competitors.index');
+    Route::post('/api/competitors', [CompetitorController::class, 'store'])->name('api.competitors.store')->middleware('throttle:10,1');
+    Route::get('/api/competitors/compare', [CompetitorController::class, 'compare'])->name('api.competitors.compare');
+    Route::get('/api/competitors/{id}', [CompetitorController::class, 'show'])->name('api.competitors.show');
+    Route::delete('/api/competitors/{id}', [CompetitorController::class, 'destroy'])->name('api.competitors.destroy')->middleware('throttle:10,1');
+
+    // ─── Bulk Content API ───
+    Route::get('/api/bulk-content/stats', [BulkContentController::class, 'stats'])->name('api.bulk-content.stats');
+    Route::get('/api/bulk-content/quality-report', [BulkContentController::class, 'qualityReport'])->name('api.bulk-content.quality-report');
+    Route::get('/api/bulk-content/jobs', [BulkContentController::class, 'index'])->name('api.bulk-content.jobs.index');
+    Route::post('/api/bulk-content/jobs', [BulkContentController::class, 'store'])->name('api.bulk-content.jobs.store')->middleware('throttle:10,1');
+    Route::get('/api/bulk-content/jobs/{id}', [BulkContentController::class, 'show'])->name('api.bulk-content.jobs.show');
+    Route::post('/api/bulk-content/jobs/{id}/run', [BulkContentController::class, 'run'])->name('api.bulk-content.jobs.run')->middleware('throttle:5,1');
+    Route::post('/api/bulk-content/jobs/{id}/publish', [BulkContentController::class, 'publishJob'])->name('api.bulk-content.jobs.publish')->middleware('throttle:10,1');
+    Route::post('/api/bulk-content/items/{id}/publish', [BulkContentController::class, 'publishItem'])->name('api.bulk-content.items.publish')->middleware('throttle:10,1');
+    Route::post('/api/bulk-content/items/{id}/rework', [BulkContentController::class, 'rework'])->name('api.bulk-content.items.rework')->middleware('throttle:10,1');
+    Route::get('/api/bulk-content/jobs/{id}/status', [BulkContentController::class, 'status'])->name('api.bulk-content.jobs.status');
+
+    // ─── Title A/B Tests API ───
+    Route::get('/api/title-ab-tests', [TitleAbTestController::class, 'index'])->name('api.title-ab-tests.index');
+    Route::post('/api/title-ab-tests', [TitleAbTestController::class, 'store'])->name('api.title-ab-tests.store')->middleware('throttle:10,1');
+    Route::get('/api/title-ab-tests/{id}', [TitleAbTestController::class, 'show'])->name('api.title-ab-tests.show');
+    Route::post('/api/title-ab-tests/{id}/start', [TitleAbTestController::class, 'start'])->name('api.title-ab-tests.start')->middleware('throttle:10,1');
+    Route::post('/api/title-ab-tests/{id}/pause', [TitleAbTestController::class, 'pause'])->name('api.title-ab-tests.pause')->middleware('throttle:10,1');
+    Route::post('/api/title-ab-tests/{id}/apply-winner', [TitleAbTestController::class, 'applyWinner'])->name('api.title-ab-tests.apply-winner')->middleware('throttle:10,1');
+    Route::get('/api/title-ab-tests/{id}/publish-log', [TitleAbTestController::class, 'publishLog'])->name('api.title-ab-tests.publish-log');
+
+    // ─── Content Refresh API ───
+    Route::get('/api/content/refresh/summary', [TitleOptimizationController::class, 'summary'])->name('api.content.refresh.summary');
+    Route::get('/api/content/refresh', [TitleOptimizationController::class, 'index'])->name('api.content.refresh.index');
+    Route::post('/api/content/refresh/{draftId}/optimize', [TitleOptimizationController::class, 'optimize'])->name('api.content.refresh.optimize')->middleware('throttle:10,1');
+    Route::post('/api/content/refresh/{draftId}/apply-title', [TitleOptimizationController::class, 'applyTitle'])->name('api.content.refresh.apply-title')->middleware('throttle:10,1');
 
     // ─── Content API (AI Gateway + SEO Intelligence) ───
     Route::get('/api/content/research', [ContentResearchController::class, 'research'])->name('api.content.research');
